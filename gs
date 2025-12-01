@@ -2605,16 +2605,19 @@ function crearHojaHistoricoAgentes(ss) {
   let hoja = ss.getSheetByName('Historico_Agentes');
   if (!hoja) {
     hoja = ss.insertSheet('Historico_Agentes');
-    // AHORA GUARDAMOS 8 MÉTRICAS CLAVE + Identificadores
+    // AÑADIMOS LAS NUEVAS COLUMNAS AQUÍ
     const headers = [
       'ID_Agente', 'Nombre', 'Año', 'Mes', 
       'GCI', 'Ventas_Cierres', 
       'Citas_Captacion', 'Exclusivas_Venta', 'Capt_Abierto',
-      'Citas_Comprador', 'Exclusivas_Comprador', 'Visitas_Casas',
+      'Citas_Comprador', 'Visitas_Casas',
+      'Capt_Alquiler', '3Bs', 'Bajadas_Precio', 'Propuestas', 'Arras', // <--- NUEVAS
       'Fecha_Registro'
     ];
     hoja.getRange(1, 1, 1, headers.length).setValues([headers])
-        .setBackground('#667eea').setFontColor('#ffffff').setFontWeight('bold');
+        .setBackground('#667eea')
+        .setFontColor('#ffffff')
+        .setFontWeight('bold');
     hoja.setFrozenRows(1);
   }
   return hoja;
@@ -3264,4 +3267,75 @@ function obtenerEstadisticasTransacciones(filtros) {
   } catch (error) {
     return { success: false, error: error.message };
   }
+}
+/**
+ * 📥 IMPORTACIÓN MASIVA DESDE EXCEL
+ * Recibe un array de objetos con datos mensuales y anuales.
+ * Crea agentes nuevos si no existen y guarda el histórico.
+ */
+function guardarImportacionMasiva(listaAgentes) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // 1. Gestión de Agentes (Igual que antes)
+  let hojaAgentes = ss.getSheetByName('Agentes');
+  if (!hojaAgentes) { crearHojaAgentes(ss); hojaAgentes = ss.getSheetByName('Agentes'); }
+  const datosAg = hojaAgentes.getDataRange().getValues();
+  const mapaIDs = {};
+  let maxID = 0;
+  for(let i=1; i<datosAg.length; i++) {
+    const val = String(datosAg[i][0]);
+    mapaIDs[String(datosAg[i][1]).trim().toUpperCase()] = val;
+    const num = parseInt(val.replace('AG',''));
+    if(!isNaN(num) && num > maxID) maxID = num;
+  }
+
+  const nuevosAgentes = [];
+  const historico = [];
+  const timestamp = new Date();
+
+  // 2. Procesar Datos con las NUEVAS COLUMNAS
+  listaAgentes.forEach(ag => {
+    let id = mapaIDs[ag.nombre.trim().toUpperCase()];
+    if(!id) {
+      maxID++;
+      id = 'AG' + String(maxID).padStart(3,'0');
+      nuevosAgentes.push([id, ag.nombre, "", "", new Date(ag.anio,0,1), "Activo", "NO", new Date(), 0]);
+      mapaIDs[ag.nombre.trim().toUpperCase()] = id;
+    }
+    
+    ag.mensual.forEach((m, idx) => {
+      historico.push([
+        id,
+        ag.nombre,
+        ag.anio,
+        idx + 1,
+        m.gci || 0,
+        m.ventas || 0,
+        m.citasCapt || 0,
+        m.exclVenta || 0,
+        m.captAbierto || 0,
+        m.citasComp || 0,
+        m.visitas || 0,
+        // --- AQUÍ GUARDAMOS LOS NUEVOS DATOS ---
+        m.captAlq || 0,
+        m.tresBs || 0,
+        m.bajadas || 0,
+        m.propuestas || 0,
+        m.arras || 0,
+        // ---------------------------------------
+        timestamp
+      ]);
+    });
+  });
+
+  // 3. Escribir en hojas
+  if(nuevosAgentes.length) hojaAgentes.getRange(hojaAgentes.getLastRow()+1,1,nuevosAgentes.length,9).setValues(nuevosAgentes);
+  
+  let hojaHist = ss.getSheetByName('Historico_Agentes');
+  if(!hojaHist) hojaHist = crearHojaHistoricoAgentes(ss);
+  
+  // Importante: Ajustar el rango al número de columnas nuevas (ahora son 17 columnas en total)
+  if(historico.length) hojaHist.getRange(hojaHist.getLastRow()+1, 1, historico.length, 17).setValues(historico);
+
+  return { success: true, message: `Importados ${listaAgentes.length} agentes con detalle ampliado.` };
 }
