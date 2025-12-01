@@ -2893,87 +2893,7 @@ function cargarDatosGerente(periodo) {
 
     }).obtenerDatosHistoricosJSON();
 }
-// ===== SISTEMA DE COLORES PARA GRÁFICOS =====
-function getChartColors() {
-    // Detectar si estamos en modo claro
-    const isDarkMode = document.body.classList.contains('dark-theme') || 
-                       !document.body.classList.contains('light-theme');
-    
-    if (isDarkMode) {
-        return {
-            textColor: '#ffffff',
-            gridColor: 'rgba(255,255,255,0.1)',
-            backgroundColor: 'rgba(0,0,0,0.8)',
-            // Colores de datos (siempre vibrantes)
-            primary: '#667eea',
-            success: '#00ff88',
-            warning: '#ffd700',
-            danger: '#ff6b6b',
-            info: '#00c4ff',
-            // Colores con transparencia
-            primaryAlpha: 'rgba(102,126,234,0.8)',
-            successAlpha: 'rgba(0,255,136,0.8)',
-            warningAlpha: 'rgba(255,215,0,0.8)',
-            dangerAlpha: 'rgba(255,107,107,0.8)',
-            infoAlpha: 'rgba(0,196,255,0.8)',
-        };
-    } else {
-        // MODO CLARO
-        return {
-            textColor: '#1a1a1a',
-            gridColor: 'rgba(0,0,0,0.1)',
-            backgroundColor: 'rgba(255,255,255,0.95)',
-            // Colores de datos ajustados para modo claro
-            primary: '#4a5fd9',
-            success: '#00c466',
-            warning: '#e6b800',
-            danger: '#e63946',
-            info: '#0099cc',
-            // Colores con transparencia
-            primaryAlpha: 'rgba(74,95,217,0.7)',
-            successAlpha: 'rgba(0,196,102,0.7)',
-            warningAlpha: 'rgba(230,184,0,0.7)',
-            dangerAlpha: 'rgba(230,57,70,0.7)',
-            infoAlpha: 'rgba(0,153,204,0.7)',
-        };
-    }
-}
 
-// Función para obtener opciones comunes de Chart.js
-function getChartOptions(titulo, mostrarLeyenda = true) {
-    const colors = getChartColors();
-    
-    return {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: mostrarLeyenda,
-                position: 'top',
-                labels: { 
-                    color: colors.textColor, 
-                    font: { size: 12 } 
-                }
-            },
-            title: {
-                display: !!titulo,
-                text: titulo,
-                color: colors.textColor,
-                font: { size: 16, weight: 'bold' }
-            }
-        },
-        scales: {
-            x: {
-                ticks: { color: colors.textColor },
-                grid: { color: colors.gridColor }
-            },
-            y: {
-                ticks: { color: colors.textColor },
-                grid: { color: colors.gridColor }
-            }
-        }
-    };
-}
         
         function calcularFiltrosPeriodo(periodo, vista = 'gerente') {
             const hoy = new Date();
@@ -7198,97 +7118,46 @@ function renderizarEmbudos(datos) {
 // ============================================
 // RENDERIZAR CORRELACIONES
 // ============================================
-function function renderizarCorrelaciones(datos) {
+function renderizarCorrelaciones(datos) {
     const html = `
         <div class="section">
             <div class="section-title">🔬 Laboratorio de Correlaciones (Pearson)</div>
             
-            <!-- SELECTOR MÚLTIPLE DE VARIABLES -->
+            <!-- SELECTOR DE VARIABLES -->
             <div style="background: var(--color-surface); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
                 <div style="font-weight: 700; margin-bottom: 15px;">🎯 Análisis Personalizado</div>
-                
-                <!-- Modo Simple: 2 Variables -->
-                <div id="modo-simple" style="margin-bottom: 15px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: end;">
-                        <div class="form-grupo">
-                            <label class="form-label">Variable X</label>
-                            <select id="corr-var-x" class="form-select">
-                                <option value="llamadas">Llamadas</option>
-                                <option value="citasCaptacion">Citas Captación</option>
-                                <option value="exclusivasVenta">Exclusivas Venta</option>
-                                <option value="exclusivasComprador">Exclusivas Comprador</option>
-                                <option value="captacionesAbierto">Captaciones Abierto</option>
-                                <option value="citasCompradores">Citas Compradores</option>
-                                <option value="casasEnsenadas">Casas Enseñadas</option>
-                                <option value="leadsCompradores">Leads Compradores</option>
-                                <option value="gci" selected>GCI</option>
-                                <option value="volumenNegocio">Volumen Negocio</option>
-                            </select>
-                        </div>
-                        <div class="form-grupo">
-                            <label class="form-label">Variable Y</label>
-                            <select id="corr-var-y" class="form-select">
-                                <option value="llamadas" selected>Llamadas</option>
-                                <option value="citasCaptacion">Citas Captación</option>
-                                <option value="exclusivasVenta">Exclusivas Venta</option>
-                                <option value="exclusivasComprador">Exclusivas Comprador</option>
-                                <option value="captacionesAbierto">Captaciones Abierto</option>
-                                <option value="citasCompradores">Citas Compradores</option>
-                                <option value="casasEnsenadas">Casas Enseñadas</option>
-                                <option value="leadsCompradores">Leads Compradores</option>
-                                <option value="gci">GCI</option>
-                                <option value="volumenNegocio">Volumen Negocio</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary-action" onclick="analizarCorrelacionPersonalizada()">🔍 Analizar</button>
+                <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: end;">
+                    <div class="form-grupo">
+                        <label class="form-label">Variable X</label>
+                        <select id="corr-var-x" class="form-select">
+                            <option value="llamadas">Llamadas</option>
+                            <option value="citasCaptacion">Citas Captación</option>
+                            <option value="exclusivasVenta">Exclusivas Venta</option>
+                            <option value="exclusivasComprador">Exclusivas Comprador</option>
+                            <option value="captacionesAbierto">Captaciones Abierto</option>
+                            <option value="citasCompradores">Citas Compradores</option>
+                            <option value="casasEnsenadas">Casas Enseñadas</option>
+                            <option value="leadsCompradores">Leads Compradores</option>
+                            <option value="gci" selected>GCI</option>
+                            <option value="volumenNegocio">Volumen Negocio</option>
+                        </select>
                     </div>
-                </div>
-                
-                <!-- Modo Múltiple: Hasta 5 Variables -->
-                <div id="modo-multiple" style="display: none;">
-                    <div style="margin-bottom: 10px;">
-                        <label class="form-label">Selecciona Variables (máximo 5)</label>
-                        <div id="selector-multiple" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" value="llamadas" class="var-checkbox"> Llamadas
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" value="citasCaptacion" class="var-checkbox"> Citas Captación
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" value="exclusivasVenta" class="var-checkbox"> Exclusivas Venta
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" value="exclusivasComprador" class="var-checkbox"> Exclusivas Comprador
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" value="captacionesAbierto" class="var-checkbox"> Captaciones Abierto
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" value="citasCompradores" class="var-checkbox"> Citas Compradores
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" value="casasEnsenadas" class="var-checkbox"> Casas Enseñadas
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" value="leadsCompradores" class="var-checkbox"> Leads Compradores
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" value="gci" class="var-checkbox"> GCI
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" value="volumenNegocio" class="var-checkbox"> Volumen Negocio
-                            </label>
-                        </div>
+                    <div class="form-grupo">
+                        <label class="form-label">Variable Y</label>
+                        <select id="corr-var-y" class="form-select">
+                            <option value="llamadas" selected>Llamadas</option>
+                            <option value="citasCaptacion">Citas Captación</option>
+                            <option value="exclusivasVenta">Exclusivas Venta</option>
+                            <option value="exclusivasComprador">Exclusivas Comprador</option>
+                            <option value="captacionesAbierto">Captaciones Abierto</option>
+                            <option value="citasCompradores">Citas Compradores</option>
+                            <option value="casasEnsenadas">Casas Enseñadas</option>
+                            <option value="leadsCompradores">Leads Compradores</option>
+                            <option value="gci">GCI</option>
+                            <option value="volumenNegocio">Volumen Negocio</option>
+                        </select>
                     </div>
-                    <button class="btn btn-primary-action" onclick="analizarCorrelacionMultiple()">📊 Analizar Múltiples</button>
-                </div>
-                
-                <!-- Toggle entre modos -->
-                <div style="margin-top: 15px; text-align: center;">
-                    <button class="btn" id="btn-toggle-modo" onclick="toggleModoAnalisis()">
-                        🔄 Cambiar a Análisis Múltiple
-                    </button>
+                    <button class="btn btn-primary-action" onclick="analizarCorrelacionPersonalizada()">🔍 Analizar</button>
                 </div>
             </div>
             
@@ -7300,9 +7169,6 @@ function function renderizarCorrelaciones(datos) {
                 </div>
                 <div id="interpretacion-scatter" style="background: var(--color-surface); padding: 15px; border-radius: 10px; margin-top: 15px;"></div>
             </div>
-            
-            <!-- GRÁFICOS MÚLTIPLES -->
-            <div id="graficos-multiples" style="display: none; margin-bottom: 30px;"></div>
             
             <!-- TOP 10 CORRELACIONES -->
             <div id="correlaciones-top10" style="margin-bottom: 30px;"></div>
@@ -7390,8 +7256,7 @@ function function renderizarCorrelaciones(datos) {
                 top10Html += '</div>';
                 document.getElementById('correlaciones-top10').innerHTML = top10Html;
                 
-                // HEATMAP con colores adaptativos
-                const colors = getChartColors();
+                // HEATMAP
                 const dataPoints = [];
                 resultado.kpis.forEach((kpi1, i) => {
                     resultado.kpis.forEach((kpi2, j) => {
@@ -7407,8 +7272,8 @@ function function renderizarCorrelaciones(datos) {
                             data: dataPoints.map(p => ({ x: p.x, y: p.y, r: Math.abs(p.v) * 20 })),
                             backgroundColor: dataPoints.map(p => {
                                 const val = Math.abs(p.v);
-                                if (val >= 0.7) return colors.successAlpha;
-                                if (val >= 0.4) return colors.warningAlpha;
+                                if (val >= 0.7) return 'rgba(0,255,136,0.8)';
+                                if (val >= 0.4) return 'rgba(255,215,0,0.8)';
                                 return 'rgba(150,150,150,0.5)';
                             })
                         }]
@@ -7433,19 +7298,19 @@ function function renderizarCorrelaciones(datos) {
                                 position: 'bottom',
                                 ticks: {
                                     callback: (val) => kpiNames[resultado.kpis[val]] || resultado.kpis[val] || '',
-                                    color: colors.textColor,
+                                    color: '#fff',
                                     maxRotation: 45,
                                     minRotation: 45
                                 },
-                                grid: { color: colors.gridColor }
+                                grid: { color: 'rgba(255,255,255,0.1)' }
                             },
                             y: {
                                 type: 'linear',
                                 ticks: {
                                     callback: (val) => kpiNames[resultado.kpis[val]] || resultado.kpis[val] || '',
-                                    color: colors.textColor
+                                    color: '#fff'
                                 },
-                                grid: { color: colors.gridColor }
+                                grid: { color: 'rgba(255,255,255,0.1)' }
                             }
                         }
                     }
@@ -7459,162 +7324,12 @@ function function renderizarCorrelaciones(datos) {
         })
         .obtenerDatosCorrelacion(filtros);
 }
-function toggleModoAnalisis() {
-    const modoSimple = document.getElementById('modo-simple');
-    const modoMultiple = document.getElementById('modo-multiple');
-    const btnToggle = document.getElementById('btn-toggle-modo');
-    
-    if (modoSimple.style.display === 'none') {
-        modoSimple.style.display = 'block';
-        modoMultiple.style.display = 'none';
-        btnToggle.textContent = '🔄 Cambiar a Análisis Múltiple';
-    } else {
-        modoSimple.style.display = 'none';
-        modoMultiple.style.display = 'block';
-        btnToggle.textContent = '🔄 Cambiar a Análisis Simple';
-    }
-}
 
 // Función auxiliar para análisis directo (clic en Top 10)
 function analizarCorrelacionDirecta(varX, varY) {
-    // Asegurarse de que estamos en modo simple
-    document.getElementById('modo-simple').style.display = 'block';
-    document.getElementById('modo-multiple').style.display = 'none';
-    document.getElementById('btn-toggle-modo').textContent = '🔄 Cambiar a Análisis Múltiple';
-    
-    // Establecer valores en los selectores
     document.getElementById('corr-var-x').value = varX;
     document.getElementById('corr-var-y').value = varY;
-    
-    // Ejecutar análisis
     analizarCorrelacionPersonalizada();
-}
-function analizarCorrelacionMultiple() {
-    const checkboxes = document.querySelectorAll('.var-checkbox:checked');
-    const variables = Array.from(checkboxes).map(cb => cb.value);
-    
-    if (variables.length < 2) {
-        mostrarNotificacion('⚠️ Selecciona al menos 2 variables', 'error');
-        return;
-    }
-    
-    if (variables.length > 5) {
-        mostrarNotificacion('⚠️ Máximo 5 variables', 'error');
-        return;
-    }
-    
-    // Ocultar scatter simple, mostrar múltiples
-    document.getElementById('scatter-personalizado').style.display = 'none';
-    document.getElementById('graficos-multiples').style.display = 'block';
-    
-    // Generar HTML para múltiples gráficos
-    let html = '<div style="font-size: 1.3em; font-weight: 700; margin-bottom: 20px;">📊 Análisis Multivariable</div>';
-    html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">';
-    
-    // Generar todas las combinaciones (2 a 2)
-    for (let i = 0; i < variables.length; i++) {
-        for (let j = i + 1; j < variables.length; j++) {
-            const varX = variables[i];
-            const varY = variables[j];
-            html += `
-                <div class="chart-container" style="height: 350px;">
-                    <div class="chart-title">${kpiNames[varX]} vs ${kpiNames[varY]}</div>
-                    <canvas id="chart-multi-${i}-${j}"></canvas>
-                </div>
-            `;
-        }
-    }
-    
-    html += '</div>';
-    document.getElementById('graficos-multiples').innerHTML = html;
-    
-    // Generar gráficos
-    setTimeout(() => {
-        const colors = getChartColors();
-        const indexMap = {
-            'llamadas': 11, 'citasCaptacion': 4, 'exclusivasVenta': 5,
-            'exclusivasComprador': 6, 'captacionesAbierto': 7, 'citasCompradores': 8,
-            'casasEnsenadas': 9, 'leadsCompradores': 10, 'gci': 12, 'volumenNegocio': 13
-        };
-        
-        for (let i = 0; i < variables.length; i++) {
-            for (let j = i + 1; j < variables.length; j++) {
-                const varX = variables[i];
-                const varY = variables[j];
-                const idxX = indexMap[varX];
-                const idxY = indexMap[varY];
-                
-                // Extraer datos
-                const scatterData = [];
-                if (window.datosGlobales && Array.isArray(window.datosGlobales)) {
-                    window.datosGlobales.forEach(agente => {
-                        if (agente.actividadDetallada && Array.isArray(agente.actividadDetallada)) {
-                            agente.actividadDetallada.forEach(dia => {
-                                if (Array.isArray(dia) && dia.length > Math.max(idxX, idxY)) {
-                                    const valX = parseFloat(dia[idxX]) || 0;
-                                    const valY = parseFloat(dia[idxY]) || 0;
-                                    if (valX >= 0 && valY >= 0) {
-                                        scatterData.push({ x: valX, y: valY });
-                                    }
-                                }
-                            });
-                        }
-                    });
-                }
-                
-                const datosLimitados = scatterData.slice(0, 50); // Menos puntos para múltiples gráficos
-                
-                // Obtener correlación
-                const correlacion = window.datosCorrelacionGlobal.matriz[varX][varY] || 0;
-                const absCorr = Math.abs(correlacion);
-                
-                // Crear gráfico
-                new Chart(document.getElementById(`chart-multi-${i}-${j}`), {
-                    type: 'scatter',
-                    data: {
-                        datasets: [{
-                            label: `r = ${correlacion.toFixed(3)}`,
-                            data: datosLimitados,
-                            backgroundColor: absCorr >= 0.7 
-                                ? colors.successAlpha
-                                : absCorr >= 0.4 
-                                    ? colors.warningAlpha
-                                    : colors.dangerAlpha,
-                            pointRadius: 4,
-                            pointHoverRadius: 6,
-                            borderColor: colors.textColor,
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                labels: { color: colors.textColor, font: { size: 11 } }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: { display: true, text: kpiNames[varX], color: colors.textColor, font: { size: 11 } },
-                                ticks: { color: colors.textColor, font: { size: 9 } },
-                                grid: { color: colors.gridColor }
-                            },
-                            y: {
-                                title: { display: true, text: kpiNames[varY], color: colors.textColor, font: { size: 11 } },
-                                ticks: { color: colors.textColor, font: { size: 9 } },
-                                grid: { color: colors.gridColor }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-        
-        // Scroll
-        document.getElementById('graficos-multiples').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
 }
 
 function analizarCorrelacionPersonalizada() {
@@ -7642,166 +7357,185 @@ function analizarCorrelacionPersonalizada() {
     const correlacion = resultado.matriz[varX][varY];
     const absCorr = Math.abs(correlacion);
     
-    // Ocultar múltiples, mostrar simple
-    document.getElementById('graficos-multiples').style.display = 'none';
-    
-    // Índices correctos según la estructura de Actividad_Diaria
-    const indexMap = {
-        'llamadas': 11, 'citasCaptacion': 4, 'exclusivasVenta': 5,
-        'exclusivasComprador': 6, 'captacionesAbierto': 7, 'citasCompradores': 8,
-        'casasEnsenadas': 9, 'leadsCompradores': 10, 'gci': 12, 'volumenNegocio': 13
-    };
-    
-    const idxX = indexMap[varX];
-    const idxY = indexMap[varY];
-    
-    // Extraer datos de datosGlobales
+    // Construir datos del scatter desde datosGlobales
     const scatterData = [];
-    if (window.datosGlobales && Array.isArray(window.datosGlobales)) {
-        window.datosGlobales.forEach(agente => {
-            if (agente.actividadDetallada && Array.isArray(agente.actividadDetallada)) {
-                agente.actividadDetallada.forEach(dia => {
-                    if (Array.isArray(dia) && dia.length > Math.max(idxX, idxY)) {
-                        const valX = parseFloat(dia[idxX]) || 0;
-                        const valY = parseFloat(dia[idxY]) || 0;
-                        
-                        if (valX >= 0 && valY >= 0) {
-                            scatterData.push({ x: valX, y: valY });
-                        }
+    
+    // Usar datos de la respuesta del backend
+    const filtros = calcularFiltrosPeriodo(periodoActual, 'gerente');
+    
+    google.script.run
+        .withSuccessHandler(function(datosActividad) {
+            if (!datosActividad || !datosActividad.success) {
+                mostrarNotificacion('⚠️ Error al cargar datos de actividad', 'error');
+                return;
+            }
+            
+            // Índices correctos según la estructura de Actividad_Diaria
+            const indexMap = {
+                'llamadas': 11,
+                'citasCaptacion': 4,
+                'exclusivasVenta': 5,
+                'exclusivasComprador': 6,
+                'captacionesAbierto': 7,
+                'citasCompradores': 8,
+                'casasEnsenadas': 9,
+                'leadsCompradores': 10,
+                'gci': 12,
+                'volumenNegocio': 13
+            };
+            
+            const idxX = indexMap[varX];
+            const idxY = indexMap[varY];
+            
+            // Extraer datos de datosGlobales
+            if (window.datosGlobales && Array.isArray(window.datosGlobales)) {
+                window.datosGlobales.forEach(agente => {
+                    if (agente.actividadDetallada && Array.isArray(agente.actividadDetallada)) {
+                        agente.actividadDetallada.forEach(dia => {
+                            if (Array.isArray(dia) && dia.length > Math.max(idxX, idxY)) {
+                                const valX = parseFloat(dia[idxX]) || 0;
+                                const valY = parseFloat(dia[idxY]) || 0;
+                                
+                                // Agregar punto si ambos valores existen
+                                if (valX >= 0 && valY >= 0) {
+                                    scatterData.push({ x: valX, y: valY });
+                                }
+                            }
+                        });
                     }
                 });
             }
-        });
-    }
-    
-    // Limitar a 100 puntos
-    const datosLimitados = scatterData.slice(0, 100);
-    
-    if (datosLimitados.length === 0) {
-        mostrarNotificacion('⚠️ No hay suficientes datos para este análisis', 'error');
-        return;
-    }
-    
-    // Mostrar contenedor
-    document.getElementById('scatter-personalizado').style.display = 'block';
-    document.getElementById('scatter-title').textContent = `${kpiNames[varX]} vs ${kpiNames[varY]}`;
-    
-    // Destruir gráfico anterior
-    if (window.scatterChartInstance) {
-        window.scatterChartInstance.destroy();
-    }
-    
-    // Colores adaptativos
-    const colors = getChartColors();
-    
-    // Crear nuevo gráfico
-    const ctx = document.getElementById('chart-scatter-custom');
-    window.scatterChartInstance = new Chart(ctx, {
-        type: 'scatter',
-        data: {
-            datasets: [{
-                label: 'Datos',
-                data: datosLimitados,
-                backgroundColor: absCorr >= 0.7 
-                    ? colors.successAlpha
-                    : absCorr >= 0.4 
-                        ? colors.warningAlpha
-                        : colors.dangerAlpha,
-                pointRadius: 6,
-                pointHoverRadius: 8,
-                borderColor: colors.textColor,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${kpiNames[varX]}: ${context.parsed.x} | ${kpiNames[varY]}: ${context.parsed.y}`;
+            
+            // Limitar a 100 puntos
+            const datosLimitados = scatterData.slice(0, 100);
+            
+            if (datosLimitados.length === 0) {
+                mostrarNotificacion('⚠️ No hay suficientes datos para este análisis', 'error');
+                return;
+            }
+            
+            // Mostrar contenedor
+            document.getElementById('scatter-personalizado').style.display = 'block';
+            document.getElementById('scatter-title').textContent = `${kpiNames[varX]} vs ${kpiNames[varY]}`;
+            
+            // Destruir gráfico anterior
+            if (window.scatterChartInstance) {
+                window.scatterChartInstance.destroy();
+            }
+            
+            // Crear nuevo gráfico
+            const ctx = document.getElementById('chart-scatter-custom');
+            window.scatterChartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Datos',
+                        data: datosLimitados,
+                        backgroundColor: absCorr >= 0.7 
+                            ? 'rgba(0,255,136,0.6)' 
+                            : absCorr >= 0.4 
+                                ? 'rgba(255,215,0,0.6)' 
+                                : 'rgba(255,68,68,0.6)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        borderColor: '#fff',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${kpiNames[varX]}: ${context.parsed.x} | ${kpiNames[varY]}: ${context.parsed.y}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { 
+                                display: true, 
+                                text: kpiNames[varX], 
+                                color: '#fff',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y: {
+                            title: { 
+                                display: true, 
+                                text: kpiNames[varY], 
+                                color: '#fff',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
                         }
                     }
                 }
-            },
-            scales: {
-                x: {
-                    title: { 
-                        display: true, 
-                        text: kpiNames[varX], 
-                        color: colors.textColor,
-                        font: { size: 14, weight: 'bold' }
-                    },
-                    ticks: { color: colors.textColor },
-                    grid: { color: colors.gridColor }
-                },
-                y: {
-                    title: { 
-                        display: true, 
-                        text: kpiNames[varY], 
-                        color: colors.textColor,
-                        font: { size: 14, weight: 'bold' }
-                    },
-                    ticks: { color: colors.textColor },
-                    grid: { color: colors.gridColor }
-                }
+            });
+            
+            // Interpretación
+            let colorInterp, nivelInterp, analisisTexto, accionInterp;
+            
+            if (absCorr >= 0.7) {
+                colorInterp = '#00ff88';
+                nivelInterp = '✅ CORRELACIÓN MUY FUERTE';
+                analisisTexto = correlacion > 0 
+                    ? `Relación POSITIVA muy fuerte. Cuando ${kpiNames[varX]} aumenta, ${kpiNames[varY]} casi siempre aumenta también.`
+                    : `Relación NEGATIVA muy fuerte. Cuando ${kpiNames[varX]} aumenta, ${kpiNames[varY]} casi siempre disminuye.`;
+                accionInterp = correlacion > 0 
+                    ? `<strong>💡 Acción:</strong> PRIORIZA ${kpiNames[varX]} ya que impacta directamente en ${kpiNames[varY]}.`
+                    : `<strong>⚠️ Acción:</strong> Relación inversa fuerte. Evalúa si este comportamiento es deseable.`;
+            } else if (absCorr >= 0.4) {
+                colorInterp = '#ffd700';
+                nivelInterp = '⚠️ CORRELACIÓN MODERADA';
+                analisisTexto = `Existe una relación ${correlacion > 0 ? 'POSITIVA' : 'NEGATIVA'} moderada. Otros factores también influyen en ${kpiNames[varY]}.`;
+                accionInterp = `<strong>💡 Acción:</strong> Combina ${kpiNames[varX]} con otras métricas para mejores resultados.`;
+            } else {
+                colorInterp = '#ff6b6b';
+                nivelInterp = '❌ CORRELACIÓN DÉBIL';
+                analisisTexto = `Variables prácticamente independientes. ${kpiNames[varX]} tiene poco o ningún impacto en ${kpiNames[varY]}.`;
+                accionInterp = `<strong>💡 Acción:</strong> Trabaja estas variables por separado. No esperes que una afecte a la otra.`;
             }
-        }
-    });
-    
-    // Interpretación
-    let colorInterp, nivelInterp, analisisTexto, accionInterp;
-    
-    if (absCorr >= 0.7) {
-        colorInterp = colors.success;
-        nivelInterp = '✅ CORRELACIÓN MUY FUERTE';
-        analisisTexto = correlacion > 0 
-            ? `Relación POSITIVA muy fuerte. Cuando ${kpiNames[varX]} aumenta, ${kpiNames[varY]} casi siempre aumenta también.`
-            : `Relación NEGATIVA muy fuerte. Cuando ${kpiNames[varX]} aumenta, ${kpiNames[varY]} casi siempre disminuye.`;
-        accionInterp = correlacion > 0 
-            ? `<strong>💡 Acción:</strong> PRIORIZA ${kpiNames[varX]} ya que impacta directamente en ${kpiNames[varY]}.`
-            : `<strong>⚠️ Acción:</strong> Relación inversa fuerte. Evalúa si este comportamiento es deseable.`;
-    } else if (absCorr >= 0.4) {
-        colorInterp = colors.warning;
-        nivelInterp = '⚠️ CORRELACIÓN MODERADA';
-        analisisTexto = `Existe una relación ${correlacion > 0 ? 'POSITIVA' : 'NEGATIVA'} moderada. Otros factores también influyen en ${kpiNames[varY]}.`;
-        accionInterp = `<strong>💡 Acción:</strong> Combina ${kpiNames[varX]} con otras métricas para mejores resultados.`;
-    } else {
-        colorInterp = colors.danger;
-        nivelInterp = '❌ CORRELACIÓN DÉBIL';
-        analisisTexto = `Variables prácticamente independientes. ${kpiNames[varX]} tiene poco o ningún impacto en ${kpiNames[varY]}.`;
-        accionInterp = `<strong>💡 Acción:</strong> Trabaja estas variables por separado. No esperes que una afecte a la otra.`;
-    }
-    
-    document.getElementById('interpretacion-scatter').innerHTML = `
-        <div style="display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center;">
-            <div style="text-align: center; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 10px; min-width: 150px;">
-                <div style="font-size: 3em; color: ${colorInterp}; font-weight: 900; margin-bottom: 5px;">${correlacion.toFixed(3)}</div>
-                <div style="color: ${colorInterp}; font-weight: 700; font-size: 0.9em;">${nivelInterp}</div>
-            </div>
-            <div>
-                <div style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid ${colorInterp};">
-                    <strong>📊 Análisis:</strong> ${analisisTexto}
+            
+            document.getElementById('interpretacion-scatter').innerHTML = `
+                <div style="display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center;">
+                    <div style="text-align: center; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 10px; min-width: 150px;">
+                        <div style="font-size: 3em; color: ${colorInterp}; font-weight: 900; margin-bottom: 5px;">${correlacion.toFixed(3)}</div>
+                        <div style="color: ${colorInterp}; font-weight: 700; font-size: 0.9em;">${nivelInterp}</div>
+                    </div>
+                    <div>
+                        <div style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid ${colorInterp};">
+                            <strong>📊 Análisis:</strong> ${analisisTexto}
+                        </div>
+                        <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid ${colorInterp};">
+                            ${accionInterp}
+                        </div>
+                        <div style="margin-top: 15px; font-size: 0.9em; color: #aaa; text-align: right;">
+                            📈 Análisis basado en ${datosLimitados.length} registros
+                        </div>
+                    </div>
                 </div>
-                <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid ${colorInterp};">
-                    ${accionInterp}
-                </div>
-                <div style="margin-top: 15px; font-size: 0.9em; color: #aaa; text-align: right;">
-                    📈 Análisis basado en ${datosLimitados.length} registros
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Scroll suave
-    setTimeout(() => {
-        document.getElementById('scatter-personalizado').scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
-        });
-    }, 150);
+            `;
+            
+            // Scroll suave
+            setTimeout(() => {
+                document.getElementById('scatter-personalizado').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }, 150);
+        })
+        .withFailureHandler(function(error) {
+            mostrarNotificacion('❌ Error: ' + error.message, 'error');
+        })
+        .obtenerDatosCorrelacion(filtros);
 }
 // FUNCIÓN AUXILIAR: Análisis personalizado
 function analizarCorrelacionPersonalizada() {
