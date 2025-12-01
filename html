@@ -146,6 +146,7 @@
             --shadow-ia: rgba(57, 73, 171, 0.4);
             --shadow-good: rgba(0, 150, 136, 0.4);
         }
+        
 
         /* =================================
         ESTILOS BASE
@@ -331,6 +332,19 @@
             font-size: 1em;
             font-family: 'Montserrat', sans-serif;
         }
+        body[data-theme="claro"] .form-input,
+body[data-theme="kw-claro"] .form-input,
+body[data-theme="claro"] .form-select,
+body[data-theme="kw-claro"] .form-select {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #cccccc !important;
+}
+
+body[data-theme="claro"] .form-input::placeholder,
+body[data-theme="kw-claro"] .form-input::placeholder {
+    color: #999999 !important;
+}
         .form-input[type="date"] {
             color-scheme: dark;
         }
@@ -975,9 +989,19 @@ body[data-theme="kw-claro"] .agent-stat-box {
             z-index: 5;
         }
         body[data-theme="claro"] .tabla thead,
-        body[data-theme="kw-claro"] .tabla thead {
-            background: var(--color-bg-alt);
-        }
+body[data-theme="kw-claro"] .tabla thead {
+    background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
+}
+
+body[data-theme="claro"] .tabla th,
+body[data-theme="kw-claro"] .tabla th {
+    color: #000000 !important;
+}
+
+body[data-theme="claro"] .tabla td,
+body[data-theme="kw-claro"] .tabla td {
+    color: #333333 !important;
+}
         .tabla th {
             padding: 15px 10px;
             text-align: center;
@@ -1449,6 +1473,20 @@ body[data-theme="claro"] .agent-stat-value,
 body[data-theme="kw-claro"] .agent-stat-value {
     color: #333333 !important;
 }
+/* DESPUÉS de la línea 797, AÑADIR: */
+body[data-theme="claro"] .signo-value,
+body[data-theme="kw-claro"] .signo-value {
+    background: linear-gradient(135deg, #009688, #00796B) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+body[data-theme="claro"] .signo-value.critical,
+body[data-theme="kw-claro"] .signo-value.critical {
+    background: linear-gradient(135deg, #D32F2F, #a02020) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
 
 /* Fondo de las tarjetas en modo claro para que resalten */
 body[data-theme="claro"] .signo-card,
@@ -1668,6 +1706,13 @@ body[data-theme="kw-claro"] canvas {
     <span class="role-icon">📜</span>
     Histórico Agentes
     <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Cargar datos año anterior (Anual o Mensual).</div>
+</button>
+<button class="btn-role" onclick="mostrarModalImportador()">
+    <span class="role-icon">📥</span>
+    Importar Excel Masivo
+    <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">
+        Copiar y pegar desde Excel (Crea agentes e histórico).
+    </div>
 </button>
 
     </div>
@@ -2781,9 +2826,9 @@ function cargarDatosGerente(periodo) {
 
         // 2. CARGAR HISTÓRICO INDIVIDUAL
         const anioPasado = new Date().getFullYear() - 1;
-        google.script.run.withSuccessHandler(function(histAgentes) {
-            historialAgentesCache = histAgentes || {};
-            console.log("✅ Históricos individuales cargados:", Object.keys(historialAgentesCache).length);
+google.script.run.withSuccessHandler(function(histAgentes) {
+    historialAgentesCache = histAgentes || {}; // <--- ESTO ES CRUCIAL
+    console.log("✅ Históricos individuales cargados:", Object.keys(historialAgentesCache).length);
 
             // 3. CARGAR DATOS ACTUALES
             google.script.run.withSuccessHandler(function(datos) {
@@ -3085,59 +3130,102 @@ function cargarDatosGerente(periodo) {
 }
 
         // --- 1. REJILLA DE SIGNOS VITALES CON COMPARATIVA YTD ---
+// --- 1. REJILLA DE SIGNOS VITALES CON COMPARATIVA YTD DETALLADA ---
 function renderSignosVitalesGrid(kpiData, idAgente) {
     const isTeam = !idAgente; 
     let html = '<div class="signos-grid">';
     
-    // 1. Calcular Factor YTD
+    // 1. Calcular Factor de Tiempo (Ponderación YTD)
     const hoy = new Date();
-    const dias = Math.ceil((hoy - new Date(hoy.getFullYear(),0,1)) / 86400000);
-    const factor = Math.min(dias / 365, 1);
+    const inicioAnio = new Date(hoy.getFullYear(), 0, 1);
+    const diasTranscurridos = Math.ceil((hoy - inicioAnio) / (1000 * 60 * 60 * 24));
+    // Factor: Porcentaje del año transcurrido (ej: 0.5 a mitad de año)
+    const factor = Math.max(diasTranscurridos / 365, 0.01); 
 
-    // 2. Obtener Histórico Correcto (Global o Individual)
+    // 2. Obtener Histórico Correcto
     let hist = null;
-    
     if (isTeam) {
-        if (datosHistoricosCache && datosHistoricosCache.totales) {
+        if (typeof datosHistoricosCache !== 'undefined' && datosHistoricosCache.totales) {
+            // Mapeo para el equipo global
             const t = datosHistoricosCache.totales;
-            hist = { gci: t.gci, citasCaptacion: t.citas, exclusivasVenta: t.exclusivas, citasCompradores: t.citasComp };
+            hist = { 
+                gci: t.gci, citasCaptacion: t.citas, exclusivasVenta: t.exclusivas, 
+                captacionesAbierto: t.abierto, citasCompradores: t.citasComp,
+                exclusivasComprador: t.exclusivasComp, casasEnsenadas: t.visitas,
+                totalTransacciones: t.ventas
+            };
         }
     } else {
-        if (historialAgentesCache && historialAgentesCache[idAgente]) {
+        if (typeof historialAgentesCache !== 'undefined' && historialAgentesCache[idAgente]) {
+            // Histórico individual cargado desde el servidor
             hist = historialAgentesCache[idAgente];
         }
     }
 
+    // 3. Mapeo de claves: (Nombre en KPI Actual) -> (Nombre en Histórico)
+    const mapHistKeys = {
+        'gci': 'gci',
+        'citasCaptacion': 'citasCapt',
+        'exclusivasVenta': 'exclVenta',
+        'captacionesAbierto': 'captAbierto',
+        'citasCompradores': 'citasComp',
+        'exclusivasComprador': 'exclComp',
+        'casasEnsenadas': 'visitas',
+        'totalTransacciones': 'ventas', // Corregido para que coincida con tu histórico
+        'llamadas': 'llamadas' // Si tienes histórico de llamadas
+    };
+
     Object.keys(kpiNames).forEach(key => {
-        const valor = kpiData[key];
-        if ((valor === undefined || valor === 0) && !['gci', 'actividadTotal', 'cumplimientoGlobal', 'beneficioNeto', 'totalTransacciones'].includes(key)) return;
+        // Corrección para valores undefined o nulos
+        const valor = (kpiData[key] !== undefined && kpiData[key] !== null) ? kpiData[key] : 0;
+        
+        // Filtrar métricas irrelevantes si están a 0 (excepto las importantes)
+        if (valor === 0 && !['gci', 'actividadTotal', 'cumplimientoGlobal', 'beneficioNeto', 'totalTransacciones'].includes(key)) return;
         
         const meta = getKpiMetadata(key, valor);
         
-        // ✅ DETECTAR KPIs ESPECIALES para usar funciones personalizadas
+        // Lógica de click
         let funcionClic = "";
-        if (key === 'beneficioNeto' && isTeam) {
-            funcionClic = `mostrarGraficoBeneficio()`;
-        } else if (key === 'totalTransacciones' && isTeam) {
-            funcionClic = `mostrarGraficoTransacciones()`;
-        } else if (isTeam) {
-            funcionClic = `mostrarAnalisisEquipo('${key}')`;
-        } else {
-            funcionClic = `mostrarGraficoAgente('${idAgente}', '${key}')`;
-        }
+        if (key === 'beneficioNeto' && isTeam) funcionClic = `mostrarGraficoBeneficio()`;
+        else if (key === 'totalTransacciones' && isTeam) funcionClic = `mostrarGraficoTransacciones()`;
+        else if (isTeam) funcionClic = `mostrarAnalisisEquipo('${key}')`;
+        else funcionClic = `mostrarGraficoAgente('${idAgente}', '${key}')`;
         
-        // 3. Comparativa
+        // --- 4. GENERAR HTML DE COMPARATIVA ---
         let compHTML = "";
-        if (hist && hist[key] !== undefined && hist[key] > 0) {
-            const metaYTD = hist[key] * factor;
-            const diff = valor - metaYTD;
-            const pct = (diff / metaYTD) * 100;
-            const color = pct >= 0 ? '#00ff88' : '#ff4444';
-            const icono = pct >= 0 ? '⬆️' : '🔻';
+        const histKey = mapHistKeys[key];
+
+        // Solo comparamos si es una métrica de volumen (no porcentajes como conversión) y si tenemos datos históricos
+        if (hist && histKey && hist[histKey] !== undefined) {
+            const totalAnoPasado = hist[histKey] || 0;
             
-            compHTML = `<div style="font-size:0.65em; color:${color}; margin-top:4px; font-weight:bold;">
-                            ${icono} ${Math.abs(pct).toFixed(0)}%
-                        </div>`;
+            if (totalAnoPasado > 0) {
+                // Meta YTD: Lo que debería llevar hoy para igualar el año pasado
+                const metaYTD = totalAnoPasado * factor; 
+                const diff = valor - metaYTD;
+                const pctCrecimiento = ((diff / metaYTD) * 100).toFixed(1);
+                
+                const esPositivo = diff >= 0;
+                const color = esPositivo ? '#00ff88' : '#ff4444'; // Verde o Rojo
+                const icono = esPositivo ? '▲' : '▼';
+                
+                // Formato del valor anterior (moneda o número)
+                const valorAntFormat = meta.unidad === '€' ? 
+                    Math.round(metaYTD).toLocaleString('es-ES') + '€' : 
+                    Math.round(metaYTD);
+
+                compHTML = `
+                    <div style="font-size:0.7em; color:${color}; margin-top:6px; font-weight:bold; display:flex; justify-content:center; align-items:center; gap:4px;">
+                        <span>${icono} ${Math.abs(pctCrecimiento)}%</span>
+                        <span style="opacity:0.6; color:var(--color-text-secondary); font-weight:400;">(vs ${valorAntFormat})</span>
+                    </div>
+                `;
+            } else {
+                 compHTML = `<div style="font-size:0.65em; color:#888; margin-top:6px;">Sin histórico</div>`;
+            }
+        } else if (key.includes('conversion') || key.includes('ratio') || key.includes('Cumplimiento')) {
+             // Para porcentajes no hacemos pro-rateo por tiempo, solo comparativa directa si existiera dato
+             compHTML = `<div style="font-size:0.65em; color:#888; margin-top:6px;">KPI Ratio</div>`;
         }
 
         html += renderSignoCard(meta.icon, meta.label, valor, meta.unidad, meta.claseCritica, funcionClic, compHTML);
@@ -4383,38 +4471,59 @@ function crearGraficoComparativoAgente(canvasId, agente, hist, factor) {
 
 
         function mostrarAnalisisEquipo(kpiKey) {
-            const modalBody = document.getElementById('modal-analisis-body');
-            const kpiLabel = kpiNames[kpiKey] || kpiKey;
-            
-            modalBody.innerHTML = `
-                <h2 style="text-align: center; margin-bottom: 30px; font-size: 2em;">📈 Evolución del Equipo: ${kpiLabel}</h2>
-                <div class="chart-container" style="height: 60vh;">
-                    <canvas id="modal-chart-detalle"></canvas>
-                </div>
-                ${getKpiLegend(kpiKey)}
-            `;
-            document.getElementById('modal-analisis').classList.add('active');
-            document.body.classList.add('modal-open');
+    const kpiLabel = kpiNames[kpiKey] || kpiKey;
+    const modalBody = document.getElementById('modal-analisis-body');
 
-            const labels = datosAgregadosEquipo.labels;
-            const realizado = datosAgregadosEquipo[kpiKey]?.realizado;
-            const objetivo = datosAgregadosEquipo[kpiKey]?.objetivo;
+    // 1. Datos Actuales
+    const labels = datosAgregadosEquipo.labels || ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const realizado = datosAgregadosEquipo[kpiKey]?.realizado || [];
+    const objetivo = datosAgregadosEquipo[kpiKey]?.objetivo || [];
 
-            if (!realizado || !objetivo) {
-                modalBody.innerHTML += `<p style="text-align: center; color: var(--color-accent-bad); margin-top: 20px;">No hay datos de evolución mensual para esta métrica.</p>`;
-                return;
-            }
-            
-            setTimeout(() => {
-                crearGraficoDetalle('modal-chart-detalle', labels, realizado, objetivo, `Realizado (${kpiLabel})`, `Objetivo (${kpiLabel})`);
-            }, 100);
+    // 2. Datos Históricos (Promedio mensual basado en el total anual)
+    let historico = new Array(12).fill(0);
+    
+    // Mapeo de claves
+    const mapKeys = {
+        'gci': 'gci', 'citasCaptacion': 'citas', 'exclusivasVenta': 'exclusivas',
+        'captacionesAbierto': 'abierto', 'citasCompradores': 'citasComp', 
+        'exclusivasComprador': 'exclusivasComp', 'casasEnsenadas': 'visitas', 
+        'totalTransacciones': 'ventas'
+    };
+    const histKey = mapKeys[kpiKey];
+
+    if (datosHistoricosCache && datosHistoricosCache.totales && histKey) {
+        const totalHist = datosHistoricosCache.totales[histKey] || 0;
+        if (totalHist > 0) {
+            const promedioMensual = totalHist / 12;
+            historico = new Array(12).fill(promedioMensual);
         }
+    }
+
+    // 3. Renderizar Modal (SIN interruptores, solo título y gráfico)
+    modalBody.innerHTML = `
+        <h2 style="text-align: center; margin-bottom: 10px; color: var(--color-secondary);">📊 Equipo: ${kpiLabel}</h2>
+        <div style="text-align: center; font-size: 0.8em; color: #888; margin-bottom: 20px;">
+            (Haz clic en la leyenda para ocultar/mostrar series)
+        </div>
+        <div class="chart-container" style="height: 65vh; border:none; box-shadow:none;">
+            <canvas id="modal-chart-detalle"></canvas>
+        </div>
+        ${getKpiLegend(kpiKey)}
+    `;
+
+    document.getElementById('modal-analisis').classList.add('active');
+    document.body.classList.add('modal-open');
+
+    setTimeout(() => {
+        crearGraficoDetalleComparativo('modal-chart-detalle', labels, realizado, objetivo, historico, kpiLabel);
+    }, 100);
+}
 
         function mostrarGraficoAgente(idAgente, kpiKey) {
     console.log("🖱️ Click detectado: Agente=" + idAgente + " KPI=" + kpiKey);
 
     let agente;
-    // Lógica para encontrar al agente sea cual sea la vista
+    // Buscar al agente en los datos cargados
     if (agenteActual && agenteActual.id === idAgente) {
         agente = datosAgenteCompletos;
     } else {
@@ -4422,43 +4531,71 @@ function crearGraficoComparativoAgente(canvasId, agente, hist, factor) {
     }
 
     if (!agente) {
-        // Usamos alert por seguridad si no hay notificaciones
-        alert("Error: No se encuentran los datos de este agente.");
+        mostrarNotificacion("Error: No se encuentran los datos de este agente.", true);
         return;
     }
 
+    // --- MAPEO DE CLAVES (KPI Actual -> KPI Histórico) ---
+    // Esto es necesario porque a veces guardamos 'citasCaptacion' y en el histórico se llama 'citasCapt'
+    const mapKeys = {
+        'gci': 'gci',
+        'citasCaptacion': 'citasCapt',
+        'exclusivasVenta': 'exclVenta',
+        'exclusivasComprador': 'exclComp',
+        'captacionesAbierto': 'captAbierto',
+        'citasCompradores': 'citasComp',
+        'casasEnsenadas': 'visitas',
+        'totalTransacciones': 'ventas',
+        'llamadas': 'llamadas'
+    };
+
+    const histKey = mapKeys[kpiKey];
+    
+    // --- OBTENER DATOS ---
+    const labels = agente.evolucionMensual.labels; // Ene, Feb, Mar...
+    const realizado = agente.evolucionMensual[kpiKey]?.realizado || [];
+    const objetivo = agente.evolucionMensual[kpiKey]?.objetivo || [];
+    
+    // Preparar Array del Año Anterior (Histórico)
+    let historico = new Array(12).fill(0); // Por defecto 0
+    
+    // Intentar sacar datos reales del caché histórico
+    if (historialAgentesCache && historialAgentesCache[idAgente]) {
+        const h = historialAgentesCache[idAgente];
+        
+        // Si tenemos desglose mensual en el caché (Ideal)
+        if (h.mensual && h.mensual[histKey]) {
+            historico = h.mensual[histKey]; 
+        } 
+        // Si solo tenemos el total anual, calculamos el promedio para referencia
+        else if (h[histKey] > 0) {
+            const promedio = h[histKey] / 12;
+            historico = new Array(12).fill(promedio); 
+        }
+    }
+
+    // --- RENDERIZAR MODAL ---
     const modalBody = document.getElementById('modal-grafico-body');
-    if (!modalBody) {
-        console.error("ERROR CRÍTICO: Falta el div 'modal-grafico-body'. Revisa el final del HTML.");
-        return;
-    }
-
     const kpiLabel = kpiNames[kpiKey] || kpiKey;
 
-    // 1. Pintar Estructura
     modalBody.innerHTML = `
-        <h2 style="text-align: center; margin-bottom: 20px; color: var(--color-primary);">📈 ${agente.agente}: ${kpiLabel}</h2>
-        <div class="chart-container" style="height: 60vh; width: 100%; border:none; box-shadow:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin-bottom: 20px; color: var(--color-primary);">📈 ${kpiLabel}: Comparativa Total</h2>
+            <div style="font-size:0.8em; color:#888;">
+                <span style="color:#00ff88">● Actual</span> | 
+                <span style="color:#ffd700">-- Objetivo</span> | 
+                <span style="color:#aaa">▮ Año Anterior</span>
+            </div>
+        </div>
+        <div class="chart-container" style="height: 65vh; width: 100%; border:none; box-shadow:none;">
             <canvas id="modal-chart-detalle"></canvas>
         </div>
     `;
 
-    // 2. Abrir Modal (Usando la función de capas)
     abrirModalEncima('modal-grafico-secundario');
-    
-    // 3. Preparar datos
-    const labels = agente.evolucionMensual.labels;
-    const realizado = agente.evolucionMensual[kpiKey]?.realizado;
-    const objetivo = agente.evolucionMensual[kpiKey]?.objetivo;
 
-    if (!realizado) {
-         modalBody.innerHTML += "<p style='text-align:center'>Sin datos históricos.</p>";
-         return;
-    }
-
-    // 4. Dibujar Gráfico (con pequeño retraso)
     setTimeout(() => {
-        crearGraficoDetalle('modal-chart-detalle', labels, realizado, objetivo, 'Realizado', 'Objetivo');
+        crearGraficoDetalleComparativo('modal-chart-detalle', labels, realizado, objetivo, historico, kpiLabel);
     }, 200);
 }
 
@@ -8413,6 +8550,330 @@ function mostrarGraficoTransacciones() {
         });
     }, 100);
 }
+function crearGraficoDetalleComparativo(canvasId, labels, dataRealizado, dataObjetivo, dataHistorico, titulo) {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    
+    // Destruir gráfico previo si existe para evitar superposiciones
+    if (chartInstances[canvasId]) {
+        chartInstances[canvasId].destroy();
+    }
+
+    chartInstances[canvasId] = new Chart(ctx, {
+        type: 'bar', // Tipo base bar para permitir mezcla
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    type: 'bar',
+                    label: 'Año Anterior',
+                    data: dataHistorico,
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Gris muy sutil
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                    borderWidth: 1,
+                    barPercentage: 0.6,
+                    order: 3 // Al fondo
+                },
+                {
+                    type: 'line',
+                    label: 'Objetivo 2025',
+                    data: dataObjetivo,
+                    borderColor: '#ffd700', // Amarillo
+                    borderWidth: 2,
+                    borderDash: [5, 5], // Línea discontinua
+                    pointRadius: 0, // Sin puntos para limpiar
+                    fill: false,
+                    tension: 0.4,
+                    order: 1
+                },
+                {
+                    type: 'line',
+                    label: 'Realizado 2025',
+                    data: dataRealizado,
+                    borderColor: '#00ff88', // Verde KW
+                    backgroundColor: 'rgba(0, 255, 136, 0.15)', // Relleno verde suave
+                    borderWidth: 3,
+                    pointBackgroundColor: '#00ff88',
+                    pointRadius: 4,
+                    fill: true,
+                    tension: 0.4,
+                    order: 0 // Al frente
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#ccc', font: { size: 11 } }
+                },
+                title: {
+                    display: false // Ya tenemos título en HTML
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.9)',
+                    titleColor: '#fff',
+                    bodyFont: { size: 13 },
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                // Formato moneda si el título incluye 'GCI' o 'Ticket'
+                                if(titulo.includes('GCI') || titulo.includes('Ticket')) {
+                                    label += context.parsed.y.toLocaleString('es-ES') + ' €';
+                                } else {
+                                    label += Math.round(context.parsed.y);
+                                }
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#aaa' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#aaa' }
+                }
+            }
+        }
+    });
+}
+// --- NUEVA LÓGICA DE IMPORTACIÓN CSV (V3) ---
+
+function mostrarModalImportador() {
+    abrirModalEncima('modal-importador');
+    document.getElementById('file-upload').value = '';
+    document.getElementById('resultado-importacion').innerHTML = '';
+}
+
+// --- IMPORTADOR V10: COORDENADAS FIJAS (MODO QUIRÚRGICO) ---
+
+function procesarArchivoCSV(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // Feedback visual
+    document.getElementById('resultado-importacion').innerHTML = 
+        '<div style="text-align:center; padding:20px; color:#aaa;">⚙️ Procesando archivo con Matriz V10...</div>';
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        parsearCSV_V10(e.target.result);
+    };
+    // ISO-8859-1 es OBLIGATORIO para que Excel español no rompa acentos
+    reader.readAsText(file, "ISO-8859-1"); 
+}
+
+function parsearCSV_V10(csvText) {
+    // 1. CONFIGURACIÓN FIJA (Basada en tu archivo real V3)
+    const DELIMITER = ';';  // Forzamos punto y coma
+    const FILA_INICIO_DATOS = 3; // Lidia está en la fila 4 (índice 3)
+    
+    const COL_NOMBRE = 16; // Columna Q
+    const COL_ENERO  = 42; // Columna AQ (Donde empieza el bloque mensual)
+    const ANCHO_MES  = 21; // 21 celdas por mes
+
+    // Mapeo de columnas relativas (0 a 20 dentro de cada mes)
+    const OFF = {
+        citas: 0,       // Nº CITAS
+        excl: 1,        // Captaciones EXCLUSIVAS
+        abierto: 2,     // Captaciones ABIERTO
+        citasComp: 3,   // CLIENTES Compradores con VISITAS
+        visitas: 4,     // CASAS Enseñadas
+        captAlq: 5,     // Captacines ALQUILER
+        tresBs: 6,      // 3Bs Activadas
+        bajadas: 7,     // Bajadas Precio
+        propuestas: 8,  // Propuesta Compra
+        arras: 9,       // Arras
+        // Ventas y GCI
+        vtaExcl: 10, gciExcl: 11,
+        vtaAbierto: 12, gciAbierto: 13,
+        vtaComp: 14, gciComp: 15,
+        vtaAlq: 16, gciAlq: 17
+    };
+
+    // 2. PROCESAR
+    const lineas = csvText.split(/\r\n|\n/);
+    const agentesProcesados = [];
+    const anio = new Date().getFullYear() - 1; // 2024
+
+    console.log(`📂 Analizando ${lineas.length} líneas. Inicio datos: Fila ${FILA_INICIO_DATOS}`);
+
+    for (let i = FILA_INICIO_DATOS; i < lineas.length; i++) {
+        const filaRaw = lineas[i];
+        // Saltar líneas vacías
+        if (!filaRaw || filaRaw.trim() === '') continue;
+
+        const fila = filaRaw.split(DELIMITER);
+        
+        // Si la fila no es lo suficientemente larga, la ignoramos
+        if (fila.length < COL_ENERO + 10) continue;
+
+        // Limpieza del nombre
+        let nombre = fila[COL_NOMBRE] ? fila[COL_NOMBRE].replace(/['"]+/g, '').trim() : '';
+        
+        // Filtro de seguridad: Ignorar filas que no son agentes
+        if (!nombre || nombre.length < 3 || nombre.match(/TOTAL|ACUMULADO|MEDIA|Especialista|#DIV|AGENTE/i)) continue;
+
+        const datosMensuales = [];
+        let tGCI = 0, tCitas = 0, tVentas = 0, tExcl = 0, tVisitas = 0;
+
+        for (let m = 0; m < 12; m++) {
+            const base = COL_ENERO + (m * ANCHO_MES);
+            
+            // Lector numérico tolerante a fallos
+            const getVal = (offset) => {
+                if ((base + offset) >= fila.length) return 0;
+                let val = fila[base + offset];
+                if (!val) return 0;
+                
+                // Limpieza agresiva de caracteres raros
+                val = val.replace(/['"€\s]+/g, '').trim();
+                if (val === '' || val === '-' || val.includes('#') || val.toLowerCase() === 'nan') return 0;
+
+                // Formato Europeo (1.000,00) a JS (1000.00)
+                if (val.indexOf(',') > -1 && val.indexOf('.') > -1) {
+                     if (val.indexOf('.') < val.indexOf(',')) val = val.replace(/\./g, '').replace(',', '.'); 
+                     else val = val.replace(/,/g, ''); 
+                } else if (val.indexOf(',') > -1) {
+                     val = val.replace(',', '.');
+                }
+                return parseFloat(val) || 0;
+            };
+
+            const citas = getVal(OFF.citas);
+            const excl = getVal(OFF.excl);
+            const abierto = getVal(OFF.abierto);
+            const citasComp = getVal(OFF.citasComp);
+            const visitas = getVal(OFF.visitas);
+            
+            // Nuevos Datos Extra
+            const captAlq = getVal(OFF.captAlq);
+            const tresBs = getVal(OFF.tresBs);
+            const bajadas = getVal(OFF.bajadas);
+            const propuestas = getVal(OFF.propuestas);
+            const arras = getVal(OFF.arras);
+
+            // Sumatorios Financieros
+            const ventas = getVal(OFF.vtaExcl) + getVal(OFF.vtaAbierto) + getVal(OFF.vtaComp) + getVal(OFF.vtaAlq);
+            const gci = getVal(OFF.gciExcl) + getVal(OFF.gciAbierto) + getVal(OFF.gciComp) + getVal(OFF.gciAlq);
+
+            datosMensuales.push({
+                citasCapt: citas, exclVenta: excl, captAbierto: abierto,
+                citasComp: citasComp, visitas: visitas,
+                captAlq: captAlq, tresBs: tresBs, bajadas: bajadas, propuestas: propuestas, arras: arras,
+                ventas: ventas, gci: gci, exclComp: 0
+            });
+
+            tCitas += citas; tExcl += excl; tVisitas += visitas; tVentas += ventas; tGCI += gci;
+        }
+
+        // Guardamos el agente
+        agentesProcesados.push({
+            nombre: nombre,
+            anio: anio,
+            mensual: datosMensuales,
+            totalCitas: tCitas,
+            totalExclusivas: tExcl,
+            totalVisitas: tVisitas,
+            totalVentas: tVentas,
+            totalGCI: tGCI
+        });
+    }
+
+    console.log(`✅ Encontrados ${agentesProcesados.length} agentes.`);
+    renderizarTablaConfirmacionDetallada(agentesProcesados);
+}
+
+// --- FUNCIONES AUXILIARES DE RENDERIZADO ---
+
+function renderizarTablaConfirmacionDetallada(agentes) {
+    const contenedor = document.getElementById('resultado-importacion');
+    
+    if (agentes.length === 0) {
+        contenedor.innerHTML = `
+            <div style="color:#ff6b6b; padding:20px; text-align:center; border:1px dashed red; border-radius:10px;">
+                ⚠️ No se encontraron datos. <br>
+                <small>Posible causa: El archivo no es un CSV separado por punto y coma (;).</small>
+            </div>`;
+        return;
+    }
+
+    let html = `
+        <div style="background:var(--color-bg-alt); padding:15px; border-radius:10px; border:1px solid var(--color-accent-good);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="color:var(--color-accent-good); margin:0;">✅ ${agentes.length} Agentes Detectados</h3>
+                <div style="font-size:0.8em; color:#aaa;">Datos 2024</div>
+            </div>
+            
+            <div class="tabla-container" style="max-height:350px; overflow-y:auto; margin:15px 0;">
+                <table class="tabla" style="font-size:0.85em;">
+                    <thead style="position:sticky; top:0; background:#222; z-index:2;">
+                        <tr>
+                            <th style="text-align:left;">Agente</th>
+                            <th>Citas</th>
+                            <th>Excl.</th>
+                            <th>Visitas</th>
+                            <th>Ventas</th>
+                            <th>GCI Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    `;
+
+    agentes.forEach(a => {
+        const estilo = (a.totalGCI === 0 && a.totalCitas === 0) ? 'color:#ff6b6b' : '';
+        html += `<tr style="${estilo}">
+            <td style="text-align:left; font-weight:bold;">${a.nombre}</td>
+            <td>${a.totalCitas}</td>
+            <td>${a.totalExclusivas}</td>
+            <td>${a.totalVisitas}</td>
+            <td>${a.totalVentas}</td>
+            <td style="font-weight:bold; color:var(--color-accent-good);">${a.totalGCI.toLocaleString('es-ES',{maximumFractionDigits:0})}€</td>
+        </tr>`;
+    });
+
+    html += `</tbody></table></div>
+        <div style="display:flex; gap:10px;">
+            <button class="btn" onclick="mostrarModalImportador()" style="background:#444; flex:1;">❌ Cancelar</button>
+            <button class="btn-primary-action" onclick='confirmarImportacion(${JSON.stringify(agentes)})' style="flex:2;">💾 IMPORTAR DATOS</button>
+        </div>
+    </div>`;
+
+    contenedor.innerHTML = html;
+}
+
+function confirmarImportacion(datos) {
+    const btn = document.querySelector('.btn-primary-action');
+    if(btn) { btn.textContent = "⏳ Guardando..."; btn.disabled = true; }
+    
+    google.script.run
+        .withSuccessHandler(res => {
+            mostrarNotificacion("✅ " + res.message);
+            cerrarModalSuperior('modal-importador');
+            if(typeof cargarDatosGerente === 'function') cargarDatosGerente('ano');
+        })
+        .withFailureHandler(err => {
+            mostrarNotificacion("❌ " + err.message, true);
+            if(btn) btn.disabled = false;
+        })
+        .guardarImportacionMasiva(datos);
+}
  </script>
  <div id="modal-grafico-secundario" class="modal" style="z-index: 1150;">
     <div class="modal-content" style="max-width: 1100px; height: 80vh;">
@@ -8489,6 +8950,34 @@ function mostrarGraficoTransacciones() {
                 
                 <button type="submit" class="form-submit">💾 Guardar Todos los Cambios</button>
             </form>
+        </div>
+    </div>
+</div>
+<div id="modal-importador" class="modal">
+    <div class="modal-content" style="max-width: 900px; height: auto;">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-importador')">&times;</span>
+        <div class="modal-body">
+            <div class="section-title">📥 Carga Masiva desde CSV</div>
+            
+            <div style="background: var(--color-surface); padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--color-border);">
+                <p><strong>Instrucciones:</strong></p>
+                <ol style="margin-left: 20px; line-height: 1.6; color: var(--color-text-secondary);">
+                    <li>Guarda tu Excel como <strong>CSV (delimitado por comas)</strong>.</li>
+                    <li>Sube el archivo aquí abajo.</li>
+                </ol>
+            </div>
+
+            <div style="border: 2px dashed var(--color-border); padding: 40px; text-align: center; border-radius: 10px; cursor: pointer; transition: all 0.3s; background: rgba(255,255,255,0.05);" 
+                 id="drop-zone"
+                 onclick="document.getElementById('file-upload').click()">
+                <div style="font-size: 3em; margin-bottom: 10px;">📂</div>
+                <p style="font-size: 1.2em; font-weight: bold;">Haz clic aquí para subir tu CSV</p>
+                <p style="font-size: 0.9em; color: #aaa;">(O arrastra el archivo aquí)</p>
+                
+                <input type="file" id="file-upload" accept=".csv" style="display: none;" onchange="procesarArchivoCSV(this)">
+            </div>
+
+            <div id="resultado-importacion" style="margin-top: 20px;"></div>
         </div>
     </div>
 </div>
