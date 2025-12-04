@@ -1288,7 +1288,7 @@ body[data-theme="kw-claro"] .tabla td {
         .tx-adder-grid {
             grid-column: 1 / -1;
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
             gap: 15px;
             align-items: end;
             background: var(--color-surface);
@@ -1573,14 +1573,24 @@ body[data-theme="kw-claro"] canvas {
 
                 <div class="section">
                     <div class="section-title">✍️ REGISTRAR ACTIVIDAD</div>
+                    
                     <form id="data-entry-form" onsubmit="guardarActividad(event)" class="form-grid">
                         <input type="hidden" id="form-agent-id">
                         <input type="hidden" id="form-agent-name">
                         
                         <div class="form-grupo">
                             <label class="form-label">📅 Fecha</label>
-                            <input type="date" id="form-fecha" class="form-input" required>
+                            <input type="date" id="form-fecha" class="form-input" required onchange="verificarActividadExistente()">
                         </div>
+                        <div id="aviso-actividad-existente" style="display: none; grid-column: 1 / -1; background: rgba(255,215,0,0.1); border: 1px solid #ffd700; border-radius: 8px; padding: 15px; margin: 10px 0;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.5em;">⚠️</span>
+        <div>
+            <strong>Ya existe actividad para esta fecha</strong>
+            <div style="font-size: 0.9em; opacity: 0.8; margin-top: 5px;" id="resumen-actividad-existente"></div>
+        </div>
+    </div>
+</div>
                         <div class="form-grupo">
                             <label class="form-label">📞 Citas Captación</label>
                             <input type="number" id="form-citas-captacion" class="form-input" min="0" value="0">
@@ -1617,7 +1627,7 @@ body[data-theme="kw-claro"] canvas {
     <label class="form-label">💰 GCI (€)</label>
     <input type="number" id="form-gci" class="form-input" min="0" step="0.01" value="0">
 </div>
-                        <button type="submit" class="form-submit">💾 GUARDAR ACTIVIDAD</button>
+                        <button type="submit" id="btn-submit-actividad" class="form-submit">💾 GUARDAR ACTIVIDAD</button>
                         <div id="form-success-message" style="grid-column: 1 / -1; text-align: center; padding: 15px; background: rgba(0,255,136,0.2); border: 1px solid var(--color-accent-good); color: var(--color-accent-good); border-radius: 10px; display: none;">✅ Actividad guardada correctamente</div>
                     </form>
                 </div>
@@ -1769,11 +1779,15 @@ body[data-theme="kw-claro"] canvas {
                         </div>
                         <div class="form-grupo">
                             <label class="form-label">GCI Parcial (€)</label>
-                            <input type="number" id="tx-gci-parcial" class="form-input" min="0" step="0.01">
+                            <input type="number" id="tx-gci-parcial" class="form-input" min="0" step="0.01" oninput="recalcularComisionTransaccion('pct')">
                         </div>
                         <div class="form-grupo">
     <label class="form-label">% Comis.</label>
-    <input type="number" id="tx-comision-pct" class="form-input" min="0" max="100" value="40" placeholder="%">
+    <input type="number" id="tx-comision-pct" class="form-input" min="0" max="100" value="40" placeholder="%" oninput="recalcularComisionTransaccion('pct')">
+</div>
+<div class="form-grupo">
+    <label class="form-label">Importe Comis. (€)</label>
+    <input type="number" id="tx-comision-importe" class="form-input" min="0" step="0.01" placeholder="0.00" oninput="recalcularComisionTransaccion('importe')">
 </div>
                         <div class="form-grupo">
                             <button type="button" class="btn btn-primary-action" onclick="agregarAgenteATransaccion()" style="width: 100%; padding: 12px;">Añadir</button>
@@ -1794,10 +1808,21 @@ body[data-theme="kw-claro"] canvas {
     </div>
 
     <div id="modal-actividad" class="modal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="cerrarModalSuperior('modal-actividad')">&times;</span>
-            <div class="modal-body">
-                <div class="section-title">✍️ Registrar Actividad (Gerente)</div>
+    <div class="modal-content">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-actividad')">&times;</span>
+        <div class="modal-body">
+            <div class="section-title">✍️ Registrar Actividad (Gerente)</div>
+            
+            <!-- BOTÓN TOGGLE VISTA MÚLTIPLE -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button type="button" id="btn-mostrar-todos-gerente" class="btn btn-primary-action" 
+                        onclick="toggleMostrarTodosGerente()">
+                    👥 Mostrar Todos los Agentes
+                </button>
+            </div>
+            
+            <!-- CONTENEDOR DINÁMICO -->
+            <div id="formularios-container-gerente">
                 <form id="form-actividad-gerente" onsubmit="guardarActividadGerente(event)" class="form-grid">
                     
                     <div class="form-grupo" style="grid-column: 1 / -1;">
@@ -1811,6 +1836,15 @@ body[data-theme="kw-claro"] canvas {
                         <label class="form-label">📅 Fecha</label>
                         <input type="date" id="gerente-form-fecha" class="form-input" required>
                     </div>
+                    <div id="aviso-actividad-existente-gerente" style="display: none; grid-column: 1 / -1; background: rgba(255,215,0,0.1); border: 1px solid #ffd700; border-radius: 8px; padding: 15px; margin: 10px 0;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.5em;">⚠️</span>
+        <div>
+            <strong>Ya existe actividad para esta fecha</strong>
+            <div style="font-size: 0.9em; opacity: 0.8; margin-top: 5px;" id="resumen-actividad-existente-gerente"></div>
+        </div>
+    </div>
+</div>
                     <div class="form-grupo">
                         <label class="form-label">📞 Citas Captación</label>
                         <input type="number" id="gerente-form-citas-captacion" class="form-input" min="0" value="0">
@@ -1836,22 +1870,24 @@ body[data-theme="kw-claro"] canvas {
                         <input type="number" id="gerente-form-casas-ensenadas" class="form-input" min="0" value="0">
                     </div>
                     <div class="form-grupo">
-    <label class="form-label">📧 Leads Compradores</label>
-    <input type="number" id="gerente-form-leads-compradores" class="form-input" min="0" value="0">
-</div>
-<div class="form-grupo">
-    <label class="form-label">📞 Llamadas</label>
-    <input type="number" id="gerente-form-llamadas" class="form-input" min="0" value="0">
-</div>
-<div class="form-grupo">
-    <label class="form-label">💰 GCI (€)</label>
-    <input type="number" id="gerente-form-gci" class="form-input" min="0" step="0.01" value="0">
-</div>
-                    <button type="submit" class="form-submit">💾 Guardar Actividad</button>
+                        <label class="form-label">📧 Leads Compradores</label>
+                        <input type="number" id="gerente-form-leads-compradores" class="form-input" min="0" value="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">📞 Llamadas</label>
+                        <input type="number" id="gerente-form-llamadas" class="form-input" min="0" value="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">💰 GCI (€)</label>
+                        <input type="number" id="gerente-form-gci" class="form-input" min="0" step="0.01" value="0">
+                    </div>
+                    <button type="submit" id="btn-submit-actividad-gerente" class="form-submit">💾 Guardar Actividad</button>
                 </form>
-            </div>
+            </div> <!-- Cierra formularios-container-gerente -->
+            
         </div>
     </div>
+</div>
     <div id="modal-carga-historico" class="modal">
     <div class="modal-content" style="max-width: 1300px; height: 95vh;">
         <span class="modal-close" onclick="cerrarModalSuperior('modal-carga-historico')">&times;</span>
@@ -1978,20 +2014,8 @@ body[data-theme="kw-claro"] canvas {
           <label class="form-label">Partida (Selecciona o Escribe)</label>
           <input list="partidas-list" id="gasto-partida" class="form-input" placeholder="Ej: Marketing" required>
           <datalist id="partidas-list">
-            <option value="Alquiler Oficina">
-            <option value="Suministros (Luz/Agua/Internet)">
-            <option value="Marketing y Publicidad">
-            <option value="Software y CRM">
-            <option value="Nóminas Staff">
-            <option value="Seguros Sociales">
-            <option value="Material de Oficina">
-            <option value="Eventos y Formación">
-            <option value="Portales Inmobiliarios">
-            <option value="Fotografía y Vídeo">
-            <option value="Asesoría y Legal">
-            <option value="Limpieza y Mantenimiento">
-            <option value="Otros Gastos">
-          </datalist>
+    <!-- Se llenará dinámicamente con las 13 partidas -->
+</datalist>
         </div>
 
         <div class="form-grupo" style="grid-column: 1/-1;">
@@ -2560,38 +2584,9 @@ body[data-theme="kw-claro"] canvas {
                             <th>% del Total</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>Esfera Influencia</td>
-                            <td><input type="number" id="fp-ei-capt" class="form-input" value="0"></td>
-                            <td><input type="number" id="fp-ei-gci" class="form-input" value="0" oninput="calcularPorcentajesFuentes()"></td>
-                            <td id="fp-ei-pct">0%</td>
-                        </tr>
-                        <tr>
-                            <td>Referidos</td>
-                            <td><input type="number" id="fp-ref-capt" class="form-input" value="0"></td>
-                            <td><input type="number" id="fp-ref-gci" class="form-input" value="0" oninput="calcularPorcentajesFuentes()"></td>
-                            <td id="fp-ref-pct">0%</td>
-                        </tr>
-                        <tr>
-                            <td>Base de Datos</td>
-                            <td><input type="number" id="fp-bd-capt" class="form-input" value="0"></td>
-                            <td><input type="number" id="fp-bd-gci" class="form-input" value="0" oninput="calcularPorcentajesFuentes()"></td>
-                            <td id="fp-bd-pct">0%</td>
-                        </tr>
-                        <tr>
-                            <td>Prospección</td>
-                            <td><input type="number" id="fp-pros-capt" class="form-input" value="0"></td>
-                            <td><input type="number" id="fp-pros-gci" class="form-input" value="0" oninput="calcularPorcentajesFuentes()"></td>
-                            <td id="fp-pros-pct">0%</td>
-                        </tr>
-                        <tr>
-                            <td>Portales / RRSS</td>
-                            <td><input type="number" id="fp-port-capt" class="form-input" value="0"></td>
-                            <td><input type="number" id="fp-port-gci" class="form-input" value="0" oninput="calcularPorcentajesFuentes()"></td>
-                            <td id="fp-port-pct">0%</td>
-                        </tr>
-                    </tbody>
+                    <tbody id="tabla-origenes-negocio">
+    <!-- Se llenará dinámicamente con las 18 partidas -->
+</tbody>
                     <tfoot>
                         <tr>
                             <td style="text-align:right; font-weight:bold;">TOTALES:</td>
@@ -2649,6 +2644,10 @@ body[data-theme="kw-claro"] canvas {
 </div>
 
     <script>
+      // ============================================
+// MEJORA 4: VISTA MÚLTIPLE DE AGENTES
+// ============================================
+let mostrandoTodosLosAgentes = false;
         // ==================== DASHBOARD KW PRO - JAVASCRIPT COMPLETO (REPARADO v5.3) ====================
         // VERSION: 5.3 (Fix Vista Agente & Transacciones Crash)
         
@@ -2938,7 +2937,6 @@ google.script.run.withSuccessHandler(function(histAgentes) {
 
     }).obtenerDatosHistoricosJSON();
 }
-
         
         function calcularFiltrosPeriodo(periodo, vista = 'gerente') {
             const hoy = new Date();
@@ -4871,43 +4869,50 @@ function crearGraficoComparativoAgente(canvasId, agente, hist, factor) {
         }
 
         function guardarActividad(event) {
-            event.preventDefault();
-            const datos = {
-                fecha: document.getElementById('form-fecha').value,
-                idAgente: document.getElementById('form-agent-id').value,
-                nombreAgente: document.getElementById('form-agent-name').value,
-                citasCaptacion: parseInt(document.getElementById('form-citas-captacion').value) || 0,
-                exclusivasVenta: parseInt(document.getElementById('form-exclusivas-venta').value) || 0,
-                exclusivasComprador: parseInt(document.getElementById('form-exclusivas-comprador').value) || 0,
-                captacionesAbierto: parseInt(document.getElementById('form-captaciones-abierto').value) || 0,
-                citasCompradores: parseInt(document.getElementById('form-citas-compradores').value) || 0,
-                casasEnsenadas: parseInt(document.getElementById('form-casas-ensenadas').value) || 0,
-                leadsCompradores: parseInt(document.getElementById('form-leads-compradores').value) || 0,
+    event.preventDefault();
+    const datos = {
+        fecha: document.getElementById('form-fecha').value,
+        idAgente: document.getElementById('form-agent-id').value,
+        nombreAgente: document.getElementById('form-agent-name').value,
+        citasCaptacion: parseInt(document.getElementById('form-citas-captacion').value) || 0,
+        exclusivasVenta: parseInt(document.getElementById('form-exclusivas-venta').value) || 0,
+        exclusivasComprador: parseInt(document.getElementById('form-exclusivas-comprador').value) || 0,
+        captacionesAbierto: parseInt(document.getElementById('form-captaciones-abierto').value) || 0,
+        citasCompradores: parseInt(document.getElementById('form-citas-compradores').value) || 0,
+        casasEnsenadas: parseInt(document.getElementById('form-casas-ensenadas').value) || 0,
+        leadsCompradores: parseInt(document.getElementById('form-leads-compradores').value) || 0,
         llamadas: parseInt(document.getElementById('form-llamadas').value) || 0,
         gci: parseFloat(document.getElementById('form-gci').value) || 0,
-                notas: "Registro de Agente"
-            };
+        volumenNegocio: 0,
+        notas: "Registro de Agente"
+    };
+    
+    // Decidir si guardar nueva o actualizar existente
+    const funcionALlamar = modoEdicionActividad ? 'actualizarActividad' : 'guardarActividad';
+    const mensajeAccion = modoEdicionActividad ? 'actualizada' : 'guardada';
+    
+    console.log(`💾 ${modoEdicionActividad ? 'Actualizando' : 'Guardando'} actividad (Agente)...`, datos);
+    
+    google.script.run
+        .withSuccessHandler(function(respuesta) {
+            console.log('✅ Actividad ' + mensajeAccion + ':', respuesta.message);
+            const msg = document.getElementById('form-success-message');
+            msg.textContent = `✅ Actividad ${mensajeAccion} correctamente`;
+            msg.style.display = 'block';
             
-            console.log('💾 Guardando actividad (Agente)...', datos);
-            
-            google.script.run
-                .withSuccessHandler(function(respuesta) {
-                    console.log('✅ Actividad guardada:', respuesta.message);
-                    const msg = document.getElementById('form-success-message');
-                    msg.style.display = 'block';
-                    // No resetear id/nombre
-                    document.getElementById('form-fecha').valueAsDate = new Date();
-                    document.getElementById('form-citas-captacion').value = 0;
-                    // ... (resetear el resto de campos si es necesario)
-                    
-                    setTimeout(() => {
-                        msg.style.display = 'none';
-                        cargarDashboardAgente(); // Recargar datos del agente
-                    }, 2000);
-                })
-                .withFailureHandler(mostrarError)
-                .guardarActividad(datos);
-        }
+            setTimeout(() => {
+    msg.style.display = 'none';
+    // NO recalcular automáticamente - solo limpiar formulario
+    
+    limpiarFormularioActividad();
+    ocultarAvisoActividadExistente();
+    cambiarBotonAGuardar();
+    modoEdicionActividad = false;
+}, 2000);
+        })
+        .withFailureHandler(mostrarError)
+        [funcionALlamar](datos);
+}
         
         // ===== GESTIÓN GERENTE (FORMULARIOS) =====
         
@@ -5058,35 +5063,6 @@ function mostrarModalCargaHistorico() {
     }
 }
 
-function mostrarModalFacturacionPasada() {
-    abrirModalEncima('modal-facturacion-pasada');
-    
-    // Cargar datos históricos globales si existen
-    google.script.run.withSuccessHandler(json => {
-        if(json) {
-            const data = JSON.parse(json);
-            datosHistoricosCache = data;
-            const t = data.totales || {};
-            
-            // Rellenar campos si existen en el HTML
-            if(document.getElementById('hist-citas')) document.getElementById('hist-citas').value = t.citas || 0;
-            if(document.getElementById('hist-exclusivas')) document.getElementById('hist-exclusivas').value = t.exclusivas || 0;
-            if(document.getElementById('hist-ventas')) document.getElementById('hist-ventas').value = t.ventas || 0;
-            if(document.getElementById('hist-gci')) document.getElementById('hist-gci').value = t.gci || 0;
-            
-            // Rellenar fuentes
-            ['ei','ref','bd','pros','port'].forEach(f => {
-                const elCapt = document.getElementById(`fp-${f}-capt`);
-                const elGci = document.getElementById(`fp-${f}-gci`);
-                if(elCapt) elCapt.value = data.fuentes?.[f]?.capt || 0;
-                if(elGci) elGci.value = data.fuentes?.[f]?.gci || 0;
-            });
-            
-            if(typeof calcularPorcentajesFuentes === 'function') calcularPorcentajesFuentes();
-        }
-    }).obtenerDatosHistoricosJSON();
-}
-
         // ===================================
         // ⭐ LÓGICA MODAL TRANSACCIONES
         // ===================================
@@ -5120,22 +5096,23 @@ function mostrarModalFacturacionPasada() {
     const lado = document.getElementById('tx-lado-select').value;
     const gciParcial = parseFloat(document.getElementById('tx-gci-parcial').value) || 0;
     
-    // NUEVO: Capturar comisión
-    const comisionPct = parseFloat(document.getElementById('tx-comision-pct').value) || 0;
-    const comisionImporte = gciParcial * (comisionPct / 100);
+    // Capturar comisión
+const comisionPct = parseFloat(document.getElementById('tx-comision-pct').value) || 40;
+const comisionImporte = parseFloat(document.getElementById('tx-comision-importe').value) || 0;
 
-    if (!id) { mostrarError({ message: 'Por favor, selecciona un agente.' }); return; }
-    if (gciParcial <= 0) { mostrarError({ message: 'GCI debe ser mayor que 0.' }); return; }
+if (!id) { mostrarError({ message: 'Por favor, selecciona un agente.' }); return; }
+if (gciParcial <= 0) { mostrarError({ message: 'GCI debe ser mayor que 0.' }); return; }
 
-    // Añadir al array con los nuevos datos
-    agentesParaTransaccion.push({ 
-        id, 
-        nombre, 
-        lado, 
-        gci: gciParcial,
-        comisionPct: comisionPct,       // <--- Guardamos %
-        comisionImporte: comisionImporte // <--- Guardamos Importe €
-    });
+// Añadir al array con los nuevos datos
+agentesParaTransaccion.push({ 
+    id, 
+    nombre, 
+    lado, 
+    gci: gciParcial,
+    comisionPct: comisionPct,
+    comisionImporte: comisionImporte,
+    campoModificado: window.ultimoCampoComisionTx || 'pct'
+});
 
     renderListaAgentesTx();
     actualizarGCIRestante();
@@ -5218,39 +5195,52 @@ function mostrarModalFacturacionPasada() {
         // ===================================
 
         function guardarActividadGerente(event) {
-            event.preventDefault();
-            const selectAgente = document.getElementById('actividad-agente-select');
-            const idAgente = selectAgente.value;
-            const nombreAgente = selectAgente.options[selectAgente.selectedIndex]?.text;
-            
-            const datos = {
-                fecha: document.getElementById('gerente-form-fecha').value,
-                idAgente: idAgente,
-                nombreAgente: nombreAgente,
-                citasCaptacion: parseInt(document.getElementById('gerente-form-citas-captacion').value) || 0,
-                exclusivasVenta: parseInt(document.getElementById('gerente-form-exclusivas-venta').value) || 0,
-                exclusivasComprador: parseInt(document.getElementById('gerente-form-exclusivas-comprador').value) || 0,
-                captacionesAbierto: parseInt(document.getElementById('gerente-form-captaciones-abierto').value) || 0,
-                citasCompradores: parseInt(document.getElementById('gerente-form-citas-compradores').value) || 0,
-                casasEnsenadas: parseInt(document.getElementById('gerente-form-casas-ensenadas').value) || 0,
-                leadsCompradores: parseInt(document.getElementById('gerente-form-leads-compradores').value) || 0,
+    event.preventDefault();
+    const selectAgente = document.getElementById('actividad-agente-select');
+    const idAgente = selectAgente.value;
+    const nombreAgente = selectAgente.options[selectAgente.selectedIndex]?.text;
+    
+    const datos = {
+        fecha: document.getElementById('gerente-form-fecha').value,
+        idAgente: idAgente,
+        nombreAgente: nombreAgente,
+        citasCaptacion: parseInt(document.getElementById('gerente-form-citas-captacion').value) || 0,
+        exclusivasVenta: parseInt(document.getElementById('gerente-form-exclusivas-venta').value) || 0,
+        exclusivasComprador: parseInt(document.getElementById('gerente-form-exclusivas-comprador').value) || 0,
+        captacionesAbierto: parseInt(document.getElementById('gerente-form-captaciones-abierto').value) || 0,
+        citasCompradores: parseInt(document.getElementById('gerente-form-citas-compradores').value) || 0,
+        casasEnsenadas: parseInt(document.getElementById('gerente-form-casas-ensenadas').value) || 0,
+        leadsCompradores: parseInt(document.getElementById('gerente-form-leads-compradores').value) || 0,
         llamadas: parseInt(document.getElementById('gerente-form-llamadas').value) || 0,
         gci: parseFloat(document.getElementById('gerente-form-gci').value) || 0,
-                notas: "Registro de Gerente"
-            };
+        volumenNegocio: 0,
+        notas: "Registro de Gerente"
+    };
 
-            console.log('💾 Guardando actividad (Gerente)...', datos);
+    // Decidir si guardar nueva o actualizar existente
+    const funcionALlamar = modoEdicionActividadGerente ? 'actualizarActividad' : 'guardarActividad';
+    const mensajeAccion = modoEdicionActividadGerente ? 'actualizada' : 'guardada';
+    
+    console.log(`💾 ${modoEdicionActividadGerente ? 'Actualizando' : 'Guardando'} actividad (Gerente)...`, datos);
+    
+    google.script.run
+        .withSuccessHandler(function(respuesta) {
+            console.log('✅ Actividad ' + mensajeAccion + ':', respuesta.message);
+            mostrarNotificacion(`✅ Actividad ${mensajeAccion} correctamente`, 'success');
             
-            google.script.run
-                .withSuccessHandler(function(respuesta) {
-                    // [REPARACIÓN B] Eliminado el alert
-                    console.log('✅ Actividad guardada:', respuesta.message);
-                    cerrarModal(); // Cerrar modal antes de recargar
-                    cargarDatosGerente(periodoActual); // Recargar datos
-                })
-                .withFailureHandler(mostrarError)
-                .guardarActividad(datos);
-        }
+            // Resetear modo edición
+            modoEdicionActividadGerente = false;
+            
+            // Limpiar formulario
+limpiarFormularioActividadGerente();
+ocultarAvisoActividadExistenteGerente();
+cambiarBotonAGuardarGerente();
+
+// NO recalcular automáticamente
+        })
+        .withFailureHandler(mostrarError)
+        [funcionALlamar](datos);
+}
         
         function crearAgente(event) {
     event.preventDefault();
@@ -5610,6 +5600,8 @@ function cerrarModal(idModalAbreDespues = null) {
 
         </script>
         <script>
+          // Variable global para rastrear último campo modificado
+window.ultimoCampoComisionTx = 'pct';
         /* --- UTIL: evita inyección al insertar texto dinámico --- */
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';
@@ -6335,11 +6327,29 @@ function renderizarGraficosRentabilidad(labels, dataGCI, dataCoste, dataValorHor
     }
 }
 function mostrarModalRegistrarGasto() {
-    
+    // PRIMERO: Abrir el modal INMEDIATAMENTE (no esperar)
     document.getElementById('modal-registrar-gasto').classList.add('active');
     document.body.classList.add('modal-open');
     document.getElementById('form-gasto').reset();
     document.getElementById('gasto-fecha').valueAsDate = new Date();
+    
+    // SEGUNDO: Cargar partidas en paralelo (en segundo plano)
+    // Solo si el datalist está vacío (primera vez)
+    const datalist = document.getElementById('partidas-list');
+    if (datalist.children.length === 0) {
+        google.script.run
+            .withSuccessHandler(function(partidas) {
+                datalist.innerHTML = '';
+                partidas.forEach(partida => {
+                    datalist.innerHTML += `<option value="${partida}">`;
+                });
+            })
+            .withFailureHandler(function(error) {
+                console.error('Error al cargar partidas:', error);
+                // El modal ya está abierto, el usuario puede escribir manualmente
+            })
+            .obtenerPartidasGastos();
+    }
 }
 function guardarGasto(event) {
     event.preventDefault();
@@ -6498,29 +6508,96 @@ let datosHistoricosCache = null;
 function mostrarModalFacturacionPasada() {
     abrirModalEncima('modal-facturacion-pasada');
     
-    // Pedir datos al servidor
+    // PRIMERO: Cargar las 18 partidas dinámicas
+    google.script.run
+        .withSuccessHandler(function(origenes) {
+            const tbody = document.getElementById('tabla-origenes-negocio');
+            let html = '';
+            
+            origenes.forEach((origen, idx) => {
+                html += `
+                    <tr>
+                        <td style="text-align:left;">${origen}</td>
+                        <td><input type="number" id="fp-origen-${idx}-capt" class="form-input" value="0" min="0"></td>
+                        <td><input type="number" id="fp-origen-${idx}-gci" class="form-input" value="0" min="0" step="0.01" oninput="calcularPorcentajesFuentes()"></td>
+                        <td id="fp-origen-${idx}-pct" style="font-weight:700;">0%</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+            
+            // SEGUNDO: Cargar datos históricos guardados
+            cargarDatosHistoricosFacturacion();
+        })
+        .withFailureHandler(function(error) {
+            console.error('Error al cargar orígenes:', error);
+            mostrarNotificacion('Error al cargar orígenes de negocio', 'error');
+        })
+        .obtenerOrigenesNegocio();
+}
+
+// ============================================
+// FUNCIÓN AUXILIAR: Cargar datos históricos
+// ============================================
+// ============================================
+// FUNCIÓN AUXILIAR: Cargar datos históricos
+// ============================================
+function cargarDatosHistoricosFacturacion() {
     google.script.run.withSuccessHandler(json => {
         if(json) {
             const data = JSON.parse(json);
             datosHistoricosCache = data;
-            
-            // Rellenar Totales Ampliados
             const t = data.totales || {};
-            document.getElementById('hist-citas').value = t.citas || 0;
-            document.getElementById('hist-exclusivas').value = t.exclusivas || 0;
-            document.getElementById('hist-abierto').value = t.abierto || 0;
-            document.getElementById('hist-citas-comp').value = t.citasComp || 0;
-            document.getElementById('hist-visitas').value = t.visitas || 0;
-            document.getElementById('hist-exclusivas-comp').value = t.exclusivasComp || 0;
-            document.getElementById('hist-ventas').value = t.ventas || 0;
-            document.getElementById('hist-gci').value = t.gci || 0;
             
-            // Rellenar Fuentes
-            ['ei','ref','bd','pros','port'].forEach(f => {
-                document.getElementById(`fp-${f}-capt`).value = data.fuentes?.[f]?.capt || 0;
-                document.getElementById(`fp-${f}-gci`).value = data.fuentes?.[f]?.gci || 0;
-            });
-            calcularPorcentajesFuentes();
+            // Rellenar campos de totales si existen
+            if(document.getElementById('hist-citas')) document.getElementById('hist-citas').value = t.citas || 0;
+            if(document.getElementById('hist-exclusivas')) document.getElementById('hist-exclusivas').value = t.exclusivas || 0;
+            if(document.getElementById('hist-ventas')) document.getElementById('hist-ventas').value = t.ventas || 0;
+            if(document.getElementById('hist-gci')) document.getElementById('hist-gci').value = t.gci || 0;
+            
+            // ============================================
+            // MEJORA 2: Cargar las 19 partidas desde el array
+            // ============================================
+            if (Array.isArray(data.fuentes)) {
+                // Nuevo formato: array de 19 elementos
+                data.fuentes.forEach((fuente, idx) => {
+                    const captInput = document.getElementById(`fp-origen-${idx}-capt`);
+                    const gciInput = document.getElementById(`fp-origen-${idx}-gci`);
+                    
+                    if (captInput) captInput.value = fuente.capt || 0;
+                    if (gciInput) gciInput.value = fuente.gci || 0;
+                });
+            } else {
+                // Formato antiguo: objeto con 5 claves (ei, ref, bd, pros, port)
+                // Mapear a las nuevas posiciones
+                const mapeoFuentesAntiguas = {
+                    'ei': 1,    // Esfera de Influencia
+                    'ref': 6,   // Referidos de Clientes Antiguos
+                    'bd': 1,    // Base de Datos → Esfera de Influencia
+                    'pros': 3,  // Prospección → Farming
+                    'port': 16  // Portales → Idealistas
+                };
+                
+                ['ei','ref','bd','pros','port'].forEach(f => {
+                    const posicion = mapeoFuentesAntiguas[f];
+                    const captAntiguo = data.fuentes?.[f]?.capt || 0;
+                    const gciAntiguo = data.fuentes?.[f]?.gci || 0;
+                    
+                    const elCapt = document.getElementById(`fp-origen-${posicion}-capt`);
+                    const elGci = document.getElementById(`fp-origen-${posicion}-gci`);
+                    
+                    if (elCapt && captAntiguo > 0) {
+                        elCapt.value = (parseFloat(elCapt.value) || 0) + captAntiguo;
+                    }
+                    if (elGci && gciAntiguo > 0) {
+                        elGci.value = (parseFloat(elGci.value) || 0) + gciAntiguo;
+                    }
+                });
+            }
+            
+            // Recalcular porcentajes
+            if(typeof calcularPorcentajesFuentes === 'function') calcularPorcentajesFuentes();
         }
     }).obtenerDatosHistoricosJSON();
 }
@@ -6528,24 +6605,30 @@ function mostrarModalFacturacionPasada() {
 function guardarDatosHistoricos() {
     const datos = {
         totales: {
-            citas: parseFloat(document.getElementById('hist-citas').value)||0,
-            exclusivas: parseFloat(document.getElementById('hist-exclusivas').value)||0,
-            abierto: parseFloat(document.getElementById('hist-abierto').value)||0,
-            citasComp: parseFloat(document.getElementById('hist-citas-comp').value)||0,
-            visitas: parseFloat(document.getElementById('hist-visitas').value)||0,
-            exclusivasComp: parseFloat(document.getElementById('hist-exclusivas-comp').value)||0,
-            ventas: parseFloat(document.getElementById('hist-ventas').value)||0,
-            gci: parseFloat(document.getElementById('hist-gci').value)||0
+            citas: parseFloat(document.getElementById('hist-citas')?.value)||0,
+            exclusivas: parseFloat(document.getElementById('hist-exclusivas')?.value)||0,
+            abierto: parseFloat(document.getElementById('hist-abierto')?.value)||0,
+            citasComp: parseFloat(document.getElementById('hist-citas-comp')?.value)||0,
+            visitas: parseFloat(document.getElementById('hist-visitas')?.value)||0,
+            exclusivasComp: parseFloat(document.getElementById('hist-exclusivas-comp')?.value)||0,
+            ventas: parseFloat(document.getElementById('hist-ventas')?.value)||0,
+            gci: parseFloat(document.getElementById('hist-gci')?.value)||0
         },
-        fuentes: {}
+        fuentes: []  // ← CAMBIO: Ahora es un array en lugar de objeto
     };
     
-    ['ei','ref','bd','pros','port'].forEach(f => {
-        datos.fuentes[f] = {
-            capt: parseFloat(document.getElementById(`fp-${f}-capt`).value)||0,
-            gci: parseFloat(document.getElementById(`fp-${f}-gci`).value)||0
-        };
-    });
+    // ============================================
+    // MEJORA 2: Leer las 19 partidas dinámicas (índices 0-18)
+    // ============================================
+    for (let i = 0; i < 19; i++) {
+        const captInput = document.getElementById(`fp-origen-${i}-capt`);
+        const gciInput = document.getElementById(`fp-origen-${i}-gci`);
+        
+        datos.fuentes.push({
+            capt: captInput ? parseFloat(captInput.value) || 0 : 0,
+            gci: gciInput ? parseFloat(gciInput.value) || 0 : 0
+        });
+    }
 
     google.script.run.withSuccessHandler(() => {
         mostrarNotificacion("✅ Histórico Guardado");
@@ -6555,21 +6638,41 @@ function guardarDatosHistoricos() {
     }).guardarDatosHistoricosJSON(JSON.stringify(datos));
 }
 
+// ============================================
+// MEJORA 2: Calcular porcentajes para 19 partidas (índices 0-18)
+// ============================================
+
 function calcularPorcentajesFuentes() {
-    let totalGCI = 0, totalCapt = 0;
-    ['ei','ref','bd','pros','port'].forEach(f => {
-        totalGCI += parseFloat(document.getElementById(`fp-${f}-gci`).value)||0;
-        totalCapt += parseFloat(document.getElementById(`fp-${f}-capt`).value)||0;
-    });
+    let totalGCI = 0;
+    let totalCapt = 0;
     
-    ['ei','ref','bd','pros','port'].forEach(f => {
-        const gci = parseFloat(document.getElementById(`fp-${f}-gci`).value)||0;
-        const pct = totalGCI > 0 ? (gci / totalGCI * 100).toFixed(1) : 0;
-        document.getElementById(`fp-${f}-pct`).innerText = pct + '%';
-    });
+    // Sumar todas las partidas (19 orígenes: índices 0-18)
+    for (let i = 0; i < 19; i++) {
+        const captInput = document.getElementById(`fp-origen-${i}-capt`);  // ✅ Paréntesis añadido
+        const gciInput = document.getElementById(`fp-origen-${i}-gci`);    // ✅ Paréntesis añadido
+        
+        if (captInput) totalCapt += parseFloat(captInput.value) || 0;
+        if (gciInput) totalGCI += parseFloat(gciInput.value) || 0;
+    }
     
-    document.getElementById('fp-total-gci').innerText = totalGCI.toLocaleString() + '€';
-    document.getElementById('fp-total-capt').innerText = totalCapt;
+    // Calcular porcentajes individuales
+    for (let i = 0; i < 19; i++) {
+        const gciInput = document.getElementById(`fp-origen-${i}-gci`);    // ✅ Paréntesis añadido
+        const pctCell = document.getElementById(`fp-origen-${i}-pct`);     // ✅ Paréntesis añadido
+        
+        if (gciInput && pctCell) {
+            const gci = parseFloat(gciInput.value) || 0;
+            const pct = totalGCI > 0 ? ((gci / totalGCI) * 100).toFixed(1) : 0;
+            pctCell.textContent = pct + '%';
+        }
+    }
+    
+    // Actualizar totales del footer
+    const totalCaptCell = document.getElementById('fp-total-capt');
+    const totalGCICell = document.getElementById('fp-total-gci');
+    
+    if (totalCaptCell) totalCaptCell.textContent = totalCapt.toFixed(0);
+    if (totalGCICell) totalGCICell.textContent = totalGCI.toFixed(0) + '€';
 }
 
 function crearGraficoYoYCompleto(act, meta) {
@@ -8661,97 +8764,92 @@ function mostrarModalImportador() {
     document.getElementById('resultado-importacion').innerHTML = '';
 }
 
-// --- IMPORTADOR V10: COORDENADAS FIJAS (MODO QUIRÚRGICO) ---
+// --- IMPORTADOR V15: COORDENADAS FIJAS + VISOR DE ERROR ---
+
+// --- IMPORTADOR V16: ESCANEO TOTAL + TABLA EXTENDIDA ---
 
 function procesarArchivoCSV(input) {
     const file = input.files[0];
     if (!file) return;
 
-    // Feedback visual
     document.getElementById('resultado-importacion').innerHTML = 
-        '<div style="text-align:center; padding:20px; color:#aaa;">⚙️ Procesando archivo con Matriz V10...</div>';
+        '<div style="text-align:center; padding:20px; color:#aaa;">🕵️‍♂️ V16: Escaneando archivo completo...</div>';
 
     const reader = new FileReader();
     reader.onload = function(e) {
-        parsearCSV_V10(e.target.result);
+        parsearCSV_V16(e.target.result);
     };
-    // ISO-8859-1 es OBLIGATORIO para que Excel español no rompa acentos
     reader.readAsText(file, "ISO-8859-1"); 
 }
 
-function parsearCSV_V10(csvText) {
-    // 1. CONFIGURACIÓN FIJA (Basada en tu archivo real V3)
-    const DELIMITER = ';';  // Forzamos punto y coma
-    const FILA_INICIO_DATOS = 3; // Lidia está en la fila 4 (índice 3)
+function parsearCSV_V16(csvText) {
+    const lineas = csvText.split(/\r\n|\n/);
     
-    const COL_NOMBRE = 16; // Columna Q
-    const COL_ENERO  = 42; // Columna AQ (Donde empieza el bloque mensual)
-    const ANCHO_MES  = 21; // 21 celdas por mes
+    // 1. DETECTAR DELIMITADOR
+    const lineaMuestra = lineas[4] || lineas[0];
+    const countComa = (lineaMuestra.match(/,/g) || []).length;
+    const countPuntoComa = (lineaMuestra.match(/;/g) || []).length;
+    const delimiter = countPuntoComa > countComa ? ';' : ',';
 
-    // Mapeo de columnas relativas (0 a 20 dentro de cada mes)
+    console.log("V16 Delimitador:", delimiter);
+
+    // 2. COORDENADAS FIJAS
+    const COL_NOMBRE = 16; // Q
+    const COL_ENERO = 42;  // AQ
+    const ANCHO_MES = 21; 
     const OFF = {
-        citas: 0,       // Nº CITAS
-        excl: 1,        // Captaciones EXCLUSIVAS
-        abierto: 2,     // Captaciones ABIERTO
-        citasComp: 3,   // CLIENTES Compradores con VISITAS
-        visitas: 4,     // CASAS Enseñadas
-        captAlq: 5,     // Captacines ALQUILER
-        tresBs: 6,      // 3Bs Activadas
-        bajadas: 7,     // Bajadas Precio
-        propuestas: 8,  // Propuesta Compra
-        arras: 9,       // Arras
-        // Ventas y GCI
-        vtaExcl: 10, gciExcl: 11,
-        vtaAbierto: 12, gciAbierto: 13,
-        vtaComp: 14, gciComp: 15,
-        vtaAlq: 16, gciAlq: 17
+        citas: 0, excl: 1, abierto: 2, citasComp: 3, visitas: 4,
+        captAlq: 5, tresBs: 6, bajadas: 7, propuestas: 8, arras: 9,
+        ventasBase: 10, gciBase: 11 // Referencia para sumar los bloques de 2 en 2
     };
 
-    // 2. PROCESAR
-    const lineas = csvText.split(/\r\n|\n/);
     const agentesProcesados = [];
-    const anio = new Date().getFullYear() - 1; // 2024
+    const filasIgnoradas = [];
+    const anio = new Date().getFullYear() - 1;
 
-    console.log(`📂 Analizando ${lineas.length} líneas. Inicio datos: Fila ${FILA_INICIO_DATOS}`);
+    // 3. ESCANEO DESDE LA LÍNEA 0 (Para no perder a Lidia)
+    for (let i = 0; i < lineas.length; i++) {
+        const fila = lineas[i].split(delimiter);
 
-    for (let i = FILA_INICIO_DATOS; i < lineas.length; i++) {
-        const filaRaw = lineas[i];
-        // Saltar líneas vacías
-        if (!filaRaw || filaRaw.trim() === '') continue;
+        // Ignorar líneas muy cortas
+        if (fila.length < 50) {
+            continue;
+        }
 
-        const fila = filaRaw.split(DELIMITER);
-        
-        // Si la fila no es lo suficientemente larga, la ignoramos
-        if (fila.length < COL_ENERO + 10) continue;
-
-        // Limpieza del nombre
+        // Limpieza del Nombre
         let nombre = fila[COL_NOMBRE] ? fila[COL_NOMBRE].replace(/['"]+/g, '').trim() : '';
-        
-        // Filtro de seguridad: Ignorar filas que no son agentes
-        if (!nombre || nombre.length < 3 || nombre.match(/TOTAL|ACUMULADO|MEDIA|Especialista|#DIV|AGENTE/i)) continue;
+
+        // FILTRO INTELIGENTE:
+        // Si el nombre está vacío, o es una cabecera ("NOMBRE AGENTE"), o un total... IGNORAR
+        if (!nombre || nombre.length < 3 || 
+            nombre.includes("NOMBRE AGENTE") || 
+            nombre.includes("TOTAL") || 
+            nombre.includes("MEDIA") || 
+            nombre.includes("Especialista")) {
+            
+            if(nombre.length > 2) filasIgnoradas.push(`Fila ${i}: ${nombre} (Filtro)`);
+            continue;
+        }
 
         const datosMensuales = [];
-        let tGCI = 0, tCitas = 0, tVentas = 0, tExcl = 0, tVisitas = 0;
+        // Acumuladores para la tabla
+        let tCitas=0, tExcl=0, tBajadas=0, tArras=0, tVentas=0, tGCI=0;
 
         for (let m = 0; m < 12; m++) {
             const base = COL_ENERO + (m * ANCHO_MES);
             
-            // Lector numérico tolerante a fallos
             const getVal = (offset) => {
                 if ((base + offset) >= fila.length) return 0;
                 let val = fila[base + offset];
                 if (!val) return 0;
-                
-                // Limpieza agresiva de caracteres raros
                 val = val.replace(/['"€\s]+/g, '').trim();
                 if (val === '' || val === '-' || val.includes('#') || val.toLowerCase() === 'nan') return 0;
 
-                // Formato Europeo (1.000,00) a JS (1000.00)
-                if (val.indexOf(',') > -1 && val.indexOf('.') > -1) {
-                     if (val.indexOf('.') < val.indexOf(',')) val = val.replace(/\./g, '').replace(',', '.'); 
-                     else val = val.replace(/,/g, ''); 
-                } else if (val.indexOf(',') > -1) {
-                     val = val.replace(',', '.');
+                // Formato Europeo vs US
+                if (val.includes('.') && val.includes(',')) {
+                    val = val.replace(/\./g, '').replace(',', '.');
+                } else if (val.includes(',')) {
+                    val = val.replace(',', '.');
                 }
                 return parseFloat(val) || 0;
             };
@@ -8762,55 +8860,52 @@ function parsearCSV_V10(csvText) {
             const citasComp = getVal(OFF.citasComp);
             const visitas = getVal(OFF.visitas);
             
-            // Nuevos Datos Extra
             const captAlq = getVal(OFF.captAlq);
             const tresBs = getVal(OFF.tresBs);
             const bajadas = getVal(OFF.bajadas);
             const propuestas = getVal(OFF.propuestas);
             const arras = getVal(OFF.arras);
 
-            // Sumatorios Financieros
-            const ventas = getVal(OFF.vtaExcl) + getVal(OFF.vtaAbierto) + getVal(OFF.vtaComp) + getVal(OFF.vtaAlq);
-            const gci = getVal(OFF.gciExcl) + getVal(OFF.gciAbierto) + getVal(OFF.gciComp) + getVal(OFF.gciAlq);
+            // Ventas: 10, 12, 14, 16
+            const ventas = getVal(10) + getVal(12) + getVal(14) + getVal(16);
+            // GCI: 11, 13, 15, 17
+            const gci = getVal(11) + getVal(13) + getVal(15) + getVal(17);
 
             datosMensuales.push({
                 citasCapt: citas, exclVenta: excl, captAbierto: abierto,
                 citasComp: citasComp, visitas: visitas,
-                captAlq: captAlq, tresBs: tresBs, bajadas: bajadas, propuestas: propuestas, arras: arras,
+                captAlq, tresBs, bajadas, propuestas, arras,
                 ventas: ventas, gci: gci, exclComp: 0
             });
 
-            tCitas += citas; tExcl += excl; tVisitas += visitas; tVentas += ventas; tGCI += gci;
+            tCitas += citas; tExcl += excl; 
+            tBajadas += bajadas; tArras += arras;
+            tVentas += ventas; tGCI += gci;
         }
 
-        // Guardamos el agente
+        // Si tiene nombre válido, lo metemos (incluso si es 0, para crear ficha)
         agentesProcesados.push({
             nombre: nombre,
             anio: anio,
             mensual: datosMensuales,
+            // Totales para vista previa
             totalCitas: tCitas,
             totalExclusivas: tExcl,
-            totalVisitas: tVisitas,
+            totalBajadas: tBajadas,
+            totalArras: tArras,
             totalVentas: tVentas,
             totalGCI: tGCI
         });
     }
 
-    console.log(`✅ Encontrados ${agentesProcesados.length} agentes.`);
-    renderizarTablaConfirmacionDetallada(agentesProcesados);
+    renderizarTablaV16(agentesProcesados, filasIgnoradas);
 }
 
-// --- FUNCIONES AUXILIARES DE RENDERIZADO ---
-
-function renderizarTablaConfirmacionDetallada(agentes) {
+function renderizarTablaV16(agentes, ignorados) {
     const contenedor = document.getElementById('resultado-importacion');
     
     if (agentes.length === 0) {
-        contenedor.innerHTML = `
-            <div style="color:#ff6b6b; padding:20px; text-align:center; border:1px dashed red; border-radius:10px;">
-                ⚠️ No se encontraron datos. <br>
-                <small>Posible causa: El archivo no es un CSV separado por punto y coma (;).</small>
-            </div>`;
+        contenedor.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">⚠️ No se encontraron agentes.</div>';
         return;
     }
 
@@ -8818,17 +8913,18 @@ function renderizarTablaConfirmacionDetallada(agentes) {
         <div style="background:var(--color-bg-alt); padding:15px; border-radius:10px; border:1px solid var(--color-accent-good);">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h3 style="color:var(--color-accent-good); margin:0;">✅ ${agentes.length} Agentes Detectados</h3>
-                <div style="font-size:0.8em; color:#aaa;">Datos 2024</div>
+                <button class="btn" style="font-size:0.7em; padding:5px 10px;" onclick="alert('Filas ignoradas:\\n${ignorados.join('\\n')}')">Ver Ignorados</button>
             </div>
             
-            <div class="tabla-container" style="max-height:350px; overflow-y:auto; margin:15px 0;">
-                <table class="tabla" style="font-size:0.85em;">
+            <div class="tabla-container" style="max-height:400px; overflow-y:auto; margin:15px 0;">
+                <table class="tabla" style="font-size:0.8em;">
                     <thead style="position:sticky; top:0; background:#222; z-index:2;">
                         <tr>
                             <th style="text-align:left;">Agente</th>
                             <th>Citas</th>
                             <th>Excl.</th>
-                            <th>Visitas</th>
+                            <th>Bajadas</th>
+                            <th>Arras</th>
                             <th>Ventas</th>
                             <th>GCI Total</th>
                         </tr>
@@ -8837,12 +8933,13 @@ function renderizarTablaConfirmacionDetallada(agentes) {
     `;
 
     agentes.forEach(a => {
-        const estilo = (a.totalGCI === 0 && a.totalCitas === 0) ? 'color:#ff6b6b' : '';
+        const estilo = (a.totalGCI === 0 && a.totalCitas === 0) ? 'color:#aaa' : '';
         html += `<tr style="${estilo}">
             <td style="text-align:left; font-weight:bold;">${a.nombre}</td>
             <td>${a.totalCitas}</td>
             <td>${a.totalExclusivas}</td>
-            <td>${a.totalVisitas}</td>
+            <td>${a.totalBajadas}</td>
+            <td>${a.totalArras}</td>
             <td>${a.totalVentas}</td>
             <td style="font-weight:bold; color:var(--color-accent-good);">${a.totalGCI.toLocaleString('es-ES',{maximumFractionDigits:0})}€</td>
         </tr>`;
@@ -8851,28 +8948,510 @@ function renderizarTablaConfirmacionDetallada(agentes) {
     html += `</tbody></table></div>
         <div style="display:flex; gap:10px;">
             <button class="btn" onclick="mostrarModalImportador()" style="background:#444; flex:1;">❌ Cancelar</button>
-            <button class="btn-primary-action" onclick='confirmarImportacion(${JSON.stringify(agentes)})' style="flex:2;">💾 IMPORTAR DATOS</button>
+            <button class="btn-primary-action" onclick='confirmarImportacion(${JSON.stringify(agentes)})' style="flex:2;">💾 IMPORTAR TODO</button>
         </div>
     </div>`;
 
     contenedor.innerHTML = html;
 }
 
+// (La función confirmarImportacion sigue siendo la misma)
+
 function confirmarImportacion(datos) {
-    const btn = document.querySelector('.btn-primary-action');
-    if(btn) { btn.textContent = "⏳ Guardando..."; btn.disabled = true; }
+    mostrarNotificacion("⏳ Guardando...", false);
+    google.script.run.withSuccessHandler(res => {
+        mostrarNotificacion("✅ " + res.message);
+        cerrarModalSuperior('modal-importador');
+        if(typeof cargarDatosGerente === 'function') cargarDatosGerente('ano');
+    }).withFailureHandler(err => mostrarNotificacion("❌ " + err.message, true)).guardarImportacionMasiva(datos);
+}
+// ============================================
+// MEJORA 1: RECÁLCULO COMISIÓN EN TRANSACCIONES
+// ============================================
+
+function recalcularComisionTransaccion(campo) {
+    window.ultimoCampoComisionTx = campo;
+    
+    const gciInput = document.getElementById('tx-gci-parcial');
+    const pctInput = document.getElementById('tx-comision-pct');
+    const importeInput = document.getElementById('tx-comision-importe');
+    
+    const gci = parseFloat(gciInput.value) || 0;
+    
+    if (campo === 'pct') {
+        const pct = parseFloat(pctInput.value) || 40;
+        importeInput.value = (gci * pct / 100).toFixed(2);
+    } else if (campo === 'importe') {
+        const importe = parseFloat(importeInput.value) || 0;
+        if (gci > 0) {
+            pctInput.value = ((importe / gci) * 100).toFixed(1);
+        }
+    }
+}
+// ============================================
+// MEJORA 2: CARGAR 18 ORÍGENES DE NEGOCIO
+// ============================================
+
+function cargarOrigenesNegocio() {
+    google.script.run
+        .withSuccessHandler(function(origenes) {
+            const tbody = document.getElementById('tabla-origenes-negocio');
+            let html = '';
+            
+            origenes.forEach((origen, idx) => {
+                html += `
+                    <tr>
+                        <td style="text-align:left;">${origen}</td>
+                        <td><input type="number" id="fp-origen-${idx}-capt" class="form-input" value="0" min="0"></td>
+                        <td><input type="number" id="fp-origen-${idx}-gci" class="form-input" value="0" min="0" step="0.01" oninput="calcularPorcentajesFuentes()"></td>
+                        <td id="fp-origen-${idx}-pct" style="font-weight:700;">0%</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        })
+        .withFailureHandler(function(error) {
+            console.error('Error al cargar orígenes:', error);
+            mostrarNotificacion('Error al cargar orígenes de negocio', 'error');
+        })
+        .obtenerOrigenesNegocio();
+}
+// ============================================
+// MEJORA 4: VISTA MÚLTIPLE AGENTES (GERENTE)
+// ============================================
+
+let mostrandoTodosLosAgentesGerente = false;
+
+function toggleMostrarTodosGerente() {
+    mostrandoTodosLosAgentesGerente = !mostrandoTodosLosAgentesGerente;
+    const btn = document.getElementById('btn-mostrar-todos-gerente');
+    
+    if (mostrandoTodosLosAgentesGerente) {
+        btn.textContent = '👤 Vista Individual';
+        btn.classList.add('active');
+        renderizarFormulariosMultiplesGerente();
+    } else {
+        btn.textContent = '👥 Mostrar Todos los Agentes';
+        btn.classList.remove('active');
+        // Recargar el formulario individual
+        restaurarVistaIndividualGerente();
+    }
+}
+
+function restaurarVistaIndividualGerente() {
+    const container = document.getElementById('formularios-container-gerente');
+    
+    container.innerHTML = `
+        <form id="form-actividad-gerente" onsubmit="guardarActividadGerente(event)" class="form-grid">
+            
+            <div class="form-grupo" style="grid-column: 1 / -1;">
+                <label class="form-label">👤 Seleccionar Agente</label>
+                <select id="actividad-agente-select" class="form-select" required onchange="verificarActividadExistenteGerente()">
+                    <option value="">-- Elige un agente --</option>
+                </select>
+            </div>
+
+            <div id="aviso-actividad-existente-gerente" style="display: none; grid-column: 1 / -1; background: rgba(255,215,0,0.1); border: 1px solid #ffd700; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.5em;">⚠️</span>
+                    <div>
+                        <strong>Ya existe actividad para esta fecha</strong>
+                        <div style="font-size: 0.9em; opacity: 0.8; margin-top: 5px;" id="resumen-actividad-existente-gerente"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-grupo">
+                <label class="form-label">📅 Fecha</label>
+                <input type="date" id="gerente-form-fecha" class="form-input" required onchange="verificarActividadExistenteGerente()">
+            </div>
+            <div class="form-grupo">
+                <label class="form-label">📞 Citas Captación</label>
+                <input type="number" id="gerente-form-citas-captacion" class="form-input" min="0" value="0">
+            </div>
+            <div class="form-grupo">
+                <label class="form-label">🏠 Exclusivas Venta</label>
+                <input type="number" id="gerente-form-exclusivas-venta" class="form-input" min="0" value="0">
+            </div>
+            <div class="form-grupo">
+                <label class="form-label">🔑 Exclusivas Comprador</label>
+                <input type="number" id="gerente-form-exclusivas-comprador" class="form-input" min="0" value="0">
+            </div>
+            <div class="form-grupo">
+                <label class="form-label">🏘️ Captaciones Abierto</label>
+                <input type="number" id="gerente-form-captaciones-abierto" class="form-input" min="0" value="0">
+            </div>
+            <div class="form-grupo">
+                <label class="form-label">👥 Citas Compradores</label>
+                <input type="number" id="gerente-form-citas-compradores" class="form-input" min="0" value="0">
+            </div>
+            <div class="form-grupo">
+                <label class="form-label">🏡 Casas Enseñadas</label>
+                <input type="number" id="gerente-form-casas-ensenadas" class="form-input" min="0" value="0">
+            </div>
+            <div class="form-grupo">
+                <label class="form-label">📧 Leads Compradores</label>
+                <input type="number" id="gerente-form-leads-compradores" class="form-input" min="0" value="0">
+            </div>
+            <div class="form-grupo">
+                <label class="form-label">📞 Llamadas</label>
+                <input type="number" id="gerente-form-llamadas" class="form-input" min="0" value="0">
+            </div>
+            <div class="form-grupo">
+                <label class="form-label">💰 GCI (€)</label>
+                <input type="number" id="gerente-form-gci" class="form-input" min="0" step="0.01" value="0">
+            </div>
+            <button type="submit" id="btn-submit-actividad-gerente" class="form-submit">💾 Guardar Actividad</button>
+        </form>
+    `;
+    
+    // Recargar lista de agentes en el select
+    google.script.run.withSuccessHandler(agentes => {
+        const select = document.getElementById('actividad-agente-select');
+        agentes.forEach(ag => {
+            const opt = document.createElement('option');
+            opt.value = ag.id;
+            opt.textContent = ag.nombre;
+            select.appendChild(opt);
+        });
+    }).obtenerListaAgentes();
+    
+    // Establecer fecha actual
+    document.getElementById('gerente-form-fecha').value = new Date().toISOString().split('T')[0];
+    
+    // Resetear modo edición
+    modoEdicionActividadGerente = false;
+}
+
+function renderizarFormulariosMultiplesGerente() {
+    google.script.run
+        .withSuccessHandler(function(agentes) {
+            const container = document.getElementById('formularios-container-gerente');
+            
+            let html = `
+                <div class="form-grupo" style="margin-bottom: 30px; padding: 20px; background: var(--color-surface); border-radius: 15px;">
+                    <label class="form-label" style="font-size: 1.2em;">📅 Fecha para TODOS los agentes</label>
+                    <input type="date" id="fecha-multiple-gerente" class="form-input" 
+                           value="${new Date().toISOString().split('T')[0]}"
+                           onchange="verificarActividadTodosGerente()"
+                           required
+                           style="font-size: 1.1em;">
+                </div>
+            `;
+            
+            agentes.forEach((agente, idx) => {
+                html += `
+                    <div class="section agent-form-multi" data-agent-id="${agente.id}" data-agent-name="${agente.nombre}" style="margin-bottom: 20px; animation: fadeInUp 0.3s ${idx * 50}ms both;">
+                        <h3 style="color: var(--color-secondary); margin-bottom: 10px;">${agente.nombre}</h3>
+                        
+                        <div id="aviso-gerente-${agente.id}" style="display:none; background: rgba(255,215,0,0.1); border: 1px solid #ffd700; border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 0.9em;">
+                            ⚠️ Ya hay actividad este día
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-grupo">
+                                <label class="form-label">📞 Citas Capt.</label>
+                                <input type="number" class="form-input multi-citasCaptacion" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">🏠 Excl. Venta</label>
+                                <input type="number" class="form-input multi-exclusivasVenta" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">🔑 Excl. Compr.</label>
+                                <input type="number" class="form-input multi-exclusivasComprador" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">🏘️ Capt. Abierto</label>
+                                <input type="number" class="form-input multi-captacionesAbierto" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">👥 Citas Compr.</label>
+                                <input type="number" class="form-input multi-citasCompradores" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">🏡 Casas Enseñ.</label>
+                                <input type="number" class="form-input multi-casasEnsenadas" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">📧 Leads</label>
+                                <input type="number" class="form-input multi-leadsCompradores" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">📞 Llamadas</label>
+                                <input type="number" class="form-input multi-llamadas" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">💰 GCI (€)</label>
+                                <input type="number" class="form-input multi-gci" min="0" step="0.01" value="0">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <button type="button" class="btn btn-primary-action" 
+                        onclick="guardarActividadMultipleGerente()"
+                        style="width: 100%; padding: 20px; font-size: 1.2em; margin-top: 20px;">
+                    💾 GUARDAR ACTIVIDAD DE TODOS
+                </button>
+            `;
+            
+            container.innerHTML = html;
+        })
+        .withFailureHandler(function(error) {
+            mostrarNotificacion('Error al cargar agentes', 'error');
+        })
+        .obtenerListaAgentes();
+}
+
+function verificarActividadTodosGerente() {
+    const fecha = document.getElementById('fecha-multiple-gerente').value;
+    if (!fecha) return;
+    
+    document.querySelectorAll('.agent-form-multi').forEach(section => {
+        const agenteId = section.dataset.agentId;
+        const avisoDiv = document.getElementById(`aviso-gerente-${agenteId}`);
+        
+        google.script.run
+            .withSuccessHandler(function(actividades) {
+                if (actividades && actividades.length > 0) {
+                    const act = actividades[0];
+                    avisoDiv.innerHTML = `⚠️ Actividad previa: GCI ${act.gci}€ | Citas ${act.citasCaptacion} | Excl. ${act.exclusivasVenta}`;
+                    avisoDiv.style.display = 'block';
+                } else {
+                    avisoDiv.style.display = 'none';
+                }
+            })
+            .withFailureHandler(function(error) {
+                console.error('Error al verificar actividad:', error);
+            })
+            .obtenerActividadDia(agenteId, fecha);
+    });
+}
+
+function guardarActividadMultipleGerente() {
+    const fecha = document.getElementById('fecha-multiple-gerente').value;
+    
+    if (!fecha) {
+        mostrarNotificacion('⚠️ Selecciona una fecha', 'error');
+        return;
+    }
+    
+    let contador = 0;
+    let total = 0;
+    
+    document.querySelectorAll('.agent-form-multi').forEach(section => {
+        const datos = {
+            fecha: fecha,
+            idAgente: section.dataset.agentId,
+            nombreAgente: section.dataset.agentName,
+            citasCaptacion: section.querySelector('.multi-citasCaptacion').value,
+            exclusivasVenta: section.querySelector('.multi-exclusivasVenta').value,
+            exclusivasComprador: section.querySelector('.multi-exclusivasComprador').value,
+            captacionesAbierto: section.querySelector('.multi-captacionesAbierto').value,
+            citasCompradores: section.querySelector('.multi-citasCompradores').value,
+            casasEnsenadas: section.querySelector('.multi-casasEnsenadas').value,
+            leadsCompradores: section.querySelector('.multi-leadsCompradores').value,
+            llamadas: section.querySelector('.multi-llamadas').value,
+            gci: section.querySelector('.multi-gci').value,
+            notas: ''
+        };
+        
+        const hayActividad = Object.values(datos).slice(2).some(v => parseFloat(v) > 0);
+        
+        if (hayActividad) {
+            total++;
+            google.script.run
+                .withSuccessHandler(function() {
+                    contador++;
+                    if (contador === total) {
+                        mostrarNotificacion(`✅ ${contador} actividades guardadas correctamente`, 'success');
+                        
+                        setTimeout(() => {
+                            document.querySelectorAll('.agent-form-multi input[type="number"]').forEach(input => {
+                                input.value = '0';
+                            });
+                        }, 1000);
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    mostrarNotificacion('Error al guardar actividad', 'error');
+                })
+                .guardarActividad(datos);
+        }
+    });
+    
+    if (total === 0) {
+        mostrarNotificacion('⚠️ No hay actividad para guardar (todos los campos están en 0)', 'error');
+    }
+}
+// ============================================
+// MEJORA EXTRA: CARGAR Y EDITAR ACTIVIDAD EXISTENTE
+// ============================================
+
+let modoEdicionActividad = false;
+
+function verificarActividadExistente() {
+    const fecha = document.getElementById('form-fecha').value;
+    const idAgente = document.getElementById('form-agent-id').value;
+    
+    if (!fecha || !idAgente) return;
     
     google.script.run
-        .withSuccessHandler(res => {
-            mostrarNotificacion("✅ " + res.message);
-            cerrarModalSuperior('modal-importador');
-            if(typeof cargarDatosGerente === 'function') cargarDatosGerente('ano');
+        .withSuccessHandler(function(actividad) {
+            if (actividad && actividad.citasCaptacion !== undefined) {
+                // HAY ACTIVIDAD - Cargar datos
+                modoEdicionActividad = true;
+                cargarDatosEnFormulario(actividad);
+                mostrarAvisoActividadExistente(actividad);
+                cambiarBotonAActualizar();
+            } else {
+                // NO HAY ACTIVIDAD - Limpiar formulario
+                modoEdicionActividad = false;
+                limpiarFormularioActividad();
+                ocultarAvisoActividadExistente();
+                cambiarBotonAGuardar();
+            }
         })
-        .withFailureHandler(err => {
-            mostrarNotificacion("❌ " + err.message, true);
-            if(btn) btn.disabled = false;
+        .withFailureHandler(function(error) {
+            console.error('Error al verificar actividad:', error);
         })
-        .guardarImportacionMasiva(datos);
+        .obtenerActividadCompletaDia(idAgente, fecha);
+}
+
+function cargarDatosEnFormulario(actividad) {
+    document.getElementById('form-citas-captacion').value = actividad.citasCaptacion || 0;
+    document.getElementById('form-exclusivas-venta').value = actividad.exclusivasVenta || 0;
+    document.getElementById('form-exclusivas-comprador').value = actividad.exclusivasComprador || 0;
+    document.getElementById('form-captaciones-abierto').value = actividad.captacionesAbierto || 0;
+    document.getElementById('form-citas-compradores').value = actividad.citasCompradores || 0;
+    document.getElementById('form-casas-ensenadas').value = actividad.casasEnsenadas || 0;
+    document.getElementById('form-leads-compradores').value = actividad.leadsCompradores || 0;
+    document.getElementById('form-llamadas').value = actividad.llamadas || 0;
+    document.getElementById('form-gci').value = actividad.gci || 0;
+}
+
+function limpiarFormularioActividad() {
+    document.getElementById('form-citas-captacion').value = 0;
+    document.getElementById('form-exclusivas-venta').value = 0;
+    document.getElementById('form-exclusivas-comprador').value = 0;
+    document.getElementById('form-captaciones-abierto').value = 0;
+    document.getElementById('form-citas-compradores').value = 0;
+    document.getElementById('form-casas-ensenadas').value = 0;
+    document.getElementById('form-leads-compradores').value = 0;
+    document.getElementById('form-llamadas').value = 0;
+    document.getElementById('form-gci').value = 0;
+}
+
+function mostrarAvisoActividadExistente(actividad) {
+    const aviso = document.getElementById('aviso-actividad-existente');
+    const resumen = document.getElementById('resumen-actividad-existente');
+    
+    resumen.innerHTML = `GCI: ${actividad.gci}€ | Citas: ${actividad.citasCaptacion} | Exclusivas: ${actividad.exclusivasVenta} | Llamadas: ${actividad.llamadas}`;
+    aviso.style.display = 'block';
+}
+
+function ocultarAvisoActividadExistente() {
+    document.getElementById('aviso-actividad-existente').style.display = 'none';
+}
+
+function cambiarBotonAActualizar() {
+    const btn = document.getElementById('btn-submit-actividad');
+    btn.textContent = '🔄 ACTUALIZAR ACTIVIDAD';
+    btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+}
+
+function cambiarBotonAGuardar() {
+    const btn = document.getElementById('btn-submit-actividad');
+    btn.textContent = '💾 GUARDAR ACTIVIDAD';
+    btn.style.background = '';
+}
+// ============================================
+// MEJORA EXTRA: EDITAR ACTIVIDAD EN VISTA GERENTE
+// ============================================
+
+let modoEdicionActividadGerente = false;
+
+function verificarActividadExistenteGerente() {
+    const fecha = document.getElementById('gerente-form-fecha').value;
+    const idAgente = document.getElementById('actividad-agente-select').value;
+    
+    if (!fecha || !idAgente) return;
+    
+    google.script.run
+        .withSuccessHandler(function(actividad) {
+            if (actividad && actividad.citasCaptacion !== undefined) {
+                modoEdicionActividadGerente = true;
+                cargarDatosEnFormularioGerente(actividad);
+                mostrarAvisoActividadExistenteGerente(actividad);
+                cambiarBotonAActualizarGerente();
+            } else {
+                modoEdicionActividadGerente = false;
+                limpiarFormularioActividadGerente();
+                ocultarAvisoActividadExistenteGerente();
+                cambiarBotonAGuardarGerente();
+            }
+        })
+        .withFailureHandler(function(error) {
+            console.error('Error al verificar actividad:', error);
+        })
+        .obtenerActividadCompletaDia(idAgente, fecha);
+}
+
+function cargarDatosEnFormularioGerente(actividad) {
+    document.getElementById('gerente-form-citas-captacion').value = actividad.citasCaptacion || 0;
+    document.getElementById('gerente-form-exclusivas-venta').value = actividad.exclusivasVenta || 0;
+    document.getElementById('gerente-form-exclusivas-comprador').value = actividad.exclusivasComprador || 0;
+    document.getElementById('gerente-form-captaciones-abierto').value = actividad.captacionesAbierto || 0;
+    document.getElementById('gerente-form-citas-compradores').value = actividad.citasCompradores || 0;
+    document.getElementById('gerente-form-casas-ensenadas').value = actividad.casasEnsenadas || 0;
+    document.getElementById('gerente-form-leads-compradores').value = actividad.leadsCompradores || 0;
+    document.getElementById('gerente-form-llamadas').value = actividad.llamadas || 0;
+    document.getElementById('gerente-form-gci').value = actividad.gci || 0;
+}
+
+function limpiarFormularioActividadGerente() {
+    document.getElementById('gerente-form-citas-captacion').value = 0;
+    document.getElementById('gerente-form-exclusivas-venta').value = 0;
+    document.getElementById('gerente-form-exclusivas-comprador').value = 0;
+    document.getElementById('gerente-form-captaciones-abierto').value = 0;
+    document.getElementById('gerente-form-citas-compradores').value = 0;
+    document.getElementById('gerente-form-casas-ensenadas').value = 0;
+    document.getElementById('gerente-form-leads-compradores').value = 0;
+    document.getElementById('gerente-form-llamadas').value = 0;
+    document.getElementById('gerente-form-gci').value = 0;
+}
+
+function mostrarAvisoActividadExistenteGerente(actividad) {
+    const aviso = document.getElementById('aviso-actividad-existente-gerente');
+    const resumen = document.getElementById('resumen-actividad-existente-gerente');
+    
+    resumen.innerHTML = `GCI: ${actividad.gci}€ | Citas: ${actividad.citasCaptacion} | Exclusivas: ${actividad.exclusivasVenta} | Llamadas: ${actividad.llamadas}`;
+    aviso.style.display = 'block';
+}
+
+function ocultarAvisoActividadExistenteGerente() {
+    const avisoEl = document.getElementById('aviso-actividad-existente-gerente');
+    if (avisoEl) avisoEl.style.display = 'none';
+}
+
+function cambiarBotonAActualizarGerente() {
+    const btn = document.getElementById('btn-submit-actividad-gerente');
+    if (btn) {
+        btn.textContent = '🔄 ACTUALIZAR ACTIVIDAD';
+        btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    }
+}
+
+function cambiarBotonAGuardarGerente() {
+    const btn = document.getElementById('btn-submit-actividad-gerente');
+    if (btn) {
+        btn.textContent = '💾 GUARDAR ACTIVIDAD';
+        btn.style.background = '';
+    }
 }
  </script>
  <div id="modal-grafico-secundario" class="modal" style="z-index: 1150;">
