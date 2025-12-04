@@ -71,6 +71,50 @@ const CONFIG = {
  
   METRICAS: ['Citas Captación', 'Exclusivas Venta', 'Exclusivas Comprador', 'Captaciones Abierto', 'Citas Compradores', 'Casas Enseñadas', 'Leads Compradores', 'Llamadas', 'GCI', 'Volumen Negocio']
 };
+// ============================================
+// MEJORA 2: 18 ORÍGENES DE NEGOCIO
+// ============================================
+
+const ORIGENES_NEGOCIO = [
+  'Clientes Antiguos (repiten compra)',
+  'Esfera de Influencia/ Contactos',
+  'Vendedores por sí mismos (FSO)',
+  'Farming (posicionamiento en zona)',
+  'Aliados (hipoteca, abogados, etc.)',
+  'Referidos de Agentes Inmobiliarios',
+  'Referidos de Clientes Antiguos',
+  'Reubicación',
+  'Referidos del Personal de Trabajo',
+  'Llamadas a la oficina por anuncios en carteles',
+  'Publicidad',
+  'Sitio Web',
+  'Correo directo',
+  'Redes Sociales',
+  'Open Houses',
+  'ISA/OSA',
+  'Idealistas',
+  'Fotocasa',
+  'Otro'
+];
+// ============================================
+// MEJORA 3: 12 PARTIDAS DE GASTOS OPERATIVOS
+// ============================================
+
+const PARTIDAS_GASTOS = [
+  'Administración/Coordinación',
+  'Salarios Agentes Vendedores',
+  'Salarios Agentes Compradores',
+  'Generación de Negocio Marketing',
+  'Generación de Negocio Prospección',
+  'Alquileres/Amortización lugar trabajo',
+  'Educación/Coaching/Afiliaciones',
+  'Suministros / Gastos de oficina',
+  'Comunicación/Tecnología',
+  'Automovil',
+  'Equipo/Mobiliario',
+  'Seguro',
+  'Otros Gastos'
+];
 
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
@@ -408,12 +452,17 @@ function guardarTransaccionGCI(datosTransaccion) {
       const idTransaccion = `${idBase}-${String(i + 1).padStart(2, '0')}`;
       
       const gci = parseFloat(agente.gci) || 0;
-      const comisionPct = parseFloat(agente.comisionPct) || 40;
-      
-      // ✅ CORRECCIÓN CRÍTICA: Comisión = (GCI × %) / 100
-      const comisionImporte = parseFloat((gci * comisionPct / 100).toFixed(2));
+let comisionPct = parseFloat(agente.comisionPct) || 40;
+let comisionImporte = parseFloat(agente.comisionImporte) || 0;
 
-      const notas = `TRANSACCIÓN ${datosTransaccion.tipo.toUpperCase()} - ${datosTransaccion.descripcion || 'Venta/Alquiler'} | Lado: ${agente.lado} | Comis: ${comisionPct}%`;
+// Recálculo bidireccional según campo modificado
+if (agente.campoModificado === 'importe' && gci > 0) {
+  comisionPct = (comisionImporte / gci) * 100;
+} else {
+  comisionImporte = (gci * comisionPct / 100);
+}
+
+const notas = `TRANSACCIÓN ${datosTransaccion.tipo.toUpperCase()} - ${datosTransaccion.descripcion || 'Venta/Alquiler'} | Lado: ${agente.lado} | Comis: ${comisionPct.toFixed(1)}%`;
       
       hoja.appendRow([
         idTransaccion,              // 1: ID
@@ -3338,4 +3387,148 @@ function guardarImportacionMasiva(listaAgentes) {
   if(historico.length) hojaHist.getRange(hojaHist.getLastRow()+1, 1, historico.length, 17).setValues(historico);
 
   return { success: true, message: `Importados ${listaAgentes.length} agentes con detalle ampliado.` };
+}
+// ============================================
+// MEJORA 2: Función para obtener orígenes de negocio
+// ============================================
+
+function obtenerOrigenesNegocio() {
+  return ORIGENES_NEGOCIO;
+}
+// ============================================
+// MEJORA 3: Función para obtener partidas de gastos
+// ============================================
+
+function obtenerPartidasGastos() {
+  return PARTIDAS_GASTOS;
+}
+// ============================================
+// MEJORA 4: Verificar actividad previa de un agente en una fecha
+// ============================================
+
+function obtenerActividadDia(idAgente, fecha) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hoja = ss.getSheetByName(CONFIG.HOJA_ACTIVIDAD);
+    if (!hoja) return [];
+    
+    const datos = hoja.getDataRange().getValues();
+    const actividades = [];
+    const fechaBuscar = new Date(fecha);
+    fechaBuscar.setHours(0, 0, 0, 0);
+    
+    for (let i = 1; i < datos.length; i++) {
+      if (datos[i][2] === idAgente) { // Columna 3: ID_Agente
+        const fechaFila = new Date(datos[i][1]); // Columna 2: Fecha
+        fechaFila.setHours(0, 0, 0, 0);
+        
+        if (fechaFila.getTime() === fechaBuscar.getTime()) {
+          actividades.push({
+            gci: datos[i][12] || 0,
+            citasCaptacion: datos[i][4] || 0,
+            exclusivasVenta: datos[i][5] || 0
+          });
+        }
+      }
+    }
+    
+    return actividades;
+  } catch (error) {
+    Logger.log('Error en obtenerActividadDia: ' + error);
+    return [];
+  }
+}
+// ============================================
+// MEJORA EXTRA: Obtener actividad completa de un día para editar
+// ============================================
+
+function obtenerActividadCompletaDia(idAgente, fecha) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hoja = ss.getSheetByName(CONFIG.HOJA_ACTIVIDAD);
+    if (!hoja) return null;
+    
+    const datos = hoja.getDataRange().getValues();
+    const fechaBuscar = new Date(fecha);
+    fechaBuscar.setHours(0, 0, 0, 0);
+    
+    for (let i = 1; i < datos.length; i++) {
+      if (datos[i][2] === idAgente) { // Columna 3: ID_Agente
+        const fechaFila = new Date(datos[i][1]); // Columna 2: Fecha
+        fechaFila.setHours(0, 0, 0, 0);
+        
+        if (fechaFila.getTime() === fechaBuscar.getTime()) {
+          return {
+            fila: i + 1, // Guardamos el número de fila para actualizar después
+            citasCaptacion: datos[i][4] || 0,
+            exclusivasVenta: datos[i][5] || 0,
+            exclusivasComprador: datos[i][6] || 0,
+            captacionesAbierto: datos[i][7] || 0,
+            citasCompradores: datos[i][8] || 0,
+            casasEnsenadas: datos[i][9] || 0,
+            leadsCompradores: datos[i][10] || 0,
+            llamadas: datos[i][11] || 0,
+            gci: datos[i][12] || 0,
+            volumenNegocio: datos[i][13] || 0,
+            notas: datos[i][14] || ''
+          };
+        }
+      }
+    }
+    
+    return null; // No hay actividad ese día
+  } catch (error) {
+    Logger.log('Error en obtenerActividadCompletaDia: ' + error);
+    return null;
+  }
+}
+// ============================================
+// MEJORA EXTRA: Actualizar actividad existente
+// ============================================
+
+function actualizarActividad(datos) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hoja = ss.getSheetByName(CONFIG.HOJA_ACTIVIDAD);
+    if (!hoja) throw new Error('No se encontró la hoja Actividad_Diaria');
+    
+    const datosHoja = hoja.getDataRange().getValues();
+    const fechaBuscar = new Date(datos.fecha);
+    fechaBuscar.setHours(0, 0, 0, 0);
+    
+    // Buscar la fila exacta
+    for (let i = 1; i < datosHoja.length; i++) {
+      if (datosHoja[i][2] === datos.idAgente) { // Columna 3: ID_Agente
+        const fechaFila = new Date(datosHoja[i][1]); // Columna 2: Fecha
+        fechaFila.setHours(0, 0, 0, 0);
+        
+        if (fechaFila.getTime() === fechaBuscar.getTime()) {
+          // Actualizar la fila encontrada
+          const fila = i + 1;
+          
+          hoja.getRange(fila, 5).setValue(parseInt(datos.citasCaptacion) || 0);
+          hoja.getRange(fila, 6).setValue(parseInt(datos.exclusivasVenta) || 0);
+          hoja.getRange(fila, 7).setValue(parseInt(datos.exclusivasComprador) || 0);
+          hoja.getRange(fila, 8).setValue(parseInt(datos.captacionesAbierto) || 0);
+          hoja.getRange(fila, 9).setValue(parseInt(datos.citasCompradores) || 0);
+          hoja.getRange(fila, 10).setValue(parseInt(datos.casasEnsenadas) || 0);
+          hoja.getRange(fila, 11).setValue(parseInt(datos.leadsCompradores) || 0);
+          hoja.getRange(fila, 12).setValue(parseInt(datos.llamadas) || 0);
+          hoja.getRange(fila, 13).setValue(parseFloat(datos.gci) || 0);
+          hoja.getRange(fila, 14).setValue(parseFloat(datos.volumenNegocio) || 0);
+          hoja.getRange(fila, 15).setValue(datos.notas || '');
+          hoja.getRange(fila, 16).setValue(new Date()); // Timestamp actualización
+          
+          return { success: true, message: 'Actividad actualizada correctamente', accion: 'actualizar' };
+        }
+      }
+    }
+    
+    // Si no se encontró, crear nueva (fallback)
+    return guardarActividad(datos);
+    
+  } catch (error) {
+    Logger.log('Error en actualizarActividad: ' + error);
+    return { success: false, error: error.message };
+  }
 }
