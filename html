@@ -8758,213 +8758,253 @@ function crearGraficoDetalleComparativo(canvasId, labels, dataRealizado, dataObj
 }
 // --- NUEVA LÓGICA DE IMPORTACIÓN CSV (V3) ---
 
+// --- IMPORTADOR V24: ESCÁNER VISUAL Y DEBUG ---
+
 function mostrarModalImportador() {
-    abrirModalEncima('modal-importador');
-    document.getElementById('file-upload').value = '';
-    document.getElementById('resultado-importacion').innerHTML = '';
-}
+    // Modal específico para pegar texto
+    const modalHTML = `
+        <div id="modal-pegado" class="modal active" style="z-index:2000;">
+            <div class="modal-content" style="max-width: 1100px; max-height:90vh; overflow-y:auto;">
+                <span class="modal-close" onclick="cerrarModalSuperior('modal-pegado')">&times;</span>
+                <div class="modal-body">
+                    <div class="section-title">📋 Pegado Directo (V24)</div>
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:15px;">
+                        <div>
+                            <p style="color:#aaa; margin-bottom:5px;">1. Copia las filas del Excel (desde Lidia hasta el final).</p>
+                            <textarea id="input-paste" style="width:100%; height:150px; background:#222; color:#fff; border:1px solid #555; padding:10px; font-family:monospace; white-space:pre; font-size:0.8em;" placeholder="Pega aquí las filas..."></textarea>
+                        </div>
+                        <div id="debug-panel" style="background:#111; padding:10px; border:1px solid #333; font-family:monospace; font-size:0.75em; color:#0f0; overflow:auto; max-height:150px;">
+                            Esperando datos...
+                        </div>
+                    </div>
 
-// --- IMPORTADOR V15: COORDENADAS FIJAS + VISOR DE ERROR ---
-
-// --- IMPORTADOR V16: ESCANEO TOTAL + TABLA EXTENDIDA ---
-
-function procesarArchivoCSV(input) {
-    const file = input.files[0];
-    if (!file) return;
-
-    document.getElementById('resultado-importacion').innerHTML = 
-        '<div style="text-align:center; padding:20px; color:#aaa;">🕵️‍♂️ V16: Escaneando archivo completo...</div>';
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        parsearCSV_V16(e.target.result);
-    };
-    reader.readAsText(file, "ISO-8859-1"); 
-}
-
-function parsearCSV_V16(csvText) {
-    const lineas = csvText.split(/\r\n|\n/);
+                    <button class="btn-primary-action" onclick="analizarTextoPegado()" style="width:100%;">🔍 2. ANALIZAR ESTRUCTURA</button>
+                    
+                    <div id="resultado-pegado" style="margin-top:20px;"></div>
+                </div>
+            </div>
+        </div>
+    `;
     
-    // 1. DETECTAR DELIMITADOR
-    const lineaMuestra = lineas[4] || lineas[0];
-    const countComa = (lineaMuestra.match(/,/g) || []).length;
-    const countPuntoComa = (lineaMuestra.match(/;/g) || []).length;
-    const delimiter = countPuntoComa > countComa ? ';' : ',';
+    if (!document.getElementById('modal-pegado')) {
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    } else {
+        document.getElementById('modal-pegado').classList.add('active');
+    }
+}
 
-    console.log("V16 Delimitador:", delimiter);
+function analizarTextoPegado() {
+    const text = document.getElementById('input-paste').value;
+    if (!text.trim()) return;
 
-    // 2. COORDENADAS FIJAS
-    const COL_NOMBRE = 16; // Q
-    const COL_ENERO = 42;  // AQ
-    const ANCHO_MES = 21; 
-    const OFF = {
-        citas: 0, excl: 1, abierto: 2, citasComp: 3, visitas: 4,
-        captAlq: 5, tresBs: 6, bajadas: 7, propuestas: 8, arras: 9,
-        ventasBase: 10, gciBase: 11 // Referencia para sumar los bloques de 2 en 2
-    };
+    const lineas = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
+    const debugPanel = document.getElementById('debug-panel');
+    
+    // 1. DEBUG: MOSTRAR CÓMO SE DIVIDE LA PRIMERA LÍNEA
+    const primeraLinea = lineas[0];
+    const columnasTab = primeraLinea.split('\t');
+    
+    let debugHTML = `<strong>LÍNEA 1 DETECTADA (${columnasTab.length} columnas):</strong><br>`;
+    columnasTab.forEach((col, idx) => {
+        if(col.trim()) debugHTML += `[${idx}]: ${col.substring(0,15)}...<br>`;
+    });
+    debugPanel.innerHTML = debugHTML;
 
-    const agentesProcesados = [];
-    const filasIgnoradas = [];
+    // 2. PARSEAR SEGÚN TU ESTRUCTURA "LIDIA"
+    // Basado en tu texto: Col 2 = Nombre, Col 7 = Citas Total (107)
+    // Bloque Total = 20 columnas. Enero empieza en 7 + 20 = 27.
+    
+    const COL_NOMBRE = 2;
+    const COL_ENERO = 27; // 7 (Citas Total) + 20 (Ancho bloque)
+    const ANCHO_MES = 20;
+
+    const agentes = [];
     const anio = new Date().getFullYear() - 1;
 
-    // 3. ESCANEO DESDE LA LÍNEA 0 (Para no perder a Lidia)
-    for (let i = 0; i < lineas.length; i++) {
-        const fila = lineas[i].split(delimiter);
+    lineas.forEach((linea, i) => {
+        const cols = linea.split('\t');
+        
+        // Si la línea es muy corta, saltar
+        if (cols.length < 50) return;
 
-        // Ignorar líneas muy cortas
-        if (fila.length < 50) {
-            continue;
-        }
+        let nombre = cols[COL_NOMBRE].trim();
+        
+        // Filtros de basura
+        if (!nombre || nombre.length < 3 || nombre.includes("NOMBRE AGENTE") || nombre.includes("TOTAL")) return;
 
-        // Limpieza del Nombre
-        let nombre = fila[COL_NOMBRE] ? fila[COL_NOMBRE].replace(/['"]+/g, '').trim() : '';
-
-        // FILTRO INTELIGENTE:
-        // Si el nombre está vacío, o es una cabecera ("NOMBRE AGENTE"), o un total... IGNORAR
-        if (!nombre || nombre.length < 3 || 
-            nombre.includes("NOMBRE AGENTE") || 
-            nombre.includes("TOTAL") || 
-            nombre.includes("MEDIA") || 
-            nombre.includes("Especialista")) {
-            
-            if(nombre.length > 2) filasIgnoradas.push(`Fila ${i}: ${nombre} (Filtro)`);
-            continue;
-        }
-
+        // PROCESAR MESES
         const datosMensuales = [];
-        // Acumuladores para la tabla
-        let tCitas=0, tExcl=0, tBajadas=0, tArras=0, tVentas=0, tGCI=0;
+        let tGCI = 0, tVentas = 0, tCitas = 0, tExcl = 0;
 
         for (let m = 0; m < 12; m++) {
             const base = COL_ENERO + (m * ANCHO_MES);
             
-            const getVal = (offset) => {
-                if ((base + offset) >= fila.length) return 0;
-                let val = fila[base + offset];
+            const getVal = (off) => {
+                if (base + off >= cols.length) return 0;
+                let val = cols[base + off];
                 if (!val) return 0;
-                val = val.replace(/['"€\s]+/g, '').trim();
-                if (val === '' || val === '-' || val.includes('#') || val.toLowerCase() === 'nan') return 0;
-
-                // Formato Europeo vs US
-                if (val.includes('.') && val.includes(',')) {
-                    val = val.replace(/\./g, '').replace(',', '.');
-                } else if (val.includes(',')) {
-                    val = val.replace(',', '.');
-                }
+                // Limpiar puntos de miles (1.200 -> 1200)
+                val = val.replace(/\./g, '').replace(',', '.').replace(/[^0-9\.-]/g, '');
                 return parseFloat(val) || 0;
             };
 
-            const citas = getVal(OFF.citas);
-            const excl = getVal(OFF.excl);
-            const abierto = getVal(OFF.abierto);
-            const citasComp = getVal(OFF.citasComp);
-            const visitas = getVal(OFF.visitas);
-            
-            const captAlq = getVal(OFF.captAlq);
-            const tresBs = getVal(OFF.tresBs);
-            const bajadas = getVal(OFF.bajadas);
-            const propuestas = getVal(OFF.propuestas);
-            const arras = getVal(OFF.arras);
+            // Mapeo relativo (0 a 19)
+            const citas = getVal(0);
+            const excl = getVal(1);
+            const abierto = getVal(2);
+            const citasComp = getVal(3);
+            const visitas = getVal(4);
+            const captAlq = getVal(5);
+            const tresBs = getVal(6);
+            const bajadas = getVal(7);
+            const propuestas = getVal(8);
+            const arras = getVal(9);
 
-            // Ventas: 10, 12, 14, 16
+            // Ventas: 10+12+14+16
             const ventas = getVal(10) + getVal(12) + getVal(14) + getVal(16);
-            // GCI: 11, 13, 15, 17
-            const gci = getVal(11) + getVal(13) + getVal(15) + getVal(17);
+            // GCI Total: Columna 18
+            const gci = getVal(18);
 
             datosMensuales.push({
                 citasCapt: citas, exclVenta: excl, captAbierto: abierto,
                 citasComp: citasComp, visitas: visitas,
                 captAlq, tresBs, bajadas, propuestas, arras,
-                ventas: ventas, gci: gci, exclComp: 0
+                ventas, gci, exclComp: 0
             });
 
-            tCitas += citas; tExcl += excl; 
-            tBajadas += bajadas; tArras += arras;
-            tVentas += ventas; tGCI += gci;
+            tCitas += citas; tExcl += excl; tVentas += ventas; tGCI += gci;
         }
 
-        // Si tiene nombre válido, lo metemos (incluso si es 0, para crear ficha)
-        agentesProcesados.push({
+        agentes.push({
             nombre: nombre,
             anio: anio,
             mensual: datosMensuales,
-            // Totales para vista previa
             totalCitas: tCitas,
             totalExclusivas: tExcl,
-            totalBajadas: tBajadas,
-            totalArras: tArras,
             totalVentas: tVentas,
             totalGCI: tGCI
         });
-    }
+    });
 
-    renderizarTablaV16(agentesProcesados, filasIgnoradas);
+    renderizarTablaV24(agentes);
 }
 
-function renderizarTablaV16(agentes, ignorados) {
-    const contenedor = document.getElementById('resultado-importacion');
+// --- VISUALIZADOR V25: DETALLE TOTAL MENSUAL ---
+
+function renderizarTablaV24(agentes) {
+    const div = document.getElementById('resultado-pegado');
     
     if (agentes.length === 0) {
-        contenedor.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">⚠️ No se encontraron agentes.</div>';
+        div.innerHTML = '<div style="color:red; text-align:center; padding:20px;">❌ No se han detectado agentes.</div>';
         return;
     }
 
     let html = `
-        <div style="background:var(--color-bg-alt); padding:15px; border-radius:10px; border:1px solid var(--color-accent-good);">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="color:var(--color-accent-good); margin:0;">✅ ${agentes.length} Agentes Detectados</h3>
-                <button class="btn" style="font-size:0.7em; padding:5px 10px;" onclick="alert('Filas ignoradas:\\n${ignorados.join('\\n')}')">Ver Ignorados</button>
+        <div style="background:#222; padding:15px; border-radius:10px; border:1px solid #444;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0; color:#00ff88;">✅ ${agentes.length} Agentes Listos para Revisión</h3>
+                <div style="color:#aaa; font-size:0.9em;">Revisa mes a mes antes de aceptar</div>
             </div>
             
-            <div class="tabla-container" style="max-height:400px; overflow-y:auto; margin:15px 0;">
-                <table class="tabla" style="font-size:0.8em;">
-                    <thead style="position:sticky; top:0; background:#222; z-index:2;">
-                        <tr>
-                            <th style="text-align:left;">Agente</th>
-                            <th>Citas</th>
-                            <th>Excl.</th>
-                            <th>Bajadas</th>
-                            <th>Arras</th>
-                            <th>Ventas</th>
-                            <th>GCI Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+            <div id="lista-agentes-detalle" style="max-height:500px; overflow-y:auto; padding-right:5px;">
     `;
 
-    agentes.forEach(a => {
-        const estilo = (a.totalGCI === 0 && a.totalCitas === 0) ? 'color:#aaa' : '';
-        html += `<tr style="${estilo}">
-            <td style="text-align:left; font-weight:bold;">${a.nombre}</td>
-            <td>${a.totalCitas}</td>
-            <td>${a.totalExclusivas}</td>
-            <td>${a.totalBajadas}</td>
-            <td>${a.totalArras}</td>
-            <td>${a.totalVentas}</td>
-            <td style="font-weight:bold; color:var(--color-accent-good);">${a.totalGCI.toLocaleString('es-ES',{maximumFractionDigits:0})}€</td>
-        </tr>`;
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+    agentes.forEach((a, index) => {
+        // Cabecera del Agente (Resumen)
+        html += `
+            <div class="agente-bloque" style="background:#333; margin-bottom:15px; border-radius:5px; overflow:hidden;">
+                <div class="agente-header" onclick="toggleDetalle('detalle-${index}')" 
+                     style="padding:10px 15px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; background:linear-gradient(90deg, #444, #333);">
+                    <div>
+                        <strong style="color:#fff; font-size:1.1em;">👤 ${a.nombre}</strong>
+                        <span style="color:#aaa; font-size:0.8em; margin-left:10px;">(Total GCI: ${a.totalGCI.toLocaleString()}€)</span>
+                    </div>
+                    <button class="btn" style="font-size:0.7em; padding:2px 8px;">Ver Meses ▼</button>
+                </div>
+
+                <div id="detalle-${index}" style="display:none; overflow-x:auto; padding:10px;">
+                    <table class="tabla" style="font-size:0.75em; width:100%; min-width:1200px;">
+                        <thead style="background:#222; color:#aaa;">
+                            <tr>
+                                <th style="position:sticky; left:0; background:#222;">Mes</th>
+                                <th>Citas</th><th>Excl.</th><th>Abierto</th><th>Citas Comp</th><th>Visitas</th>
+                                <th style="color:#ffd700;">Capt Alq</th><th style="color:#ffd700;">3Bs</th><th style="color:#ffd700;">Bajadas</th><th style="color:#ffd700;">Prop.</th><th style="color:#ffd700;">Arras</th>
+                                <th style="color:#00ff88;">Ventas</th><th style="color:#00ff88;">GCI Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        // Filas de los meses
+        a.mensual.forEach((m, i) => {
+            // Resaltar si hay producción
+            const estiloFila = (m.gci > 0 || m.ventas > 0) ? 'background:rgba(0,255,136,0.05);' : '';
+            const estiloGCI = (m.gci > 0) ? 'color:#00ff88; font-weight:bold;' : 'opacity:0.5;';
+
+            html += `
+                <tr style="${estiloFila}">
+                    <td style="position:sticky; left:0; background:#333; font-weight:bold;">${meses[i]}</td>
+                    <td>${m.citasCapt}</td>
+                    <td>${m.exclVenta}</td>
+                    <td>${m.captAbierto}</td>
+                    <td>${m.citasComp}</td>
+                    <td>${m.visitas}</td>
+                    
+                    <td>${m.captAlq}</td>
+                    <td>${m.tresBs}</td>
+                    <td>${m.bajadas}</td>
+                    <td>${m.propuestas}</td>
+                    <td>${m.arras}</td>
+
+                    <td style="${estiloGCI}">${m.ventas}</td>
+                    <td style="${estiloGCI}">${m.gci.toLocaleString()}€</td>
+                </tr>
+            `;
+        });
+
+        // Fila de Totales del Agente
+        html += `
+            <tr style="background:#444; font-weight:bold; border-top:2px solid #555;">
+                <td style="position:sticky; left:0; background:#444;">TOTAL</td>
+                <td>${a.totalCitas}</td>
+                <td>${a.totalExclusivas}</td>
+                <td>-</td><td>-</td><td>-</td>
+                <td>-</td><td>-</td>
+                <td>${a.totalBajadas}</td>
+                <td>-</td><td>-</td>
+                <td>${a.totalVentas}</td>
+                <td style="color:#00ff88; font-size:1.1em;">${a.totalGCI.toLocaleString()}€</td>
+            </tr>
+        `;
+
+        html += `</tbody></table></div></div>`;
     });
 
-    html += `</tbody></table></div>
-        <div style="display:flex; gap:10px;">
-            <button class="btn" onclick="mostrarModalImportador()" style="background:#444; flex:1;">❌ Cancelar</button>
-            <button class="btn-primary-action" onclick='confirmarImportacion(${JSON.stringify(agentes)})' style="flex:2;">💾 IMPORTAR TODO</button>
+    html += `
+            </div>
+            <button class="btn-primary-action" onclick='confirmarImportacion(${JSON.stringify(agentes)})' style="width:100%; margin-top:15px; padding:15px; font-size:1.1em;">
+                💾 TODO CORRECTO - GUARDAR EN BASE DE DATOS
+            </button>
         </div>
-    </div>`;
+    `;
 
-    contenedor.innerHTML = html;
+    div.innerHTML = html;
 }
 
-// (La función confirmarImportacion sigue siendo la misma)
-
-function confirmarImportacion(datos) {
-    mostrarNotificacion("⏳ Guardando...", false);
-    google.script.run.withSuccessHandler(res => {
-        mostrarNotificacion("✅ " + res.message);
-        cerrarModalSuperior('modal-importador');
-        if(typeof cargarDatosGerente === 'function') cargarDatosGerente('ano');
-    }).withFailureHandler(err => mostrarNotificacion("❌ " + err.message, true)).guardarImportacionMasiva(datos);
+// Función pequeña para abrir/cerrar el acordeón
+function toggleDetalle(id) {
+    const el = document.getElementById(id);
+    if (el.style.display === 'none') {
+        el.style.display = 'block';
+    } else {
+        el.style.display = 'none';
+    }
 }
+
+
 // ============================================
 // MEJORA 1: RECÁLCULO COMISIÓN EN TRANSACCIONES
 // ============================================
