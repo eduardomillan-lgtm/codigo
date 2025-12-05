@@ -3532,3 +3532,86 @@ function actualizarActividad(datos) {
     return { success: false, error: error.message };
   }
 }
+// --- BACKEND V27: SOPORTE PARA 20 COLUMNAS ---
+
+function crearHojaHistoricoAgentes(ss) {
+  let hoja = ss.getSheetByName('Historico_Agentes');
+  if (!hoja) {
+    hoja = ss.insertSheet('Historico_Agentes');
+    const headers = [
+      'ID_Agente', 'Nombre', 'Año', 'Mes', 
+      // Las 20 columnas del Excel KW
+      'Citas', 'Capt_Excl', 'Capt_Abierto', 'Visitas_Comp', 'Casas_Ens',
+      'Capt_Alq', '3Bs', 'Bajadas', 'Propuestas', 'Arras',
+      'Vtas_Excl', 'GCI_Excl', 'Vtas_Abierto', 'GCI_Abierto',
+      'Vtas_Comp', 'GCI_Comp', 'Vtas_Alq', 'GCI_Alq',
+      'GCI_Total', 'Co_Euro',
+      'Fecha_Registro'
+    ];
+    hoja.getRange(1, 1, 1, headers.length).setValues([headers])
+        .setBackground('#667eea').setFontColor('#ffffff').setFontWeight('bold');
+    hoja.setFrozenRows(1);
+  }
+  return hoja;
+}
+
+function guardarImportacionMasivaV27(listaAgentes) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // 1. Gestión Agentes (Crear si no existen)
+  let hojaAgentes = ss.getSheetByName('Agentes');
+  if (!hojaAgentes) { crearHojaAgentes(ss); hojaAgentes = ss.getSheetByName('Agentes'); }
+  const datosAg = hojaAgentes.getDataRange().getValues();
+  const mapaIDs = {};
+  let maxID = 0;
+  
+  for(let i=1; i<datosAg.length; i++) {
+    const val = String(datosAg[i][0]);
+    mapaIDs[String(datosAg[i][1]).trim().toUpperCase()] = val;
+    const num = parseInt(val.replace('AG',''));
+    if(!isNaN(num) && num > maxID) maxID = num;
+  }
+
+  const nuevosAgentes = [];
+  const filasHist = [];
+  const timestamp = new Date();
+
+  listaAgentes.forEach(ag => {
+    let id = mapaIDs[ag.nombre.trim().toUpperCase()];
+    if(!id) {
+      maxID++;
+      id = 'AG' + String(maxID).padStart(3,'0');
+      nuevosAgentes.push([id, ag.nombre, "", "", new Date(ag.anio,0,1), "Activo", "NO", new Date(), 0]);
+      mapaIDs[ag.nombre.trim().toUpperCase()] = id;
+    }
+    
+    ag.mensual.forEach((m, idx) => {
+      filasHist.push([
+        id, ag.nombre, ag.anio, idx + 1,
+        // 20 DATOS
+        m.citas, m.exclVenta, m.captAbierto, m.visitasComp, m.casasEns,
+        m.captAlq, m.tresBs, m.bajadas, m.propuestas, m.arras,
+        m.vtaExcl, m.gciExcl, m.vtaAbierto, m.gciAbierto,
+        m.vtaComp, m.gciComp, m.vtaAlq, m.gciAlq,
+        m.gciTotal, m.coEuro,
+        timestamp
+      ]);
+    });
+  });
+
+  // Guardar Agentes
+  if(nuevosAgentes.length) hojaAgentes.getRange(hojaAgentes.getLastRow()+1,1,nuevosAgentes.length,9).setValues(nuevosAgentes);
+  
+  // Guardar Histórico (Recomendado: Borrar hoja vieja antes si ya tenías datos con formato antiguo)
+  let hojaHist = ss.getSheetByName('Historico_Agentes');
+  // Si las columnas no coinciden, recreamos la hoja
+  if(hojaHist && hojaHist.getLastColumn() < 25) {
+      ss.deleteSheet(hojaHist);
+      hojaHist = null;
+  }
+  if(!hojaHist) hojaHist = crearHojaHistoricoAgentes(ss);
+  
+  if(filasHist.length) hojaHist.getRange(hojaHist.getLastRow()+1, 1, filasHist.length, 25).setValues(filasHist);
+
+  return { success: true, message: `Guardado Completo: ${listaAgentes.length} Agentes` };
+}
