@@ -1670,11 +1670,21 @@ body[data-theme="kw-claro"] canvas {
             Establecer Objetivos
             <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Definir objetivos anuales.</div>
         </button>
-        <button class="btn-role" onclick="mostrarModalNuevoAgente()">
-            <span class="role-icon">👤</span>
-            Crear Nuevo Agente
-            <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Dar de alta un nuevo miembro.</div>
-        </button>
+        <button 
+    class="btn-role" 
+    onclick="mostrarModalGestionAgentes()"
+    style="background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(30,30,30,0.9)); border: 2px solid #d4af37; cursor: pointer; transition: all 0.3s;"
+    onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 20px 50px rgba(212,175,55,0.5)'; this.style.borderColor='#ffd700';"
+    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.borderColor='#d4af37';">
+    
+    <span class="role-icon">👥</span>
+    
+    <div style="font-size: 1.1em; font-weight: 700;">Gestionar Agentes</div>
+    
+    <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">
+        Dashboard + Crear + Listado
+    </div>
+</button>
 
         <!-- 🆕 NUEVOS BOTONES -->
         <button class="btn-role" onclick="mostrarModalModeloEconomico()">
@@ -2255,34 +2265,137 @@ body[data-theme="kw-claro"] canvas {
     </div>
 </div>
 
-<!-- 🆕 MODAL: MODELO PRESUPUESTARIO -->
 <div id="modal-modelo-presupuestario" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 1400px;">
         <span class="modal-close" onclick="cerrarModalSuperior('modal-modelo-presupuestario')">&times;</span>
         <div class="modal-body">
-            <div class="section-title">💰 Modelo Presupuestario</div>
-            <div class="charts-grid" style="grid-template-columns: 1fr;">
-                <div class="chart-container" style="height: 400px;">
+            <div class="section-title">💰 Modelo Presupuestario 40-30-30</div>
+            
+            <!-- ANÁLISIS ANUAL (4 CARDS) -->
+            <div id="presup-cards-anual" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px;">
+                <!-- Se llenarán dinámicamente -->
+            </div>
+            
+            <!-- MENSAJE CUMPLIMIENTO ANUAL -->
+            <div id="presup-mensaje-cumplimiento" style="padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: center; font-weight: bold;"></div>
+            
+            <!-- GRÁFICOS (2) -->
+            <div class="charts-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 25px;">
+                <div class="chart-container" style="height: 350px;">
                     <div class="chart-title">GCI vs Gastos Mensuales</div>
-                    <canvas id="chart-presupuestario"></canvas>
+                    <canvas id="chart-presup-barras"></canvas>
+                </div>
+                <div class="chart-container" style="height: 350px;">
+                    <div class="chart-title">% Distribución Mensual</div>
+                    <canvas id="chart-presup-lineas"></canvas>
                 </div>
             </div>
-            <div style="margin-top: 20px; padding: 20px; background: var(--color-surface); border-radius: 15px;">
-                <h3 style="color: var(--color-secondary); margin-bottom: 15px;">🎯 Objetivos</h3>
+            
+            <!-- TABLA MENSUAL (12 FILAS) -->
+            <div class="tabla-container">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>Mes</th>
+                            <th>GCI (€)</th>
+                            <th>G. Ventas (€)</th>
+                            <th>G. Operativos (€)</th>
+                            <th>Beneficio (€)</th>
+                            <th>% Benef.</th>
+                            <th>% Ventas</th>
+                            <th>% Oper.</th>
+                            <th>Cumple</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="presup-tabla-body"></tbody>
+                </table>
+            </div>
+            
+            <!-- OBJETIVOS 40-30-30 -->
+            <div style="margin-top: 30px; padding: 20px; background: var(--color-surface); border-radius: 15px;">
+                <h3 style="color: var(--color-secondary); margin-bottom: 15px; text-align: center;">🎯 Objetivos Modelo 40-30-30</h3>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
                     <div style="text-align: center; padding: 15px; background: rgba(0,255,136,0.1); border-radius: 10px;">
-                        <div style="font-size: 2em;">40%</div>
-                        <div>Beneficio</div>
+                        <div style="font-size: 2em; color: var(--color-accent-good);">40%</div>
+                        <div style="font-weight: 700;">Beneficio</div>
+                        <div style="font-size: 0.85em; opacity: 0.8; margin-top: 5px;">Rango: 35-45%</div>
                     </div>
-                    <div style="text-align: center; padding: 15px; background: rgba(255,215,0,0.1); border-radius: 10px;">
-                        <div style="font-size: 2em;">30%</div>
-                        <div>Gastos Ventas</div>
+                    <div style="text-align: center; padding: 15px; background: rgba(255,152,0,0.1); border-radius: 10px;">
+                        <div style="font-size: 2em; color: #ff9800;">30%</div>
+                        <div style="font-weight: 700;">Gastos Ventas</div>
+                        <div style="font-size: 0.85em; opacity: 0.8; margin-top: 5px;">Rango: 25-35%</div>
                     </div>
-                    <div style="text-align: center; padding: 15px; background: rgba(255,68,68,0.1); border-radius: 10px;">
-                        <div style="font-size: 2em;">30%</div>
-                        <div>Gastos Operativos</div>
+                    <div style="text-align: center; padding: 15px; background: rgba(244,67,54,0.1); border-radius: 10px;">
+                        <div style="font-size: 2em; color: #f44336;">30%</div>
+                        <div style="font-weight: 700;">Gastos Operativos</div>
+                        <div style="font-size: 0.85em; opacity: 0.8; margin-top: 5px;">Rango: 25-35%</div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SECUNDARIO: DETALLE DE GASTOS POR MES -->
+<div id="modal-detalle-gasto-mes" class="modal" style="z-index: 1100;">
+    <div class="modal-content" style="max-width: 900px; height: auto; max-height: 85vh;">
+        <span class="modal-close" onclick="document.getElementById('modal-detalle-gasto-mes').classList.remove('active')">&times;</span>
+        <div class="modal-body">
+            <div class="section-title" id="detalle-mes-titulo">Detalle de Gastos - Mes</div>
+            
+            <!-- GASTOS DE VENTAS -->
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #ff9800; margin-bottom: 10px;">💼 Gastos de Ventas (Comisiones)</h3>
+                <div class="tabla-container">
+                    <table class="tabla">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Agente</th>
+                                <th>Descripción</th>
+                                <th>Importe</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detalle-ventas-body"></tbody>
+                        <tfoot>
+                            <tr style="background: rgba(255,152,0,0.1);">
+                                <td colspan="3" style="text-align: right; font-weight: bold;">SUBTOTAL VENTAS:</td>
+                                <td id="detalle-ventas-subtotal" style="font-weight: bold;">0.00 €</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- GASTOS OPERATIVOS -->
+            <div>
+                <h3 style="color: #f44336; margin-bottom: 10px;">🏢 Gastos Operativos</h3>
+                <div class="tabla-container">
+                    <table class="tabla">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Partida</th>
+                                <th>Descripción</th>
+                                <th>Importe</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detalle-operativos-body"></tbody>
+                        <tfoot>
+                            <tr style="background: rgba(244,67,54,0.1);">
+                                <td colspan="3" style="text-align: right; font-weight: bold;">SUBTOTAL OPERATIVOS:</td>
+                                <td id="detalle-operativos-subtotal" style="font-weight: bold;">0.00 €</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- TOTAL GENERAL -->
+            <div style="margin-top: 20px; padding: 15px; background: var(--color-surface); border-radius: 10px; text-align: right;">
+                <span style="font-size: 1.2em; font-weight: bold;">TOTAL GENERAL: </span>
+                <span id="detalle-total-general" style="font-size: 1.5em; font-weight: bold; color: var(--color-primary);">0.00 €</span>
             </div>
         </div>
     </div>
@@ -5020,8 +5133,35 @@ function mostrarModalModeloEconomico() {
 }
 
 function mostrarModalModeloPresupuestario() {
-    abrirModalEncima('modal-modelo-presupuestario');
-    setTimeout(cargarModeloPresupuestario, 200);
+    document.getElementById('modal-modelo-presupuestario').classList.add('active');
+    document.body.classList.add('modal-open');
+    
+    const year = new Date().getFullYear();
+    
+    mostrarNotificacion('Cargando datos presupuestarios...', 'success');
+    
+    google.script.run
+        .withSuccessHandler(datos => {
+            if (!datos) {
+                mostrarNotificacion('No hay datos disponibles', 'error');
+                return;
+            }
+            
+            // Renderizar análisis anual
+            renderizarAnalisisPresupuestario(datos);
+            
+            // Renderizar gráficos
+            renderizarGraficosPresupuesto(datos);
+            
+            // Renderizar tabla mensual
+            renderizarTablaPresupuesto(datos);
+            
+            mostrarNotificacion('Datos cargados correctamente', 'success');
+        })
+        .withFailureHandler(err => {
+            mostrarNotificacion('Error al cargar datos: ' + err.message, 'error');
+        })
+        .obtenerDatosPresupuestarios(year);
 }
 
 function mostrarModalModeloOrganizativo() {
@@ -5680,15 +5820,6 @@ window.ultimoCampoComisionTx = 'pct';
     document.body.classList.add('modal-open');
 }
 
-function mostrarModalModeloPresupuestario() {
-    
-    document.getElementById('modal-modelo-presupuestario').classList.add('active');
-    document.body.classList.add('modal-open');
-    
-    setTimeout(() => {
-        cargarModeloPresupuestario();
-    }, 100);
-}
 
 function mostrarModalModeloOrganizativo() {
     
@@ -8756,249 +8887,296 @@ function crearGraficoDetalleComparativo(canvasId, labels, dataRealizado, dataObj
         }
     });
 }
+// =========================================================
+// 🏁 IMPORTADOR V62: PARSER ESPAÑOL + SIN FILTROS
+// =========================================================
+
+let estadoImportacion = []; 
+let lineasCargadas = [];
 
 function mostrarModalImportador() {
-    // Modal específico para pegar texto
+    document.querySelectorAll('.modal').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+
+    const anioActual = new Date().getFullYear();
+    
     const modalHTML = `
-        <div id="modal-pegado" class="modal active" style="z-index:2000;">
-            <div class="modal-content" style="max-width: 1100px; max-height:90vh; overflow-y:auto;">
-                <span class="modal-close" onclick="cerrarModalSuperior('modal-pegado')">&times;</span>
-                <div class="modal-body">
-                    <div class="section-title">📋 Pegado Directo (V24)</div>
+        <div id="modal-pegado" class="modal active" style="z-index:5000; display:block; background:rgba(0,0,0,0.95);">
+            <div class="modal-content" style="width:95%; max-width:1400px; height:95vh; display:flex; flex-direction:column; background:#1a1a1a; color:#fff; border:1px solid #555;">
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; background:#222;">
+                    <h3 style="margin:0; color:#00ff88;">🏁 Importador V62 (Fuerza Bruta)</h3>
+                    <button onclick="cerrarModalTotal()" style="background:#ff4444; color:white; border:none; font-size:18px; padding:5px 15px; cursor:pointer; border-radius:5px;">CERRAR X</button>
+                </div>
+                
+                <div class="modal-body" style="flex-grow:1; display:flex; flex-direction:column; overflow-y:auto; padding:20px;">
                     
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:15px;">
-                        <div>
-                            <p style="color:#aaa; margin-bottom:5px;">1. Copia las filas del Excel (desde Lidia hasta el final).</p>
-                            <textarea id="input-paste" style="width:100%; height:150px; background:#222; color:#fff; border:1px solid #555; padding:10px; font-family:monospace; white-space:pre; font-size:0.8em;" placeholder="Pega aquí las filas..."></textarea>
-                        </div>
-                        <div id="debug-panel" style="background:#111; padding:10px; border:1px solid #333; font-family:monospace; font-size:0.75em; color:#0f0; overflow:auto; max-height:150px;">
-                            Esperando datos...
+                    <div id="paso-1">
+                        <p style="color:#aaa; margin-bottom:5px;">1. Pega aquí las filas del Excel (incluyendo a Lidia):</p>
+                        <textarea id="input-paste" oninput="previsualizarV62()" style="width:100%; height:150px; background:#000; color:#0f0; border:1px solid #555; padding:10px; font-family:monospace; font-size:0.8em; white-space:pre;" placeholder="Pegar datos..."></textarea>
+                        
+                        <div id="panel-calibracion" style="display:none; margin-top:15px; background:#333; padding:15px; border:2px solid #ffd700; border-radius:10px;">
+                            <h4 style="margin:0 0 10px 0; color:#ffd700;">📏 2. Calibración (Mira la regla abajo)</h4>
+                            
+                            <div style="overflow-x:auto; background:#000; padding:10px; border:1px solid #555; margin-bottom:15px;">
+                                <div id="regla-datos" style="display:flex; gap:2px; white-space:nowrap;"></div>
+                            </div>
+
+                            <div style="display:flex; gap:20px; align-items:end; flex-wrap:wrap;">
+                                <div>
+                                    <label style="display:block; font-size:0.8em; color:#aaa;">Nº Columna NOMBRE:</label>
+                                    <input type="number" id="idx-nombre" value="2" style="width:60px; padding:5px; text-align:center; font-weight:bold;">
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size:0.8em; color:#aaa;">Nº Columna Inicio ENERO:</label>
+                                    <input type="number" id="idx-enero" value="42" style="width:60px; padding:5px; text-align:center; font-weight:bold;">
+                                </div>
+                                <div style="flex-grow:1;">
+                                    <label style="display:block; font-size:0.8em; color:#aaa;">Año:</label>
+                                    <select id="input-year" style="padding:5px; width:100px;">
+                                        <option value="${anioActual}">${anioActual}</option>
+                                        <option value="${anioActual - 1}" selected>${anioActual - 1}</option>
+                                    </select>
+                                </div>
+                                <button onclick="procesarV62()" style="padding:10px 25px; background:#00ff88; color:black; font-weight:bold; border:none; cursor:pointer; border-radius:5px; font-size:1.1em;">
+                                    🚀 3. PROCESAR
+                                </button>
+                            </div>
                         </div>
                     </div>
-
-                    <button class="btn-primary-action" onclick="analizarTextoPegado()" style="width:100%;">🔍 2. ANALIZAR ESTRUCTURA</button>
                     
-                    <div id="resultado-pegado" style="margin-top:20px;"></div>
+                    <div id="resultado-importacion" style="margin-top:20px; flex-grow:1; overflow:hidden; display:none; flex-direction:column;"></div>
                 </div>
             </div>
         </div>
     `;
-    
-    if (!document.getElementById('modal-pegado')) {
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-    } else {
-        document.getElementById('modal-pegado').classList.add('active');
-    }
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
 }
 
-function analizarTextoPegado() {
+function cerrarModalTotal() {
+    document.querySelectorAll('.modal').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+}
+
+function previsualizarV62() {
     const text = document.getElementById('input-paste').value;
     if (!text.trim()) return;
 
-    const lineas = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
-    const debugPanel = document.getElementById('debug-panel');
-    
-    // 1. DEBUG: MOSTRAR CÓMO SE DIVIDE LA PRIMERA LÍNEA
-    const primeraLinea = lineas[0];
-    const columnasTab = primeraLinea.split('\t');
-    
-    let debugHTML = `<strong>LÍNEA 1 DETECTADA (${columnasTab.length} columnas):</strong><br>`;
-    columnasTab.forEach((col, idx) => {
-        if(col.trim()) debugHTML += `[${idx}]: ${col.substring(0,15)}...<br>`;
-    });
-    debugPanel.innerHTML = debugHTML;
+    lineasCargadas = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
+    if (lineasCargadas.length === 0) return;
 
-    // 2. PARSEAR SEGÚN TU ESTRUCTURA "LIDIA"
-    // Basado en tu texto: Col 2 = Nombre, Col 7 = Citas Total (107)
-    // Bloque Total = 20 columnas. Enero empieza en 7 + 20 = 27.
-    
-    const COL_NOMBRE = 2;
-    const COL_ENERO = 27; // 7 (Citas Total) + 20 (Ancho bloque)
+    // Intentamos encontrar la fila de Lidia para mostrarla de ejemplo
+    let filaEjemplo = lineasCargadas[0];
+    for(let l of lineasCargadas) {
+        if(l.includes("Lidia")) { filaEjemplo = l; break; }
+    }
+
+    const cols = filaEjemplo.split('\t');
+    let html = '';
+
+    cols.forEach((val, idx) => {
+        let bg = '#222';
+        let color = '#aaa';
+        if (val.includes("Lidia")) { bg = '#004400'; color = '#00ff88'; } 
+        // Detectar números posibles (como el 7 de enero)
+        if (val.trim().match(/^[0-9]+$/)) { bg = '#444400'; color = '#ffd700'; } 
+
+        html += `
+            <div style="min-width:60px; max-width:100px; background:${bg}; border:1px solid #444; margin-right:2px; text-align:center;">
+                <div style="background:#444; color:#fff; font-size:10px; padding:2px;">${idx}</div>
+                <div style="padding:5px; color:${color}; font-size:11px; overflow:hidden; text-overflow:ellipsis;">${val || '-'}</div>
+            </div>
+        `;
+    });
+
+    document.getElementById('regla-datos').innerHTML = html;
+    document.getElementById('panel-calibracion').style.display = 'block';
+}
+
+function procesarV62() {
+    const anio = parseInt(document.getElementById('input-year').value);
+    const colNombre = parseInt(document.getElementById('idx-nombre').value);
+    const colEnero = parseInt(document.getElementById('idx-enero').value);
     const ANCHO_MES = 20;
 
-    const agentes = [];
-    const anio = new Date().getFullYear() - 1;
+    const OFF = {
+        citas: 0, excl: 1, abierto: 2, citasComp: 3, visitas: 4,
+        captAlq: 5, tresBs: 6, bajadas: 7, propuestas: 8, arras: 9,
+        vtaExcl: 10, gciExcl: 11, vtaAbierto: 12, gciAbierto: 13,
+        vtaComp: 14, gciComp: 15, vtaAlq: 16, gciAlq: 17,
+        gciTotal: 18 
+    };
 
-    lineas.forEach((linea, i) => {
+    const agentesTemp = [];
+
+    lineasCargadas.forEach((linea, i) => {
         const cols = linea.split('\t');
         
-        // Si la línea es muy corta, saltar
-        if (cols.length < 50) return;
+        // Si la línea no llega ni a la columna de Enero, la saltamos
+        if (cols.length < colEnero) return;
 
-        let nombre = cols[COL_NOMBRE].trim();
+        let nombre = cols[colNombre] ? cols[colNombre].trim() : '';
         
-        // Filtros de basura
-        if (!nombre || nombre.length < 3 || nombre.includes("NOMBRE AGENTE") || nombre.includes("TOTAL")) return;
+        // Filtro mínimo: Si no tiene nombre o es una cabecera obvia
+        if (!nombre || nombre.length < 2 || nombre.includes("NOMBRE AGENTE") || nombre === "0") return;
 
-        // PROCESAR MESES
         const datosMensuales = [];
-        let tGCI = 0, tVentas = 0, tCitas = 0, tExcl = 0;
 
         for (let m = 0; m < 12; m++) {
-            const base = COL_ENERO + (m * ANCHO_MES);
+            const base = colEnero + (m * ANCHO_MES);
             
             const getVal = (off) => {
-                if (base + off >= cols.length) return 0;
+                if ((base + off) >= cols.length) return 0;
                 let val = cols[base + off];
                 if (!val) return 0;
-                // Limpiar puntos de miles (1.200 -> 1200)
-                val = val.replace(/\./g, '').replace(',', '.').replace(/[^0-9\.-]/g, '');
+                
+                // LIMPIEZA AGRESIVA: Solo dejamos números, comas, puntos y guiones
+                val = val.replace(/[^0-9,\.\-]/g, '');
+                if (val === '' || val === '-') return 0;
+
+                // PARSER ESPAÑOL (Punto miles, Coma decimal) -> JS (Nada miles, Punto decimal)
+                // Ejemplo: "1.200,50" -> "1200.50"
+                // Ejemplo: "100" -> "100"
+                // Ejemplo: "50,5" -> "50.5"
+                
+                if (val.includes('.') && val.includes(',')) {
+                    // Tiene ambos: quitamos punto, cambiamos coma
+                    val = val.replace(/\./g, '').replace(',', '.');
+                } else if (val.includes(',')) {
+                    // Solo tiene coma: es decimal
+                    val = val.replace(',', '.');
+                } else if (val.includes('.')) {
+                    // Solo tiene punto: en España suele ser miles (1.200), lo quitamos
+                    // CUIDADO: Si fuera 1.5 (uno y medio) esto lo convierte en 15. 
+                    // Asumimos formato ES estricto donde punto es miles.
+                    val = val.replace(/\./g, '');
+                }
+                
                 return parseFloat(val) || 0;
             };
 
-            // Mapeo relativo (0 a 19)
-            const citas = getVal(0);
-            const excl = getVal(1);
-            const abierto = getVal(2);
-            const citasComp = getVal(3);
-            const visitas = getVal(4);
-            const captAlq = getVal(5);
-            const tresBs = getVal(6);
-            const bajadas = getVal(7);
-            const propuestas = getVal(8);
-            const arras = getVal(9);
-
-            // Ventas: 10+12+14+16
-            const ventas = getVal(10) + getVal(12) + getVal(14) + getVal(16);
-            // GCI Total: Columna 18
-            const gci = getVal(18);
-
-            datosMensuales.push({
-                citasCapt: citas, exclVenta: excl, captAbierto: abierto,
-                citasComp: citasComp, visitas: visitas,
-                captAlq, tresBs, bajadas, propuestas, arras,
-                ventas, gci, exclComp: 0
-            });
-
-            tCitas += citas; tExcl += excl; tVentas += ventas; tGCI += gci;
+            const mesData = {};
+            for (const key in OFF) mesData[key] = getVal(OFF[key]);
+            
+            // Recalcular ventas
+            mesData.ventas = mesData.vtaExcl + mesData.vtaAbierto + mesData.vtaComp + mesData.vtaAlq;
+            datosMensuales.push(mesData);
         }
 
-        agentes.push({
+        const totalGCI = datosMensuales.reduce((s, m) => s + m.gciTotal, 0);
+        const totalCitas = datosMensuales.reduce((s, m) => s + m.citas, 0);
+        const totalVentas = datosMensuales.reduce((s, m) => s + m.ventas, 0);
+        const totalExclusivas = datosMensuales.reduce((s, m) => s + m.excl, 0);
+
+        // AÑADIR SIEMPRE (Sin filtrar por 0), para ver si lee mal o si son ceros reales
+        agentesTemp.push({
+            id: i,
             nombre: nombre,
             anio: anio,
             mensual: datosMensuales,
-            totalCitas: tCitas,
-            totalExclusivas: tExcl,
-            totalVentas: tVentas,
-            totalGCI: tGCI
+            totalCitas, totalExclusivas, totalVentas, totalGCI
         });
     });
 
-    renderizarTablaV24(agentes);
+    estadoImportacion = agentesTemp;
+    renderizarV62();
 }
 
-// --- VISUALIZADOR V25: DETALLE TOTAL MENSUAL ---
+function renderizarV62() {
+    const div = document.getElementById('resultado-importacion');
+    const agentes = estadoImportacion;
 
-function renderizarTablaV24(agentes) {
-    const div = document.getElementById('resultado-pegado');
-    
     if (agentes.length === 0) {
-        div.innerHTML = '<div style="color:red; text-align:center; padding:20px;">❌ No se han detectado agentes.</div>';
+        alert("❌ Error: 0 agentes procesados. Revisa el número de columna del Nombre.");
         return;
     }
 
-    let html = `
-        <div style="background:#222; padding:15px; border-radius:10px; border:1px solid #444;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="margin:0; color:#00ff88;">✅ ${agentes.length} Agentes Listos para Revisión</h3>
-                <div style="color:#aaa; font-size:0.9em;">Revisa mes a mes antes de aceptar</div>
-            </div>
-            
-            <div id="lista-agentes-detalle" style="max-height:500px; overflow-y:auto; padding-right:5px;">
-    `;
+    document.getElementById('paso-1').style.display = 'none';
+    div.style.display = 'flex';
 
+    const totalOfi = agentes.reduce((s, a) => s + a.totalGCI, 0);
+
+    const headers = ["Citas", "Excl", "Abierto", "Visitas", "Alq", "3Bs", "Bajadas", "Prop", "Arras", "Ventas", "GCI Tot"];
+    const keys = ["citas", "excl", "abierto", "visitas", "captAlq", "tresBs", "bajadas", "propuestas", "arras", "ventas", "gciTotal"];
     const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-    agentes.forEach((a, index) => {
-        // Cabecera del Agente (Resumen)
+    let html = `
+        <div style="margin-bottom:10px; background:#333; padding:10px; border-radius:5px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <h3 style="margin:0; color:#fff;">TOTAL: <span style="color:#00ff88;">${totalOfi.toLocaleString('de-DE')}€</span></h3>
+                <small style="color:#aaa;">${agentes.length} Agentes</small>
+            </div>
+            <button onclick="mostrarModalImportador()" style="background:#555; color:white; padding:5px 15px; border:none; border-radius:5px; cursor:pointer;">↩️ Recalibrar</button>
+        </div>
+        
+        <div id="lista-agentes" style="flex-grow:1; overflow-y:auto; padding-right:5px;">
+    `;
+
+    agentes.forEach((a, idx) => {
         html += `
-            <div class="agente-bloque" style="background:#333; margin-bottom:15px; border-radius:5px; overflow:hidden;">
-                <div class="agente-header" onclick="toggleDetalle('detalle-${index}')" 
-                     style="padding:10px 15px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; background:linear-gradient(90deg, #444, #333);">
+            <div style="background:#2a2a2a; margin-bottom:10px; border-radius:5px; overflow:hidden; border:1px solid #444;">
+                <div onclick="toggleDetalle('det-${idx}')" style="padding:10px 15px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; background:linear-gradient(90deg, #333, #2a2a2a);">
+                    <div><strong style="color:#fff;">👤 ${a.nombre}</strong></div>
                     <div>
-                        <strong style="color:#fff; font-size:1.1em;">👤 ${a.nombre}</strong>
-                        <span style="color:#aaa; font-size:0.8em; margin-left:10px;">(Total GCI: ${a.totalGCI.toLocaleString()}€)</span>
+                        <span style="color:#00ff88; font-weight:bold; margin-right:10px;">${a.totalGCI.toLocaleString('de-DE')}€</span>
+                        <span style="color:#aaa; font-size:0.8em;">▼</span>
                     </div>
-                    <button class="btn" style="font-size:0.7em; padding:2px 8px;">Ver Meses ▼</button>
                 </div>
-
-                <div id="detalle-${index}" style="display:none; overflow-x:auto; padding:10px;">
-                    <table class="tabla" style="font-size:0.75em; width:100%; min-width:1200px;">
-                        <thead style="background:#222; color:#aaa;">
-                            <tr>
-                                <th style="position:sticky; left:0; background:#222;">Mes</th>
-                                <th>Citas</th><th>Excl.</th><th>Abierto</th><th>Citas Comp</th><th>Visitas</th>
-                                <th style="color:#ffd700;">Capt Alq</th><th style="color:#ffd700;">3Bs</th><th style="color:#ffd700;">Bajadas</th><th style="color:#ffd700;">Prop.</th><th style="color:#ffd700;">Arras</th>
-                                <th style="color:#00ff88;">Ventas</th><th style="color:#00ff88;">GCI Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <div id="det-${idx}" style="display:none; padding:5px; background:#1e1e1e;">
+                    <div style="overflow-x:auto;">
+                        <table class="tabla" style="width:100%; font-size:0.7em; color:#ccc;">
+                            <thead>
+                                <tr style="background:#333;">
+                                    <th style="position:sticky; left:0; background:#333; padding:5px;">Mes</th>
+                                    ${headers.map(h => `<th style="text-align:center;">${h}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
         `;
-
-        // Filas de los meses
+        
         a.mensual.forEach((m, i) => {
-            // Resaltar si hay producción
-            const estiloFila = (m.gci > 0 || m.ventas > 0) ? 'background:rgba(0,255,136,0.05);' : '';
-            const estiloGCI = (m.gci > 0) ? 'color:#00ff88; font-weight:bold;' : 'opacity:0.5;';
-
-            html += `
-                <tr style="${estiloFila}">
-                    <td style="position:sticky; left:0; background:#333; font-weight:bold;">${meses[i]}</td>
-                    <td>${m.citasCapt}</td>
-                    <td>${m.exclVenta}</td>
-                    <td>${m.captAbierto}</td>
-                    <td>${m.citasComp}</td>
-                    <td>${m.visitas}</td>
-                    
-                    <td>${m.captAlq}</td>
-                    <td>${m.tresBs}</td>
-                    <td>${m.bajadas}</td>
-                    <td>${m.propuestas}</td>
-                    <td>${m.arras}</td>
-
-                    <td style="${estiloGCI}">${m.ventas}</td>
-                    <td style="${estiloGCI}">${m.gci.toLocaleString()}€</td>
-                </tr>
-            `;
+            let tds = keys.map(k => {
+                // Formato español visual
+                let valStr = m[k] === 0 ? '-' : m[k].toLocaleString('de-DE');
+                let color = k==='gciTotal' ? '#00ff88' : '#fff';
+                return `<td style="text-align:center; color:${color};">${valStr}</td>`;
+            }).join('');
+            html += `<tr><td>${meses[i]}</td>${tds}</tr>`;
         });
-
-        // Fila de Totales del Agente
-        html += `
-            <tr style="background:#444; font-weight:bold; border-top:2px solid #555;">
-                <td style="position:sticky; left:0; background:#444;">TOTAL</td>
-                <td>${a.totalCitas}</td>
-                <td>${a.totalExclusivas}</td>
-                <td>-</td><td>-</td><td>-</td>
-                <td>-</td><td>-</td>
-                <td>${a.totalBajadas}</td>
-                <td>-</td><td>-</td>
-                <td>${a.totalVentas}</td>
-                <td style="color:#00ff88; font-size:1.1em;">${a.totalGCI.toLocaleString()}€</td>
-            </tr>
-        `;
-
-        html += `</tbody></table></div></div>`;
+        
+        html += `</tbody></table></div></div></div>`;
     });
 
     html += `
-            </div>
-            <button class="btn-primary-action" onclick='confirmarImportacion(${JSON.stringify(agentes)})' style="width:100%; margin-top:15px; padding:15px; font-size:1.1em;">
-                💾 TODO CORRECTO - GUARDAR EN BASE DE DATOS
-            </button>
+        </div>
+        <div style="margin-top:15px;">
+            <button class="btn-primary-action" onclick="guardarV62()" style="width:100%; padding:15px; font-size:1.2em;">💾 GUARDAR DATOS</button>
         </div>
     `;
-
     div.innerHTML = html;
 }
 
-// Función pequeña para abrir/cerrar el acordeón
 function toggleDetalle(id) {
     const el = document.getElementById(id);
-    if (el.style.display === 'none') {
-        el.style.display = 'block';
-    } else {
-        el.style.display = 'none';
-    }
+    el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+}
+
+function guardarV62() {
+    const btn = document.querySelector('#resultado-importacion .btn-primary-action');
+    btn.innerHTML = "⏳ Guardando...";
+    btn.disabled = true;
+
+    google.script.run
+        .withSuccessHandler(res => {
+            alert("✅ " + res.message);
+            cerrarModalTotal();
+            if(typeof cargarDatosGerente === 'function') cargarDatosGerente('ano');
+        })
+        .withFailureHandler(err => {
+            alert("❌ Error: " + err.message);
+            btn.disabled = false;
+        })
+        .guardarImportacionMasivaV27(estadoImportacion);
 }
 
 
@@ -9490,6 +9668,602 @@ function cambiarBotonAGuardarGerente() {
         btn.style.background = '';
     }
 }
+/**
+ * ────────────────────────────────────────────────────────────────────────────
+ * FUNCIÓN 2: renderizarAnalisisPresupuestario (NUEVA)
+ * ────────────────────────────────────────────────────────────────────────────
+ */
+function renderizarAnalisisPresupuestario(datos) {
+    const analisis = datos.analisisAnual;
+    const container = document.getElementById('presup-cards-anual');
+    
+    // Card 1: GCI Total
+    const card1 = `
+        <div style="background: rgba(76,175,80,0.1); border: 2px solid #4caf50; padding: 20px; border-radius: 15px; text-align: center;">
+            <div style="font-size: 0.85em; opacity: 0.8; margin-bottom: 10px;">💰 GCI Total Anual</div>
+            <div style="font-size: 2em; font-weight: 900; color: #4caf50;">${analisis.totalGCI.toLocaleString('es-ES', {minimumFractionDigits: 2})} €</div>
+        </div>
+    `;
+    
+    // Card 2: Beneficio Neto
+    const indicadorBenef = analisis.cumple && analisis.pctBeneficio >= 35 && analisis.pctBeneficio <= 45 ? '✅' : '⚠️';
+    const colorBenef = analisis.pctBeneficio >= 35 && analisis.pctBeneficio <= 45 ? '#4caf50' : '#ff9800';
+    const card2 = `
+        <div style="background: rgba(76,175,80,0.1); border: 2px solid ${colorBenef}; padding: 20px; border-radius: 15px; text-align: center;">
+            <div style="font-size: 0.85em; opacity: 0.8; margin-bottom: 10px;">💎 Beneficio Neto</div>
+            <div style="font-size: 2em; font-weight: 900; color: ${colorBenef};">${analisis.totalBeneficio.toLocaleString('es-ES', {minimumFractionDigits: 2})} €</div>
+            <div style="font-size: 0.9em; margin-top: 8px; color: ${colorBenef};">${analisis.pctBeneficio.toFixed(1)}% ${indicadorBenef}</div>
+        </div>
+    `;
+    
+    // Card 3: Gastos Ventas
+    const indicadorVentas = analisis.pctVentas >= 25 && analisis.pctVentas <= 35 ? '✅' : '⚠️';
+    const colorVentas = analisis.pctVentas >= 25 && analisis.pctVentas <= 35 ? '#ff9800' : '#f44336';
+    const card3 = `
+        <div style="background: rgba(255,152,0,0.1); border: 2px solid ${colorVentas}; padding: 20px; border-radius: 15px; text-align: center;">
+            <div style="font-size: 0.85em; opacity: 0.8; margin-bottom: 10px;">💼 Gastos Ventas</div>
+            <div style="font-size: 2em; font-weight: 900; color: ${colorVentas};">${analisis.totalGastosVentas.toLocaleString('es-ES', {minimumFractionDigits: 2})} €</div>
+            <div style="font-size: 0.9em; margin-top: 8px; color: ${colorVentas};">${analisis.pctVentas.toFixed(1)}% ${indicadorVentas}</div>
+        </div>
+    `;
+    
+    // Card 4: Gastos Operativos
+    const indicadorOper = analisis.pctOperativos >= 25 && analisis.pctOperativos <= 35 ? '✅' : '⚠️';
+    const colorOper = analisis.pctOperativos >= 25 && analisis.pctOperativos <= 35 ? '#f44336' : '#d32f2f';
+    const card4 = `
+        <div style="background: rgba(244,67,54,0.1); border: 2px solid ${colorOper}; padding: 20px; border-radius: 15px; text-align: center;">
+            <div style="font-size: 0.85em; opacity: 0.8; margin-bottom: 10px;">🏢 Gastos Operativos</div>
+            <div style="font-size: 2em; font-weight: 900; color: ${colorOper};">${analisis.totalGastosOperativos.toLocaleString('es-ES', {minimumFractionDigits: 2})} €</div>
+            <div style="font-size: 0.9em; margin-top: 8px; color: ${colorOper};">${analisis.pctOperativos.toFixed(1)}% ${indicadorOper}</div>
+        </div>
+    `;
+    
+    container.innerHTML = card1 + card2 + card3 + card4;
+    
+    // Mensaje cumplimiento anual
+    const mensajeDiv = document.getElementById('presup-mensaje-cumplimiento');
+    if (analisis.cumple) {
+        mensajeDiv.innerHTML = '✅ ¡Felicidades! El modelo 40-30-30 se cumple a nivel anual.';
+        mensajeDiv.style.background = 'rgba(76,175,80,0.2)';
+        mensajeDiv.style.color = '#4caf50';
+        mensajeDiv.style.border = '2px solid #4caf50';
+    } else {
+        mensajeDiv.innerHTML = '⚠️ Advertencia: El modelo 40-30-30 NO se cumple a nivel anual. Revisa los meses con desviaciones.';
+        mensajeDiv.style.background = 'rgba(255,152,0,0.2)';
+        mensajeDiv.style.color = '#ff9800';
+        mensajeDiv.style.border = '2px solid #ff9800';
+    }
+}
+
+/**
+ * ────────────────────────────────────────────────────────────────────────────
+ * FUNCIÓN 3: renderizarGraficosPresupuesto (NUEVA)
+ * ────────────────────────────────────────────────────────────────────────────
+ */
+function renderizarGraficosPresupuesto(datos) {
+    // Destruir gráficos anteriores si existen
+    if (window.chartPresupBarras) window.chartPresupBarras.destroy();
+    if (window.chartPresupLineas) window.chartPresupLineas.destroy();
+    
+    // GRÁFICO 1: BARRAS (GCI vs Gastos)
+    const ctxBarras = document.getElementById('chart-presup-barras').getContext('2d');
+    window.chartPresupBarras = new Chart(ctxBarras, {
+        type: 'bar',
+        data: {
+            labels: datos.meses,
+            datasets: [
+                {
+                    label: 'GCI',
+                    data: datos.gciMensual,
+                    backgroundColor: 'rgba(76, 175, 80, 0.7)',
+                    borderColor: '#4caf50',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Gastos Ventas',
+                    data: datos.gastosVentas,
+                    backgroundColor: 'rgba(255, 152, 0, 0.7)',
+                    borderColor: '#ff9800',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Gastos Operativos',
+                    data: datos.gastosOperativos,
+                    backgroundColor: 'rgba(244, 67, 54, 0.7)',
+                    borderColor: '#f44336',
+                    borderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString('es-ES') + ' €';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y.toLocaleString('es-ES', {minimumFractionDigits: 2}) + ' €';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // GRÁFICO 2: LÍNEAS (% Distribución)
+    const pctBeneficio = datos.analisisMensual.map(m => m.pctBeneficio);
+    const pctVentas = datos.analisisMensual.map(m => m.pctVentas);
+    const pctOperativos = datos.analisisMensual.map(m => m.pctOperativos);
+    
+    const ctxLineas = document.getElementById('chart-presup-lineas').getContext('2d');
+    window.chartPresupLineas = new Chart(ctxLineas, {
+        type: 'line',
+        data: {
+            labels: datos.meses,
+            datasets: [
+                {
+                    label: '% Beneficio (Meta: 40%)',
+                    data: pctBeneficio,
+                    borderColor: '#4caf50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 3
+                },
+                {
+                    label: '% Ventas (Meta: 30%)',
+                    data: pctVentas,
+                    borderColor: '#ff9800',
+                    backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 3
+                },
+                {
+                    label: '% Operativos (Meta: 30%)',
+                    data: pctOperativos,
+                    borderColor: '#f44336',
+                    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '%';
+                        }
+                    }
+                },
+                annotation: {
+                    annotations: {
+                        line40: {
+                            type: 'line',
+                            yMin: 40,
+                            yMax: 40,
+                            borderColor: 'rgba(76, 175, 80, 0.5)',
+                            borderWidth: 2,
+                            borderDash: [5, 5]
+                        },
+                        line30a: {
+                            type: 'line',
+                            yMin: 30,
+                            yMax: 30,
+                            borderColor: 'rgba(255, 152, 0, 0.5)',
+                            borderWidth: 2,
+                            borderDash: [5, 5]
+                        },
+                        line30b: {
+                            type: 'line',
+                            yMin: 30,
+                            yMax: 30,
+                            borderColor: 'rgba(244, 67, 54, 0.5)',
+                            borderWidth: 2,
+                            borderDash: [5, 5]
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * ────────────────────────────────────────────────────────────────────────────
+ * FUNCIÓN 4: renderizarTablaPresupuesto (NUEVA)
+ * ────────────────────────────────────────────────────────────────────────────
+ */
+function renderizarTablaPresupuesto(datos) {
+    const tbody = document.getElementById('presup-tabla-body');
+    let html = '';
+    
+    datos.analisisMensual.forEach((mes, idx) => {
+        const bgColor = mes.cumple ? 'rgba(76,175,80,0.1)' : 'rgba(244,67,54,0.1)';
+        const cumpleIcon = mes.cumple ? '✅' : '❌';
+        
+        html += `
+            <tr style="background: ${bgColor};">
+                <td style="font-weight: 700;">${datos.meses[idx]}</td>
+                <td>${mes.gci.toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
+                <td>${mes.gastosVentas.toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
+                <td>${mes.gastosOperativos.toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
+                <td style="font-weight: 700; color: ${mes.beneficio >= 0 ? '#4caf50' : '#f44336'};">
+                    ${mes.beneficio.toLocaleString('es-ES', {minimumFractionDigits: 2})}
+                </td>
+                <td>${mes.pctBeneficio.toFixed(1)}%</td>
+                <td>${mes.pctVentas.toFixed(1)}%</td>
+                <td>${mes.pctOperativos.toFixed(1)}%</td>
+                <td style="text-align: center; font-size: 1.3em;">${cumpleIcon}</td>
+                <td style="text-align: center;">
+                    ${mes.gci > 0 ? 
+                        `<button class="btn" style="padding: 5px 10px; font-size: 0.8em;" onclick="mostrarDetalleGastosMes(${idx}, '${datos.meses[idx]}')">Ver Detalle</button>` 
+                        : '-'}
+                </td>
+            </tr>
+        `;
+    });
+    
+    tbody.innerHTML = html;
+}
+
+/**
+ * ────────────────────────────────────────────────────────────────────────────
+ * FUNCIÓN 5: mostrarDetalleGastosMes (NUEVA)
+ * ────────────────────────────────────────────────────────────────────────────
+ */
+function mostrarDetalleGastosMes(mesIndex, nombreMes) {
+    // Abrir modal secundario
+    document.getElementById('modal-detalle-gasto-mes').classList.add('active');
+    document.getElementById('detalle-mes-titulo').textContent = `Detalle de Gastos - ${nombreMes}`;
+    
+    // Obtener datos del mes (ya están cargados globalmente)
+    const year = new Date().getFullYear();
+    
+    google.script.run
+        .withSuccessHandler(datos => {
+            const mesData = datos.analisisMensual[mesIndex];
+            
+            // Renderizar Gastos de Ventas
+            let htmlVentas = '';
+            let subtotalVentas = 0;
+            mesData.detallesVentas.forEach(d => {
+                htmlVentas += `
+                    <tr>
+                        <td>${d.fecha}</td>
+                        <td>${d.concepto}</td>
+                        <td>${d.desc}</td>
+                        <td style="text-align: right; font-weight: 700;">${d.importe.toLocaleString('es-ES', {minimumFractionDigits: 2})} €</td>
+                    </tr>
+                `;
+                subtotalVentas += d.importe;
+            });
+            document.getElementById('detalle-ventas-body').innerHTML = htmlVentas || '<tr><td colspan="4" style="text-align: center; opacity: 0.5;">Sin datos</td></tr>';
+            document.getElementById('detalle-ventas-subtotal').textContent = subtotalVentas.toLocaleString('es-ES', {minimumFractionDigits: 2}) + ' €';
+            
+            // Renderizar Gastos Operativos
+            let htmlOper = '';
+            let subtotalOper = 0;
+            mesData.detallesOperativos.forEach(d => {
+                htmlOper += `
+                    <tr>
+                        <td>${d.fecha}</td>
+                        <td>${d.concepto}</td>
+                        <td>${d.desc}</td>
+                        <td style="text-align: right; font-weight: 700;">${d.importe.toLocaleString('es-ES', {minimumFractionDigits: 2})} €</td>
+                    </tr>
+                `;
+                subtotalOper += d.importe;
+            });
+            document.getElementById('detalle-operativos-body').innerHTML = htmlOper || '<tr><td colspan="4" style="text-align: center; opacity: 0.5;">Sin datos</td></tr>';
+            document.getElementById('detalle-operativos-subtotal').textContent = subtotalOper.toLocaleString('es-ES', {minimumFractionDigits: 2}) + ' €';
+            
+            // Total General
+            const totalGeneral = subtotalVentas + subtotalOper;
+            document.getElementById('detalle-total-general').textContent = totalGeneral.toLocaleString('es-ES', {minimumFractionDigits: 2}) + ' €';
+        })
+        .withFailureHandler(err => {
+            mostrarNotificacion('Error al cargar detalles: ' + err.message, 'error');
+        })
+        .obtenerDatosPresupuestarios(year);
+}
+
+function mostrarModalGestionAgentes() {
+    document.getElementById('modal-gestion-agentes').classList.add('active');
+    document.body.classList.add('modal-open');
+    
+    // Cargar dashboard por defecto
+    cambiarTabAgentes('dashboard');
+}
+
+/**
+ * ────────────────────────────────────────────────────────────────────────────
+ * FUNCIÓN 2: cambiarTabAgentes
+ * ────────────────────────────────────────────────────────────────────────────
+ * Cambia entre los 3 tabs: dashboard, crear, listado
+ */
+  function cambiarTabAgentes(tab) {
+    // Ocultar todos los contenidos
+    document.getElementById('tab-content-dashboard').style.display = 'none';
+    document.getElementById('tab-content-crear').style.display = 'none';
+    document.getElementById('tab-content-listado').style.display = 'none';
+    
+    // Desactivar todos los botones
+    document.getElementById('tab-btn-dashboard').classList.remove('active');
+    document.getElementById('tab-btn-crear').classList.remove('active');
+    document.getElementById('tab-btn-listado').classList.remove('active');
+    
+    // Activar el tab seleccionado
+    switch(tab) {
+        case 'dashboard':
+            document.getElementById('tab-content-dashboard').style.display = 'block';
+            document.getElementById('tab-btn-dashboard').classList.add('active');
+            cargarDashboardAgentes();
+            break;
+        case 'crear':
+            document.getElementById('tab-content-crear').style.display = 'block';
+            document.getElementById('tab-btn-crear').classList.add('active');
+            // Pre-llenar fecha de hoy
+            document.getElementById('crear-fecha-ingreso').valueAsDate = new Date();
+            break;
+        case 'listado':
+            document.getElementById('tab-content-listado').style.display = 'block';
+            document.getElementById('tab-btn-listado').classList.add('active');
+            cargarListadoAgentes();
+            break;
+    }
+}
+
+/**
+ * ────────────────────────────────────────────────────────────────────────────
+ * FUNCIÓN 3: cargarDashboardAgentes
+ * ────────────────────────────────────────────────────────────────────────────
+ * Carga los datos del dashboard (KPIs + gráfico + tabla)
+ */
+function cargarDashboardAgentes() {
+    mostrarNotificacion('Cargando dashboard de agentes...', 'success');
+    
+    google.script.run
+        .withSuccessHandler(datos => {
+            if (!datos) {
+                mostrarNotificacion('No hay datos disponibles', 'error');
+                return;
+            }
+            
+            // Renderizar resumen (4 KPIs)
+            document.getElementById('dashboard-total-agentes').textContent = datos.resumen.totalAgentes;
+            document.getElementById('dashboard-gci-total').textContent = datos.resumen.totalGCI.toLocaleString('es-ES', {minimumFractionDigits: 2}) + ' €';
+            document.getElementById('dashboard-transacciones-total').textContent = datos.resumen.totalTransacciones;
+            document.getElementById('dashboard-ticket-promedio').textContent = datos.resumen.ticketPromedio.toLocaleString('es-ES', {minimumFractionDigits: 2}) + ' €';
+            
+            // Renderizar gráfico de altas
+            renderizarGraficoAltasAgentes(datos.graficoAltas);
+            
+            // Renderizar tabla de rendimiento
+            renderizarTablaRendimientoAgentes(datos.agentes);
+            
+            mostrarNotificacion('Dashboard cargado correctamente', 'success');
+        })
+        .withFailureHandler(err => {
+            mostrarNotificacion('Error al cargar dashboard: ' + err.message, 'error');
+        })
+        .obtenerDashboardGestionAgentes();
+}
+
+/**
+ * ────────────────────────────────────────────────────────────────────────────
+ * FUNCIÓN 4: renderizarGraficoAltasAgentes
+ * ────────────────────────────────────────────────────────────────────────────
+ * Crea el gráfico de barras de altas por mes
+ */
+function renderizarGraficoAltasAgentes(graficoData) {
+    // Destruir gráfico anterior si existe
+    if (window.chartAltasAgentes) {
+        window.chartAltasAgentes.destroy();
+    }
+    
+    const ctx = document.getElementById('chart-altas-agentes').getContext('2d');
+    
+    window.chartAltasAgentes = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: graficoData.labels,
+            datasets: [{
+                label: 'Número de Altas',
+                data: graficoData.datos,
+                backgroundColor: 'rgba(66, 133, 244, 0.7)',
+                borderColor: '#4285f4',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        callback: function(value) {
+                            return Math.floor(value);
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Altas: ' + context.parsed.y;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * ────────────────────────────────────────────────────────────────────────────
+ * FUNCIÓN 5: renderizarTablaRendimientoAgentes
+ * ────────────────────────────────────────────────────────────────────────────
+ * Renderiza la tabla de rendimiento con 9 columnas
+ */
+function renderizarTablaRendimientoAgentes(agentes) {
+    const tbody = document.getElementById('dashboard-tabla-agentes');
+    let html = '';
+    
+    agentes.forEach(agente => {
+        const colorRent = agente.rentabilidad >= 0 ? '#4caf50' : '#f44336';
+        
+        html += `
+            <tr>
+                <td style="text-align: left;">
+                    <div style="font-weight: 700;">${agente.nombre}</div>
+                    <div style="font-size: 0.85em; opacity: 0.7;">${agente.email}</div>
+                </td>
+                <td>${agente.antiguedad}</td>
+                <td>${agente.sueldoFijo.toLocaleString('es-ES', {minimumFractionDigits: 2})} €</td>
+                <td style="font-weight: 700; color: #4caf50;">${agente.gci.toLocaleString('es-ES', {minimumFractionDigits: 2})} €</td>
+                <td>${agente.transacciones}</td>
+                <td>${agente.ticketPromedio.toLocaleString('es-ES', {minimumFractionDigits: 2})} €</td>
+                <td>${agente.comisiones.toLocaleString('es-ES', {minimumFractionDigits: 2})} €</td>
+                <td style="font-weight: 700; color: ${colorRent};">
+                    ${agente.rentabilidad.toLocaleString('es-ES', {minimumFractionDigits: 2})} €
+                </td>
+                <td style="font-weight: 700; color: ${colorRent};">
+                    ${agente.pctRentabilidad.toFixed(1)}%
+                </td>
+            </tr>
+        `;
+    });
+    
+    tbody.innerHTML = html || '<tr><td colspan="9" style="text-align: center; opacity: 0.5;">No hay datos disponibles</td></tr>';
+}
+
+/**
+ * ────────────────────────────────────────────────────────────────────────────
+ * FUNCIÓN 6: cargarListadoAgentes
+ * ────────────────────────────────────────────────────────────────────────────
+ * Carga TODOS los agentes (activos e inactivos)
+ */
+function cargarListadoAgentes() {
+    mostrarNotificacion('Cargando listado completo...', 'success');
+    
+    google.script.run
+        .withSuccessHandler(agentes => {
+            renderizarListadoAgentes(agentes);
+        })
+        .withFailureHandler(err => {
+            mostrarNotificacion('Error al cargar listado: ' + err.message, 'error');
+        })
+        .obtenerTodosAgentes();
+}
+
+/**
+ * ────────────────────────────────────────────────────────────────────────────
+ * FUNCIÓN 7: renderizarListadoAgentes
+ * ────────────────────────────────────────────────────────────────────────────
+ * Renderiza tabla con badges de estado
+ */
+function renderizarListadoAgentes(agentes) {
+    const tbody = document.getElementById('listado-tabla-body');
+    let html = '';
+    
+    agentes.forEach(agente => {
+        const badgeColor = agente.estado === 'Activo' ? 
+            'background: #e8f5e9; color: #2e7d32; border: 1px solid #4caf50;' : 
+            'background: #ffebee; color: #c62828; border: 1px solid #f44336;';
+        
+        html += `
+            <tr>
+                <td>${agente.id}</td>
+                <td style="font-weight: 700;">${agente.nombre}</td>
+                <td>${agente.email}</td>
+                <td>${agente.telefono}</td>
+                <td>${agente.fechaIngreso}</td>
+                <td>${agente.sueldoFijo.toLocaleString('es-ES', {minimumFractionDigits: 2})} €</td>
+                <td>
+                    <span style="padding: 4px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 700; ${badgeColor}">
+                        ${agente.estado}
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
+    
+    tbody.innerHTML = html || '<tr><td colspan="7" style="text-align: center; opacity: 0.5;">No hay agentes registrados</td></tr>';
+}
+
+/**
+ * ────────────────────────────────────────────────────────────────────────────
+ * FUNCIÓN 8: crearNuevoAgente
+ * ────────────────────────────────────────────────────────────────────────────
+ * Procesa el formulario de creación y vuelve al dashboard
+ */
+function crearNuevoAgente(event) {
+    event.preventDefault();
+    
+    const datos = {
+        nombre: document.getElementById('crear-nombre').value,
+        email: document.getElementById('crear-email').value,
+        telefono: document.getElementById('crear-telefono').value,
+        fechaIngreso: document.getElementById('crear-fecha-ingreso').value,
+        sueldoFijo: document.getElementById('crear-sueldo').value,
+        objetivosAcumulados: document.getElementById('crear-objetivos').value
+    };
+    
+    mostrarNotificacion('Creando agente...', 'success');
+    
+    google.script.run
+        .withSuccessHandler(respuesta => {
+            if (respuesta.success) {
+                mostrarNotificacion('✅ Agente creado: ' + respuesta.agente.nombre, 'success');
+                
+                // Limpiar formulario
+                document.getElementById('form-crear-agente-modal').reset();
+                
+                // Volver al dashboard
+                cambiarTabAgentes('dashboard');
+            } else {
+                mostrarNotificacion('Error al crear agente', 'error');
+            }
+        })
+        .withFailureHandler(err => {
+            mostrarNotificacion('Error: ' + err.message, 'error');
+        })
+        .crearAgenteCompleto(datos);
+}
+
+// ════════════════════════════════════════════════════════════════════════════════
+// FIN DE FUNCIONES GESTIÓN DE AGENTES
+// ════════════════════════════════════════════════════════════════════════════════
  </script>
  <div id="modal-grafico-secundario" class="modal" style="z-index: 1150;">
     <div class="modal-content" style="max-width: 1100px; height: 80vh;">
@@ -9594,6 +10368,162 @@ function cambiarBotonAGuardarGerente() {
             </div>
 
             <div id="resultado-importacion" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+</div>
+<div id="modal-gestion-agentes" class="modal">
+    <div class="modal-content" style="max-width: 1400px;">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-gestion-agentes')">&times;</span>
+        <div class="modal-body">
+            <div class="section-title">👥 Gestión Completa de Agentes</div>
+            
+            <!-- BOTONES TABS -->
+            <div class="vista-tabs" style="margin-bottom: 25px; position: sticky; top: 0; z-index: 10; background: var(--color-bg-alt); padding: 10px 0;">
+                <button id="tab-btn-dashboard" class="tab-btn active" onclick="cambiarTabAgentes('dashboard')">
+                    📊 Dashboard
+                </button>
+                <button id="tab-btn-crear" class="tab-btn" onclick="cambiarTabAgentes('crear')">
+                    ➕ Crear Nuevo
+                </button>
+                <button id="tab-btn-listado" class="tab-btn" onclick="cambiarTabAgentes('listado')">
+                    📋 Listado Completo
+                </button>
+            </div>
+            
+            <!-- ═══════════════════════════════════════════════════════════════════ -->
+            <!-- TAB 1: DASHBOARD AGENTES -->
+            <!-- ═══════════════════════════════════════════════════════════════════ -->
+            <div id="tab-content-dashboard" class="tab-content" style="display: block;">
+                
+                <!-- KPIs GLOBALES -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px;">
+                    <div class="signo-card" style="background: rgba(66,133,244,0.1); border: 2px solid #4285f4;">
+                        <div class="signo-icon">👥</div>
+                        <div class="signo-label">Total Agentes Activos</div>
+                        <div class="signo-value" id="dashboard-total-agentes" style="color: #4285f4;">0</div>
+                    </div>
+                    <div class="signo-card" style="background: rgba(76,175,80,0.1); border: 2px solid #4caf50;">
+                        <div class="signo-icon">💰</div>
+                        <div class="signo-label">GCI Total</div>
+                        <div class="signo-value" id="dashboard-gci-total" style="color: #4caf50;">0 €</div>
+                    </div>
+                    <div class="signo-card" style="background: rgba(255,152,0,0.1); border: 2px solid #ff9800;">
+                        <div class="signo-icon">🤝</div>
+                        <div class="signo-label">Transacciones Totales</div>
+                        <div class="signo-value" id="dashboard-transacciones-total" style="color: #ff9800;">0</div>
+                    </div>
+                    <div class="signo-card" style="background: rgba(156,39,176,0.1); border: 2px solid #9c27b0;">
+                        <div class="signo-icon">💎</div>
+                        <div class="signo-label">Ticket Promedio</div>
+                        <div class="signo-value" id="dashboard-ticket-promedio" style="color: #9c27b0;">0 €</div>
+                    </div>
+                </div>
+                
+                <!-- GRÁFICO: ALTAS DE AGENTES POR MES -->
+                <div class="chart-container" style="height: 350px; margin-bottom: 25px;">
+                    <div class="chart-title">📈 Evolución de Altas de Agentes (Últimos 12 meses)</div>
+                    <canvas id="chart-altas-agentes"></canvas>
+                </div>
+                
+                <!-- TABLA RENDIMIENTO AGENTES -->
+                <div class="tabla-container">
+                    <h3 style="color: var(--color-secondary); margin-bottom: 15px;">⭐ Rendimiento por Agente</h3>
+                    <table class="tabla">
+                        <thead>
+                            <tr>
+                                <th>Agente</th>
+                                <th>Antigüedad</th>
+                                <th>Sueldo Fijo</th>
+                                <th>GCI</th>
+                                <th>Tx</th>
+                                <th>Ticket Prom.</th>
+                                <th>Comisiones</th>
+                                <th>Rentabilidad</th>
+                                <th>% Rent.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-tabla-agentes"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- ═══════════════════════════════════════════════════════════════════ -->
+            <!-- TAB 2: CREAR NUEVO AGENTE -->
+            <!-- ═══════════════════════════════════════════════════════════════════ -->
+            <div id="tab-content-crear" class="tab-content" style="display: none;">
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <h3 style="color: var(--color-secondary); margin-bottom: 20px; text-align: center;">➕ Alta de Nuevo Agente</h3>
+                    
+                    <form id="form-crear-agente-modal" onsubmit="crearNuevoAgente(event)" class="form-grid">
+                        <div class="form-grupo" style="grid-column: 1 / -1;">
+                            <label class="form-label">👤 Nombre Completo *</label>
+                            <input type="text" id="crear-nombre" class="form-input" required placeholder="Ej: Juan Pérez García">
+                        </div>
+                        
+                        <div class="form-grupo">
+                            <label class="form-label">📧 Email *</label>
+                            <input type="email" id="crear-email" class="form-input" required placeholder="juan.perez@kw.com">
+                        </div>
+                        
+                        <div class="form-grupo">
+                            <label class="form-label">📞 Teléfono</label>
+                            <input type="tel" id="crear-telefono" class="form-input" placeholder="+34 600 000 000">
+                        </div>
+                        
+                        <div class="form-grupo">
+                            <label class="form-label">📅 Fecha de Ingreso *</label>
+                            <input type="date" id="crear-fecha-ingreso" class="form-input" required>
+                        </div>
+                        
+                        <div class="form-grupo">
+                            <label class="form-label">💶 Sueldo Fijo Mensual (€)</label>
+                            <input type="number" id="crear-sueldo" class="form-input" min="0" step="0.01" value="0" placeholder="Ej: 1000">
+                        </div>
+                        
+                        <div class="form-grupo">
+                            <label class="form-label">🎯 Objetivos Acumulados</label>
+                            <select id="crear-objetivos" class="form-select">
+                                <option value="NO" selected>NO</option>
+                                <option value="SI">SI</option>
+                            </select>
+                        </div>
+                        
+                        <div style="grid-column: 1 / -1; display: flex; gap: 15px; margin-top: 20px;">
+                            <button type="button" class="btn" onclick="cambiarTabAgentes('dashboard')" style="flex: 1; background: var(--color-surface);">
+                                ❌ Cancelar
+                            </button>
+                            <button type="submit" class="form-submit" style="flex: 2; margin: 0;">
+                                💾 Crear Agente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- ═══════════════════════════════════════════════════════════════════ -->
+            <!-- TAB 3: LISTADO COMPLETO -->
+            <!-- ═══════════════════════════════════════════════════════════════════ -->
+            <div id="tab-content-listado" class="tab-content" style="display: none;">
+                <h3 style="color: var(--color-secondary); margin-bottom: 15px;">📋 Listado Completo (Activos e Inactivos)</h3>
+                
+                <div class="tabla-container">
+                    <table class="tabla">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Teléfono</th>
+                                <th>Fecha Ingreso</th>
+                                <th>Sueldo Fijo</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listado-tabla-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            
         </div>
     </div>
 </div>
