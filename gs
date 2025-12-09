@@ -4426,5 +4426,306 @@ function obtenerHistoricoExistente(idAgente, anio) {
     return [];
   }
 }
+function guardarHistoricoAgenteHTML(datosGuardar) {
+  try {
+    Logger.log('📥 Recibiendo datos históricos:', JSON.stringify(datosGuardar));
+    
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hoja = ss.getSheetByName('Historico_Agentes');
+    
+    if (!hoja) {
+      return { success: false, message: 'No existe la hoja Historico_Agentes' };
+    }
+    
+    const idAgente = datosGuardar.idAgente;
+    const anio = datosGuardar.anio;
+    const modo = datosGuardar.modo;
+    
+    // Obtener nombre del agente
+    const hojaAgentes = ss.getSheetByName('Agentes');
+    const datosAgentes = hojaAgentes.getDataRange().getValues();
+    let nombreAgente = '';
+    
+    for (let i = 1; i < datosAgentes.length; i++) {
+      if (datosAgentes[i][0] === idAgente) {
+        nombreAgente = datosAgentes[i][1];
+        break;
+      }
+    }
+    
+    if (!nombreAgente) {
+      return { success: false, message: 'Agente no encontrado' };
+    }
+    
+    // ELIMINAR registros previos del mismo agente/año
+    const datosHoja = hoja.getDataRange().getValues();
+    const filasAEliminar = [];
+    
+    for (let i = datosHoja.length - 1; i >= 1; i--) {
+      if (datosHoja[i][0] === idAgente && datosHoja[i][2] == anio) {
+        filasAEliminar.push(i + 1);
+      }
+    }
+    
+    // Eliminar de abajo hacia arriba para no desplazar índices
+    filasAEliminar.forEach(fila => hoja.deleteRow(fila));
+    
+    Logger.log('🗑️ Eliminadas ' + filasAEliminar.length + ' filas previas');
+    
+    // INSERTAR NUEVOS DATOS
+    const filasNuevas = [];
+    
+    if (modo === 'ANUAL') {
+      // MODO ANUAL: Distribuir totales entre 12 meses (proporcional)
+      const totales = datosGuardar.totales;
+      
+      // Distribución sugerida (puedes ajustar)
+      const distribucion = [8, 8, 9, 9, 10, 10, 9, 5, 9, 9, 8, 6]; // Suma = 100%
+      const suma = distribucion.reduce((a, b) => a + b, 0);
+      
+      for (let mes = 1; mes <= 12; mes++) {
+        const factor = distribucion[mes - 1] / suma;
+        
+        const fila = [
+          idAgente,                                          // A: ID_Agente
+          nombreAgente,                                      // B: Nombre
+          anio,                                              // C: Año
+          mes,                                               // D: Mes
+          Math.round(totales.citasCapt * factor),           // E: Citas
+          Math.round(totales.exclVenta * factor),           // F: Capt_Excl
+          Math.round(totales.captAbierto * factor),         // G: Capt_Abierto
+          Math.round(totales.citasComp * factor),           // H: Visitas_Comp
+          0,                                                 // I: Casas_Ens (dejamos 0)
+          0,                                                 // J: Capt_Alq (dejamos 0)
+          0,                                                 // K: 3Bs (dejamos 0)
+          0,                                                 // L: Bajadas (dejamos 0)
+          0,                                                 // M: Propuestas (dejamos 0)
+          0,                                                 // N: Arras (dejamos 0)
+          Math.round(totales.ventas * factor),              // O: Vtas_Excl
+          0,                                                 // P: GCI_Excl (dejamos 0)
+          0,                                                 // Q: Vtas_Abierto (dejamos 0)
+          0,                                                 // R: GCI_Abierto (dejamos 0)
+          0,                                                 // S: Vtas_Comp (dejamos 0)
+          0,                                                 // T: GCI_Comp (dejamos 0)
+          0,                                                 // U: Vtas_Alq (dejamos 0)
+          0,                                                 // V: GCI_Alq (dejamos 0)
+          parseFloat((totales.gci * factor).toFixed(2)),    // W: GCI_Total ⭐
+          0,                                                 // X: Co_Euro (dejamos 0)
+          new Date()                                         // Y: Fecha_Registro
+        ];
+        
+        filasNuevas.push(fila);
+      }
+      
+    } else {
+      // MODO MENSUAL: Usar datos específicos por mes
+      datosGuardar.mensual.forEach(datosMes => {
+        const fila = [
+          idAgente,                                          // A: ID_Agente
+          nombreAgente,                                      // B: Nombre
+          anio,                                              // C: Año
+          datosMes.mes,                                      // D: Mes
+          datosMes.citasCapt || 0,                          // E: Citas
+          datosMes.exclVenta || 0,                          // F: Capt_Excl
+          datosMes.captAbierto || 0,                        // G: Capt_Abierto
+          datosMes.citasComp || 0,                          // H: Visitas_Comp
+          datosMes.visitas || 0,                            // I: Casas_Ens ✅
+          0,                                                 // J: Capt_Alq
+          0,                                                 // K: 3Bs
+          0,                                                 // L: Bajadas
+          0,                                                 // M: Propuestas
+          0,                                                 // N: Arras
+          datosMes.ventas || 0,                             // O: Vtas_Excl
+          0,                                                 // P: GCI_Excl
+          0,                                                 // Q: Vtas_Abierto
+          0,                                                 // R: GCI_Abierto
+          0,                                                 // S: Vtas_Comp
+          0,                                                 // T: GCI_Comp
+          0,                                                 // U: Vtas_Alq
+          0,                                                 // V: GCI_Alq
+          parseFloat((datosMes.gci || 0).toFixed(2)),       // W: GCI_Total ⭐
+          0,                                                 // X: Co_Euro
+          new Date()                                         // Y: Fecha_Registro
+        ];
+        
+        filasNuevas.push(fila);
+      });
+    }
+    
+    // INSERTAR en la hoja
+    if (filasNuevas.length > 0) {
+      const ultimaFila = hoja.getLastRow();
+      hoja.getRange(ultimaFila + 1, 1, filasNuevas.length, filasNuevas[0].length).setValues(filasNuevas);
+      Logger.log('✅ Insertadas ' + filasNuevas.length + ' filas nuevas');
+    }
+    
+    return { 
+      success: true, 
+      message: `Histórico guardado correctamente (${filasNuevas.length} registros)` 
+    };
+    
+  } catch (error) {
+    Logger.log('❌ Error en guardarHistoricoAgenteHTML: ' + error);
+    return { success: false, message: error.toString() };
+  }
+}
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * FUNCIÓN 2: OBTENER HISTÓRICO EXISTENTE
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+function obtenerHistoricoExistente(idAgente, anio) {
+  try {
+    Logger.log('📖 Buscando histórico de:', idAgente, 'año:', anio);
+    
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hoja = ss.getSheetByName('Historico_Agentes');
+    
+    if (!hoja) return null;
+    
+    const datos = hoja.getDataRange().getValues();
+    
+    // Buscar registros del agente/año
+    const registros = [];
+    
+    for (let i = 1; i < datos.length; i++) {
+      if (String(datos[i][0]).trim().toUpperCase() === String(idAgente).trim().toUpperCase() && 
+          datos[i][2] == anio) {
+        
+        const mes = parseInt(datos[i][3]);
+        
+        if (mes >= 1 && mes <= 12) {
+          registros.push({
+            mes: mes,
+            citasCapt: parseFloat(datos[i][4]) || 0,
+            exclVenta: parseFloat(datos[i][5]) || 0,
+            captAbierto: parseFloat(datos[i][6]) || 0,
+            citasComp: parseFloat(datos[i][7]) || 0,
+            visitas: parseFloat(datos[i][8]) || 0,
+            ventas: parseFloat(datos[i][14]) || 0,  // Columna O
+            gci: parseFloat(datos[i][22]) || 0,      // Columna W ⭐
+            exclComp: parseFloat(datos[i][5]) || 0   // Aproximación
+          });
+        }
+      }
+    }
+    
+    if (registros.length === 0) {
+      Logger.log('⚠️ No hay histórico previo');
+      return null;
+    }
+    
+    Logger.log('✅ Encontrados ' + registros.length + ' registros');
+    
+    // Ordenar por mes
+    registros.sort((a, b) => a.mes - b.mes);
+    
+    // Calcular totales
+    const totales = {
+      gci: 0,
+      ventas: 0,
+      citasCapt: 0,
+      exclVenta: 0,
+      captAbierto: 0,
+      citasComp: 0,
+      exclComp: 0,
+      visitas: 0
+    };
+    
+    registros.forEach(r => {
+      totales.gci += r.gci;
+      totales.ventas += r.ventas;
+      totales.citasCapt += r.citasCapt;
+      totales.exclVenta += r.exclVenta;
+      totales.captAbierto += r.captAbierto;
+      totales.citasComp += r.citasComp;
+      totales.exclComp += r.exclComp;
+      totales.visitas += r.visitas;
+    });
+    
+    return {
+      gci: totales.gci,
+      ventas: totales.ventas,
+      citasCapt: totales.citasCapt,
+      exclVenta: totales.exclVenta,
+      captAbierto: totales.captAbierto,
+      citasComp: totales.citasComp,
+      exclComp: totales.exclComp,
+      visitas: totales.visitas,
+      mensual: registros
+    };
+    
+  } catch (error) {
+    Logger.log('❌ Error en obtenerHistoricoExistente: ' + error);
+    return null;
+  }
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * FUNCIÓN 3: OBTENER TODOS LOS HISTÓRICOS (Para cache)
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+function obtenerTodosHistoricosAgentes(anio) {
+  try {
+    Logger.log('📚 Cargando TODOS los históricos del año:', anio);
+    
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hoja = ss.getSheetByName('Historico_Agentes');
+    
+    if (!hoja) return {};
+    
+    const datos = hoja.getDataRange().getValues();
+    const cache = {};
+    
+    for (let i = 1; i < datos.length; i++) {
+      const row = datos[i];
+      
+      if (row[2] == anio) { // Año coincide
+        const idAgente = String(row[0]).trim();
+        const mes = parseInt(row[3]) - 1; // Convertir a índice 0-11
+        
+        if (mes >= 0 && mes < 12) {
+          // Inicializar agente si no existe
+          if (!cache[idAgente]) {
+            cache[idAgente] = {
+              gci: 0,
+              citasCapt: 0,
+              exclVenta: 0,
+              captAbierto: 0,
+              citasComp: 0,
+              exclComp: 0,
+              visitas: 0,
+              ventas: 0
+            };
+          }
+          
+          // Sumar totales
+          cache[idAgente].gci += parseFloat(row[22]) || 0;      // GCI_Total
+          cache[idAgente].citasCapt += parseFloat(row[4]) || 0;
+          cache[idAgente].exclVenta += parseFloat(row[5]) || 0;
+          cache[idAgente].captAbierto += parseFloat(row[6]) || 0;
+          cache[idAgente].citasComp += parseFloat(row[7]) || 0;
+          cache[idAgente].visitas += parseFloat(row[8]) || 0;
+          cache[idAgente].ventas += parseFloat(row[14]) || 0;
+          cache[idAgente].exclComp += parseFloat(row[5]) || 0; // Aproximación
+        }
+      }
+    }
+    
+    Logger.log('✅ Históricos de ' + Object.keys(cache).length + ' agentes cargados');
+    return cache;
+    
+  } catch (error) {
+    Logger.log('❌ Error en obtenerTodosHistoricosAgentes: ' + error);
+    return {};
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 📝 NOTA: Estas funciones se añaden al final del archivo .gs
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log('✅ Funciones backend de histórico cargadas');
 
