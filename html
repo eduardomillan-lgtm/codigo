@@ -1898,63 +1898,61 @@ body[data-theme="kw-claro"] canvas {
         </div>
     </div>
 </div>
-    <div id="modal-carga-historico" class="modal">
-    <div class="modal-content" style="max-width: 1300px; height: 95vh;">
-        <span class="modal-close" onclick="cerrarModalSuperior('modal-carga-historico')">&times;</span>
-        <div class="modal-body">
-            <div class="section-title">📜 Historial Detallado del Agente</div>
-            
-            <div style="background:var(--color-surface); padding:20px; border-radius:15px; display:flex; gap:20px; align-items:end; margin-bottom:20px;">
-                <div class="form-grupo" style="flex-grow:1;">
-                    <label class="form-label">Seleccionar Agente</label>
-                    <select id="hist-agente-select" class="form-select" onchange="cargarDatosHistoricosExistentes()"></select>
-                </div>
-                <div class="form-grupo">
-                    <label class="form-label">Año Histórico</label>
-                    <select id="hist-anio" class="form-select" onchange="cargarDatosHistoricosExistentes()">
-                        <option value="2024" selected>2024</option>
-                        <option value="2023">2023</option>
-                    </select>
-                </div>
-                <div style="background:rgba(0,0,0,0.2); padding:5px; border-radius:10px; display:flex;">
-                    <button id="btn-hist-anual" class="btn" style="border:none; background:var(--color-primary); color:white;" onclick="setModoHistorico('ANUAL')">Total Anual</button>
-                    <button id="btn-hist-mensual" class="btn" style="border:none; background:transparent; opacity:0.6;" onclick="setModoHistorico('MENSUAL')">Por Meses</button>
-                </div>
+    <div class="modal-body">
+        <div class="section-title">📜 Historial Detallado del Agente</div>
+        
+        <div style="background:var(--color-surface); padding:20px; border-radius:15px; display:flex; gap:20px; align-items:end; margin-bottom:20px;">
+            <div class="form-grupo" style="flex-grow:1;">
+                <label class="form-label">Seleccionar Agente</label>
+                <select id="hist-agente-select" class="form-select" onchange="cargarDatosHistoricosExistentes()"></select>
             </div>
-
-            <div id="hist-panel-anual" style="display:block;">
-                <div class="form-grid" style="background:var(--color-surface); padding:20px; border-radius:15px; border:1px solid var(--color-border);">
-                    <div class="form-grupo"><label class="form-label">💰 GCI Total (€)</label><input type="number" id="ha-gci" class="form-input"></div>
-                    <div class="form-grupo"><label class="form-label">🤝 Ventas (Cierres)</label><input type="number" id="ha-ventas" class="form-input"></div>
-                    
-                    <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">📞 Citas Captación</label><input type="number" id="ha-citasCapt" class="form-input"></div>
-                    <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">🏠 Exclusivas Venta</label><input type="number" id="ha-exclVenta" class="form-input"></div>
-                    <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">🏘️ Capt. Abierto</label><input type="number" id="ha-captAbierto" class="form-input"></div>
-                    
-                    <div class="form-grupo"><label class="form-label" style="color:#667eea">👥 Citas Comprador</label><input type="number" id="ha-citasComp" class="form-input"></div>
-                    <div class="form-grupo"><label class="form-label" style="color:#667eea">🔑 Exclusivas Comp.</label><input type="number" id="ha-exclComp" class="form-input"></div>
-                    <div class="form-grupo"><label class="form-label" style="color:#667eea">🏡 Visitas (Showings)</label><input type="number" id="ha-visitas" class="form-input"></div>
-                </div>
+            <div class="form-grupo">
+                <label class="form-label">Año Histórico</label>
+                <select id="hist-anio" class="form-select" onchange="cargarDatosHistoricosExistentes()">
+                    <option value="2025" selected>2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                </select>
             </div>
-
-            <div id="hist-panel-mensual" style="display:none;">
-                <div class="tabla-container" style="max-height:55vh; overflow-y:auto;">
-                    <table class="tabla" style="font-size:0.85em;">
-                        <thead>
-                            <tr>
-                                <th style="position:sticky; left:0; z-index:2;">Mes</th>
-                                <th>GCI (€)</th><th>Ventas</th>
-                                <th style="color:#ff6b6b">Citas Capt.</th><th style="color:#ff6b6b">Excl. Venta</th><th style="color:#ff6b6b">Abierto</th>
-                                <th style="color:#667eea">Citas Comp.</th><th style="color:#667eea">Excl. Comp.</th><th style="color:#667eea">Visitas</th>
-                            </tr>
-                        </thead>
-                        <tbody id="hist-tabla-body"></tbody>
-                    </table>
-                </div>
+            <div style="background:rgba(0,0,0,0.2); padding:5px; border-radius:10px; display:flex;">
+                <button id="btn-hist-anual" class="btn" style="border:none; background:var(--color-primary); color:white;" onclick="setModoHistorico('ANUAL')">Total Anual</button>
+                <button id="btn-hist-mensual" class="btn" style="border:none; background:transparent; opacity:0.6;" onclick="setModoHistorico('MENSUAL')">Por Meses</button>
             </div>
-
-            <button class="btn-primary-action" onclick="guardarHistoricoAgenteHTML()" style="margin-top:20px; width:100%;">💾 Guardar Histórico Completo</button>
         </div>
+
+        <div id="hist-panel-anual" style="display:block;">
+            <div class="form-grid" style="background:var(--color-surface); padding:20px; border-radius:15px; border:1px solid var(--color-border);">
+                <div class="form-grupo"><label class="form-label">💰 GCI Total (€)</label><input type="number" id="ha-gci" class="form-input"></div>
+                <div class="form-grupo"><label class="form-label">🤝 Ventas (Cierres)</label><input type="number" id="ha-ventas" class="form-input"></div>
+                
+                <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">📞 Citas Captación</label><input type="number" id="ha-citasCapt" class="form-input"></div>
+                <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">🏠 Exclusivas Venta</label><input type="number" id="ha-exclVenta" class="form-input"></div>
+                <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">🏘️ Capt. Abierto</label><input type="number" id="ha-captAbierto" class="form-input"></div>
+                
+                <div class="form-grupo"><label class="form-label" style="color:#667eea">👥 Citas Comprador</label><input type="number" id="ha-citasComp" class="form-input"></div>
+                <div class="form-grupo"><label class="form-label" style="color:#667eea">🔑 Exclusivas Comp.</label><input type="number" id="ha-exclComp" class="form-input"></div>
+                <div class="form-grupo"><label class="form-label" style="color:#667eea">🏡 Visitas (Showings)</label><input type="number" id="ha-visitas" class="form-input"></div>
+            </div>
+        </div>
+
+        <div id="hist-panel-mensual" style="display:none;">
+            <div class="tabla-container" style="max-height:55vh; overflow-y:auto;">
+                <table class="tabla" style="font-size:0.85em;">
+                    <thead>
+                        <tr>
+                            <th style="position:sticky; left:0; z-index:2;">Mes</th>
+                            <th>GCI (€)</th><th>Ventas</th>
+                            <th style="color:#ff6b6b">Citas Capt.</th><th style="color:#ff6b6b">Excl. Venta</th><th style="color:#ff6b6b">Abierto</th>
+                            <th style="color:#667eea">Citas Comp.</th><th style="color:#667eea">Excl. Comp.</th><th style="color:#667eea">Visitas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hist-tabla-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <button class="btn-primary-action" onclick="guardarHistoricoAgenteHTML()" style="margin-top:20px; width:100%;">💾 Guardar Histórico Completo</button>
+    </div>
     </div>
 </div>
 
@@ -5193,16 +5191,6 @@ function mostrarModalRentabilidad() {
     setTimeout(cargarRentabilidadAgentes, 200);
 }
 
-function mostrarModalCargaHistorico() {
-    abrirModalEncima('modal-carga-historico');
-    poblarSelectAgentes('hist-agente-select');
-    // Inicializar en modo anual
-    if (typeof setModoHistorico === 'function') {
-        setModoHistorico('ANUAL');
-        cargarDatosHistoricosExistentes();
-    }
-}
-
         // ===================================
         // ⭐ LÓGICA MODAL TRANSACCIONES
         // ===================================
@@ -6997,70 +6985,55 @@ var modoHist = 'ANUAL'; // Usamos var para asegurar que sea global
 
 // 2. Función del Interruptor (Switch)
 function setModoHistorico(modo) {
-    console.log("Cambio de modo histórico a:", modo); // Para depurar
-    modoHist = modo;
+    modoHistorico = modo;
     
-    // Botones
-    const btnA = document.getElementById('btn-hist-anual');
-    const btnM = document.getElementById('btn-hist-mensual');
+    // Actualizar botones
+    const btnAnual = document.getElementById('btn-hist-anual');
+    const btnMensual = document.getElementById('btn-hist-mensual');
     
-    // Paneles
-    const panA = document.getElementById('hist-panel-anual');
-    const panM = document.getElementById('hist-panel-mensual');
-    
-    if (!btnA || !btnM || !panA || !panM) {
-        console.error("Error: No se encuentran los elementos del modal histórico.");
-        return;
-    }
-
     if (modo === 'ANUAL') {
-        // Activar Anual
-        btnA.style.background = 'var(--color-primary)'; 
-        btnA.style.opacity = '1';
-        btnM.style.background = 'transparent'; 
-        btnM.style.opacity = '0.5';
-        
-        panA.style.display = 'block';
-        panM.style.display = 'none';
+        btnAnual.style.background = 'var(--color-primary)';
+        btnAnual.style.opacity = '1';
+        btnMensual.style.background = 'transparent';
+        btnMensual.style.opacity = '0.6';
+        document.getElementById('hist-panel-anual').style.display = 'block';
+        document.getElementById('hist-panel-mensual').style.display = 'none';
     } else {
-        // Activar Mensual
-        btnM.style.background = 'var(--color-primary)'; 
-        btnM.style.opacity = '1';
-        btnA.style.background = 'transparent'; 
-        btnA.style.opacity = '0.5';
-        
-        panM.style.display = 'block';
-        panA.style.display = 'none';
-        
-        // Generar la tabla si está vacía
-        const tbody = document.getElementById('hist-tabla-body');
-        if(tbody && tbody.children.length === 0) {
-            generarTablaMensualVacia();
-        }
+        btnMensual.style.background = 'var(--color-primary)';
+        btnMensual.style.opacity = '1';
+        btnAnual.style.background = 'transparent';
+        btnAnual.style.opacity = '0.6';
+        document.getElementById('hist-panel-anual').style.display = 'none';
+        document.getElementById('hist-panel-mensual').style.display = 'block';
+        generarTablaMensual();
     }
 }
 
-// 3. Generador de Tabla Mensual (Por si faltaba)
-function generarTablaMensualVacia() {
-    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+// ═══════════════════════════════════════════════════════════════════════════
+// FUNCIÓN 2: generarTablaMensual()
+// ═══════════════════════════════════════════════════════════════════════════
+
+function generarTablaMensual() {
     const tbody = document.getElementById('hist-tabla-body');
-    if (!tbody) return;
+    tbody.innerHTML = '';
     
-    let html = '';
-    meses.forEach((m, i) => {
-        html += `<tr>
-            <td style="font-weight:bold; background:var(--color-surface);">${m}</td>
-            <td><input type="number" class="form-input hm-gci" data-m="${i}" placeholder="0" style="width:80px"></td>
-            <td><input type="number" class="form-input hm-ventas" data-m="${i}" placeholder="0" style="width:50px"></td>
-            <td><input type="number" class="form-input hm-citasCapt" data-m="${i}" placeholder="0" style="width:50px"></td>
-            <td><input type="number" class="form-input hm-exclVenta" data-m="${i}" placeholder="0" style="width:50px"></td>
-            <td><input type="number" class="form-input hm-captAbierto" data-m="${i}" placeholder="0" style="width:50px"></td>
-            <td><input type="number" class="form-input hm-citasComp" data-m="${i}" placeholder="0" style="width:50px"></td>
-            <td><input type="number" class="form-input hm-exclComp" data-m="${i}" placeholder="0" style="width:50px"></td>
-            <td><input type="number" class="form-input hm-visitas" data-m="${i}" placeholder="0" style="width:50px"></td>
-        </tr>`;
-    });
-    tbody.innerHTML = html;
+    const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    
+    for (let i = 0; i < 12; i++) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="position:sticky; left:0; background:var(--color-bg-alt); font-weight:bold;">${meses[i]}</td>
+            <td><input type="number" id="hm-gci-${i}" class="form-input" style="width:80px; padding:5px; text-align:center;" value="0"></td>
+            <td><input type="number" id="hm-ventas-${i}" class="form-input" style="width:60px; padding:5px; text-align:center;" value="0"></td>
+            <td><input type="number" id="hm-citasCapt-${i}" class="form-input" style="width:60px; padding:5px; text-align:center;" value="0"></td>
+            <td><input type="number" id="hm-exclVenta-${i}" class="form-input" style="width:60px; padding:5px; text-align:center;" value="0"></td>
+            <td><input type="number" id="hm-captAbierto-${i}" class="form-input" style="width:60px; padding:5px; text-align:center;" value="0"></td>
+            <td><input type="number" id="hm-citasComp-${i}" class="form-input" style="width:60px; padding:5px; text-align:center;" value="0"></td>
+            <td><input type="number" id="hm-exclComp-${i}" class="form-input" style="width:60px; padding:5px; text-align:center;" value="0"></td>
+            <td><input type="number" id="hm-visitas-${i}" class="form-input" style="width:60px; padding:5px; text-align:center;" value="0"></td>
+        `;
+        tbody.appendChild(tr);
+    }
 }
 
 // 4. Función de Apertura (Asegurando que carga agentes)
@@ -7074,91 +7047,131 @@ function mostrarModalCargaHistorico() {
 }
 
 function cargarDatosHistoricosExistentes() {
-    const id = document.getElementById('hist-agente-select').value;
-    const anio = document.getElementById('hist-anio').value;
-    if(!id) return;
-
-    // Limpiar inputs anuales
-    ['gci','ventas','citasCapt','exclVenta','captAbierto','citasComp','exclComp','visitas'].forEach(k => {
-        document.getElementById('ha-'+k).value = '';
-    });
+    const idAgente = document.getElementById('hist-agente-select').value;
+    const anio = parseInt(document.getElementById('hist-anio').value);
     
-    google.script.run.withSuccessHandler(res => {
-        if(res.modo !== 'VACIO') {
-            setModoHistorico(res.modo);
-            if(res.modo === 'ANUAL') {
-                const v = res.valores;
-                document.getElementById('ha-gci').value = v.gci;
-                document.getElementById('ha-ventas').value = v.ventas;
-                document.getElementById('ha-citasCapt').value = v.citasCapt;
-                document.getElementById('ha-exclVenta').value = v.exclVenta;
-                document.getElementById('ha-captAbierto').value = v.captAbierto;
-                document.getElementById('ha-citasComp').value = v.citasComp;
-                document.getElementById('ha-exclComp').value = v.exclComp;
-                document.getElementById('ha-visitas').value = v.visitas;
+    if (!idAgente) return;
+    
+    mostrarNotificacion('Cargando datos existentes...', 'info');
+    
+    google.script.run
+        .withSuccessHandler(datos => {
+            if (datos && datos.length > 0) {
+                // Llenar modo MENSUAL
+                if (modoHistorico === 'MENSUAL') {
+                    datos.forEach(fila => {
+                        const mes = parseInt(fila[3]); // Columna Mes
+                        if (mes >= 1 && mes <= 12) {
+                            const idx = mes - 1;
+                            document.getElementById(`hm-gci-${idx}`).value = fila[22] || 0;
+                            document.getElementById(`hm-ventas-${idx}`).value = 
+                                (fila[14]||0) + (fila[16]||0) + (fila[18]||0) + (fila[20]||0);
+                            document.getElementById(`hm-citasCapt-${idx}`).value = fila[4] || 0;
+                            document.getElementById(`hm-exclVenta-${idx}`).value = fila[5] || 0;
+                            document.getElementById(`hm-captAbierto-${idx}`).value = fila[6] || 0;
+                            document.getElementById(`hm-citasComp-${idx}`).value = fila[7] || 0;
+                            document.getElementById(`hm-exclComp-${idx}`).value = 0; // No hay columna específica
+                            document.getElementById(`hm-visitas-${idx}`).value = fila[8] || 0;
+                        }
+                    });
+                } else {
+                    // Sumar todo para modo ANUAL
+                    let totales = { gci: 0, ventas: 0, citasCapt: 0, exclVenta: 0, captAbierto: 0, citasComp: 0, exclComp: 0, visitas: 0 };
+                    datos.forEach(fila => {
+                        totales.gci += parseFloat(fila[22]) || 0;
+                        totales.ventas += (fila[14]||0) + (fila[16]||0) + (fila[18]||0) + (fila[20]||0);
+                        totales.citasCapt += parseFloat(fila[4]) || 0;
+                        totales.exclVenta += parseFloat(fila[5]) || 0;
+                        totales.captAbierto += parseFloat(fila[6]) || 0;
+                        totales.citasComp += parseFloat(fila[7]) || 0;
+                        totales.visitas += parseFloat(fila[8]) || 0;
+                    });
+                    
+                    document.getElementById('ha-gci').value = totales.gci.toFixed(2);
+                    document.getElementById('ha-ventas').value = totales.ventas;
+                    document.getElementById('ha-citasCapt').value = totales.citasCapt;
+                    document.getElementById('ha-exclVenta').value = totales.exclVenta;
+                    document.getElementById('ha-captAbierto').value = totales.captAbierto;
+                    document.getElementById('ha-citasComp').value = totales.citasComp;
+                    document.getElementById('ha-exclComp').value = 0;
+                    document.getElementById('ha-visitas').value = totales.visitas;
+                }
+                
+                mostrarNotificacion('Datos cargados correctamente', 'success');
             } else {
-                // Rellenar tabla mensual
-                const filas = document.getElementById('hist-tabla-body').rows;
-                res.valores.forEach((val, i) => {
-                    if(filas[i]) {
-                        filas[i].querySelector('.hm-gci').value = val.gci;
-                        filas[i].querySelector('.hm-ventas').value = val.ventas;
-                        filas[i].querySelector('.hm-citasCapt').value = val.citasCapt;
-                        filas[i].querySelector('.hm-exclVenta').value = val.exclVenta;
-                        filas[i].querySelector('.hm-captAbierto').value = val.captAbierto;
-                        filas[i].querySelector('.hm-citasComp').value = val.citasComp;
-                        filas[i].querySelector('.hm-exclComp').value = val.exclComp;
-                        filas[i].querySelector('.hm-visitas').value = val.visitas;
-                    }
-                });
+                mostrarNotificacion('No hay datos históricos para este agente/año', 'info');
             }
-            mostrarNotificacion("Datos históricos cargados");
-        }
-    }).obtenerHistoricoAgente(id, anio);
+        })
+        .withFailureHandler(err => {
+            mostrarNotificacion('Error al cargar datos: ' + err, 'error');
+        })
+        .obtenerHistoricoExistente(idAgente, anio);
 }
 
 function guardarHistoricoAgenteHTML() {
-    const id = document.getElementById('hist-agente-select').value;
-    const nombre = document.getElementById('hist-agente-select').selectedOptions[0].text;
-    const anio = document.getElementById('hist-anio').value;
-
-    const datos = { idAgente: id, nombre: nombre, anio: anio, modo: modoHist, valores: {} };
-
-    if(modoHist === 'ANUAL') {
-        datos.valores = {
-            gci: document.getElementById('ha-gci').value,
-            ventas: document.getElementById('ha-ventas').value,
-            citasCapt: document.getElementById('ha-citasCapt').value,
-            exclVenta: document.getElementById('ha-exclVenta').value,
-            captAbierto: document.getElementById('ha-captAbierto').value,
-            citasComp: document.getElementById('ha-citasComp').value,
-            exclComp: document.getElementById('ha-exclComp').value,
-            visitas: document.getElementById('ha-visitas').value
+    const idAgente = document.getElementById('hist-agente-select').value;
+    const anio = parseInt(document.getElementById('hist-anio').value);
+    
+    if (!idAgente) {
+        mostrarNotificacion('Selecciona un agente', 'error');
+        return;
+    }
+    
+    const datos = {
+        idAgente: idAgente,
+        anio: anio,
+        modo: modoHistorico
+    };
+    
+    if (modoHistorico === 'ANUAL') {
+        // Recoger datos del formulario anual
+        datos.anual = {
+            gci: parseFloat(document.getElementById('ha-gci').value) || 0,
+            ventas: parseInt(document.getElementById('ha-ventas').value) || 0,
+            citasCapt: parseInt(document.getElementById('ha-citasCapt').value) || 0,
+            exclVenta: parseInt(document.getElementById('ha-exclVenta').value) || 0,
+            captAbierto: parseInt(document.getElementById('ha-captAbierto').value) || 0,
+            citasComp: parseInt(document.getElementById('ha-citasComp').value) || 0,
+            exclComp: parseInt(document.getElementById('ha-exclComp').value) || 0,
+            visitas: parseInt(document.getElementById('ha-visitas').value) || 0
         };
     } else {
-        const lista = [];
-        const filas = document.getElementById('hist-tabla-body').rows;
-        for(let i=0; i<12; i++) {
-            lista.push({
-                gci: filas[i].querySelector('.hm-gci').value,
-                ventas: filas[i].querySelector('.hm-ventas').value,
-                citasCapt: filas[i].querySelector('.hm-citasCapt').value,
-                exclVenta: filas[i].querySelector('.hm-exclVenta').value,
-                captAbierto: filas[i].querySelector('.hm-captAbierto').value,
-                citasComp: filas[i].querySelector('.hm-citasComp').value,
-                exclComp: filas[i].querySelector('.hm-exclComp').value,
-                visitas: filas[i].querySelector('.hm-visitas').value
+        // Recoger datos de la tabla mensual
+        datos.mensual = [];
+        for (let i = 0; i < 12; i++) {
+            datos.mensual.push({
+                gci: parseFloat(document.getElementById(`hm-gci-${i}`).value) || 0,
+                ventas: parseInt(document.getElementById(`hm-ventas-${i}`).value) || 0,
+                citasCapt: parseInt(document.getElementById(`hm-citasCapt-${i}`).value) || 0,
+                exclVenta: parseInt(document.getElementById(`hm-exclVenta-${i}`).value) || 0,
+                captAbierto: parseInt(document.getElementById(`hm-captAbierto-${i}`).value) || 0,
+                citasComp: parseInt(document.getElementById(`hm-citasComp-${i}`).value) || 0,
+                exclComp: parseInt(document.getElementById(`hm-exclComp-${i}`).value) || 0,
+                visitas: parseInt(document.getElementById(`hm-visitas-${i}`).value) || 0
             });
         }
-        datos.valores = lista;
     }
-
-    mostrarNotificacion("💾 Guardando...");
-    google.script.run.withSuccessHandler(() => {
-        mostrarNotificacion("✅ Histórico actualizado");
-        cerrarModalSuperior('modal-carga-historico');
-    }).guardarHistoricoAgente(datos);
+    
+    mostrarNotificacion('Guardando histórico...', 'info');
+    
+    google.script.run
+        .withSuccessHandler(response => {
+            if (response.success) {
+                mostrarNotificacion(response.message, 'success');
+                // Recargar dashboard si está en vista agente
+                if (agenteActual) {
+                    cargarDashboardAgente(agenteActual.id);
+                }
+            } else {
+                mostrarNotificacion('Error: ' + response.error, 'error');
+            }
+        })
+        .withFailureHandler(err => {
+            mostrarNotificacion('Error al guardar: ' + err, 'error');
+        })
+        .guardarHistoricoAgenteHTML(datos);
 }
+
 // ============================================
 // RENDERIZAR EMBUDOS
 // ============================================
