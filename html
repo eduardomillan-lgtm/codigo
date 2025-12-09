@@ -3948,23 +3948,28 @@ function renderizarGraficosGenerales() {
     // 1. Calcular Ponderación Temporal
     const hoy = new Date();
     const dias = Math.ceil((hoy - new Date(hoy.getFullYear(),0,1)) / 86400000);
-    const factor = Math.max(dias / 365, 0.01); // Evitar división por cero en día 1
+    const factor = Math.max(dias / 365, 0.01); 
     
     // 2. Datos Actuales (Real 2025)
+    // Aseguramos que datosFiltrados existe
+    const dataSegura = datosFiltrados || [];
+    
     const act = {
-        gci: datosFiltrados.reduce((s, d) => s + (d.realizado.gci||0), 0),
+        gci: dataSegura.reduce((s, d) => s + (d.realizado.gci||0), 0),
         ventas: window.transaccionesGlobales ? window.transaccionesGlobales.length : 0,
-        citasCapt: datosFiltrados.reduce((s, d) => s + (d.realizado.citasCaptacion||0), 0),
-        exclVenta: datosFiltrados.reduce((s, d) => s + (d.realizado.exclusivasVenta||0), 0),
-        captAbierto: datosFiltrados.reduce((s, d) => s + (d.realizado.captacionesAbierto||0), 0),
-        citasComp: datosFiltrados.reduce((s, d) => s + (d.realizado.citasCompradores||0), 0),
-        exclComp: datosFiltrados.reduce((s, d) => s + (d.realizado.exclusivasComprador||0), 0),
-        visitas: datosFiltrados.reduce((s, d) => s + (d.realizado.casasEnsenadas||0), 0)
+        citasCapt: dataSegura.reduce((s, d) => s + (d.realizado.citasCaptacion||0), 0),
+        exclVenta: dataSegura.reduce((s, d) => s + (d.realizado.exclusivasVenta||0), 0),
+        captAbierto: dataSegura.reduce((s, d) => s + (d.realizado.captacionesAbierto||0), 0),
+        citasComp: dataSegura.reduce((s, d) => s + (d.realizado.citasCompradores||0), 0),
+        exclComp: dataSegura.reduce((s, d) => s + (d.realizado.exclusivasComprador||0), 0),
+        visitas: dataSegura.reduce((s, d) => s + (d.realizado.casasEnsenadas||0), 0)
     };
 
     // 3. Datos Históricos (Total Año Anterior)
     let histTotal = { gci:0, ventas:0, citasCapt:0, exclVenta:0, captAbierto:0, citasComp:0, exclComp:0, visitas:0 };
-    if (historialAgentesCache) {
+    
+    // Comprobamos que historialAgentesCache existe antes de usarlo
+    if (typeof historialAgentesCache !== 'undefined' && historialAgentesCache) {
          Object.values(historialAgentesCache).forEach(h => {
             histTotal.gci += h.gci||0; histTotal.ventas += h.ventas||0;
             histTotal.citasCapt += h.citasCapt||0; histTotal.exclVenta += h.exclVenta||0;
@@ -3973,29 +3978,27 @@ function renderizarGraficosGenerales() {
          });
     }
 
-    // 4. CÁLCULO DE PROYECCIÓN (FORECAST)
+    // 4. CÁLCULO DE PROYECCIÓN
     const proyeccion = {
         gci: act.gci / factor,
         ventas: act.ventas / factor
     };
 
-    // Diferencia Proyección vs Año Pasado Real
     const diffProy = proyeccion.gci - histTotal.gci;
     const pctProy = histTotal.gci > 0 ? (diffProy / histTotal.gci) * 100 : 100;
     const colorProy = diffProy >= 0 ? '#00ff88' : '#ff4444';
-    const iconoProy = diffProy >= 0 ? '🚀 Crecimiento' : '⚠️ Caída';
+    const iconoProy = diffProy >= 0 ? '🚀' : '⚠️';
 
-    // Meta YTD (Para las tarjetas pequeñas)
+    // Meta YTD
     const meta = {};
     Object.keys(histTotal).forEach(k => meta[k] = histTotal[k] * factor);
 
-    // HTML ESTRUCTURA
     const html = `
         <div style="background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; margin-bottom: 30px; display:flex; justify-content:space-around; align-items:center; flex-wrap:wrap; gap:20px;">
             <div style="text-align:center;">
                 <div style="font-size:0.9em; color:#aaa; margin-bottom:5px;">FACTURACIÓN ACTUAL (YTD)</div>
-                <div style="font-size:2.5em; font-weight:900; color:white;">${act.gci.toLocaleString('es-ES', {maximumFractionDigits:0})}€</div>
-                <div style="font-size:0.8em; color:#888;">Día ${Math.ceil(dias)} del año (${(factor*100).toFixed(1)}%)</div>
+                <div style="font-size:2.5em; font-weight:900; color:var(--color-text-primary);">${act.gci.toLocaleString('es-ES', {maximumFractionDigits:0})}€</div>
+                <div style="font-size:0.8em; color:#888;">Día ${Math.ceil(dias)} (${(factor*100).toFixed(1)}%)</div>
             </div>
             <div style="font-size:3em; opacity:0.5;">➔</div>
             <div style="text-align:center;">
@@ -4007,7 +4010,7 @@ function renderizarGraficosGenerales() {
             </div>
         </div>
 
-        <div class="section-title">📊 Comparativa YTD (Real vs Año Pasado a la Fecha)</div>
+        <div class="section-title">📊 Comparativa YTD</div>
         
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:10px; margin-bottom:30px;">
             ${renderMiniGrowthCard("💰 GCI", act.gci, meta.gci, "€")}
@@ -4022,12 +4025,12 @@ function renderizarGraficosGenerales() {
 
         <div class="charts-grid">
             <div class="chart-container" style="grid-column: 1 / -1; height: 450px;">
-                <div class="chart-title">📊 Volumen YTD: 2025 vs 2024 (Ponderado)</div>
+                <div class="chart-title">📊 Volumen YTD: 2025 vs 2024</div>
                 <canvas id="chart-yoy-completo"></canvas>
             </div>
             <div class="chart-container" style="grid-column: 1 / -1; height: 500px;">
-                <div class="chart-title">🧠 Matriz de Talento (Skill vs Will)</div>
-                <canvas id="chart-skill-will" onclick="ampliarGrafico('skillWill', 'Matriz de Talento')"></canvas>
+                <div class="chart-title">🧠 Matriz de Talento</div>
+                <canvas id="chart-skill-will"></canvas>
             </div>
         </div>
 
@@ -4645,86 +4648,6 @@ function crearGraficoComparativoAgente(canvasId, agente, hist, factor) {
     setTimeout(() => {
         crearGraficoDetalleComparativo('modal-chart-detalle', labels, realizado, objetivo, historico, kpiLabel);
     }, 100);
-}
-
-        function mostrarGraficoAgente(idAgente, kpiKey) {
-    console.log("🖱️ Click detectado: Agente=" + idAgente + " KPI=" + kpiKey);
-
-    let agente;
-    // Buscar al agente en los datos cargados
-    if (agenteActual && agenteActual.id === idAgente) {
-        agente = datosAgenteCompletos;
-    } else {
-        agente = datosGlobales.find(d => d.id === idAgente);
-    }
-
-    if (!agente) {
-        mostrarNotificacion("Error: No se encuentran los datos de este agente.", true);
-        return;
-    }
-
-    // --- MAPEO DE CLAVES (KPI Actual -> KPI Histórico) ---
-    // Esto es necesario porque a veces guardamos 'citasCaptacion' y en el histórico se llama 'citasCapt'
-    const mapKeys = {
-        'gci': 'gci',
-        'citasCaptacion': 'citasCapt',
-        'exclusivasVenta': 'exclVenta',
-        'exclusivasComprador': 'exclComp',
-        'captacionesAbierto': 'captAbierto',
-        'citasCompradores': 'citasComp',
-        'casasEnsenadas': 'visitas',
-        'totalTransacciones': 'ventas',
-        'llamadas': 'llamadas'
-    };
-
-    const histKey = mapKeys[kpiKey];
-    
-    // --- OBTENER DATOS ---
-    const labels = agente.evolucionMensual.labels; // Ene, Feb, Mar...
-    const realizado = agente.evolucionMensual[kpiKey]?.realizado || [];
-    const objetivo = agente.evolucionMensual[kpiKey]?.objetivo || [];
-    
-    // Preparar Array del Año Anterior (Histórico)
-    let historico = new Array(12).fill(0); // Por defecto 0
-    
-    // Intentar sacar datos reales del caché histórico
-    if (historialAgentesCache && historialAgentesCache[idAgente]) {
-        const h = historialAgentesCache[idAgente];
-        
-        // Si tenemos desglose mensual en el caché (Ideal)
-        if (h.mensual && h.mensual[histKey]) {
-            historico = h.mensual[histKey]; 
-        } 
-        // Si solo tenemos el total anual, calculamos el promedio para referencia
-        else if (h[histKey] > 0) {
-            const promedio = h[histKey] / 12;
-            historico = new Array(12).fill(promedio); 
-        }
-    }
-
-    // --- RENDERIZAR MODAL ---
-    const modalBody = document.getElementById('modal-grafico-body');
-    const kpiLabel = kpiNames[kpiKey] || kpiKey;
-
-    modalBody.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="margin-bottom: 20px; color: var(--color-primary);">📈 ${kpiLabel}: Comparativa Total</h2>
-            <div style="font-size:0.8em; color:#888;">
-                <span style="color:#00ff88">● Actual</span> | 
-                <span style="color:#ffd700">-- Objetivo</span> | 
-                <span style="color:#aaa">▮ Año Anterior</span>
-            </div>
-        </div>
-        <div class="chart-container" style="height: 65vh; width: 100%; border:none; box-shadow:none;">
-            <canvas id="modal-chart-detalle"></canvas>
-        </div>
-    `;
-
-    abrirModalEncima('modal-grafico-secundario');
-
-    setTimeout(() => {
-        crearGraficoDetalleComparativo('modal-chart-detalle', labels, realizado, objetivo, historico, kpiLabel);
-    }, 200);
 }
 
         function crearGraficoDetalle(canvasId, labels, dataRealizado, dataObjetivo, labelRealizado, labelObjetivo) {
@@ -10292,51 +10215,123 @@ function crearNuevoAgente(event) {
         })
         .crearAgenteCompleto(datos);
 }
+// =========================================================
+// 📈 FIX GRÁFICOS INDIVIDUALES (V10)
+// =========================================================
+
 function mostrarGraficoAgente(idAgente, kpiKey) {
-    console.log('📊 Abriendo gráfico:', kpiKey, 'para:', idAgente);
+    console.log('📊 Solicitando gráfico para ID:', idAgente, ' KPI:', kpiKey);
     
-    const year = new Date().getFullYear();
-    const modalAnalisis = document.getElementById('modal-analisis');
-    const modalBody = document.getElementById('modal-analisis-body');
+    const modalBody = document.getElementById('modal-grafico-body');
+    if (!modalBody) return;
     
-    if (!modalAnalisis || !modalBody) {
-        console.error('❌ Modal no encontrado');
-        return;
-    }
-    
-    // Mostrar loading
+    // 1. Loading
     modalBody.innerHTML = `
         <div class="loading">
             <div class="loader"></div>
-            <div>Cargando datos de ${kpiKey}...</div>
+            <div>Analizando datos de ${idAgente}...</div>
         </div>
     `;
     
-    modalAnalisis.classList.add('active');
-    document.body.classList.add('modal-open');
+    abrirModalEncima('modal-grafico-secundario');
     
-    // Llamar backend
+    // 2. PEDIR AL SERVIDOR USANDO EL ID (MÁS SEGURO)
+    // Usamos el ID directamente como criterio de búsqueda
     google.script.run
-        .withSuccessHandler(function(datosCompletos) {
-            console.log('✅ Datos completos recibidos:', datosCompletos);
-            
-            if (!datosCompletos || !datosCompletos.evolucionMensual) {
-                modalBody.innerHTML = '<div class="section">❌ No se pudieron cargar los datos</div>';
-                return;
-            }
-            
-            renderizarGraficoModalCompleto(datosCompletos, kpiKey);
+        .withSuccessHandler(datos => {
+             console.log("✅ Datos recibidos para gráfico:", datos);
+             renderizarGraficoModalAgente(datos, kpiKey);
         })
-        .withFailureHandler(function(error) {
-            console.error('❌ Error backend:', error);
-            modalBody.innerHTML = `<div class="section">❌ Error: ${error.message}</div>`;
+        .withFailureHandler(err => {
+             console.error("❌ Error servidor:", err);
+             modalBody.innerHTML = `<div style="text-align:center; padding:20px; color:#ff4444;">Error: ${err.message}</div>`;
         })
-        .obtenerDatosAgenteCompleto(idAgente, year);
+        .obtenerDatosAgenteCompleto(idAgente, { // <--- ENVIAMOS EL ID
+            fechaInicio: `${new Date().getFullYear()}-01-01`,
+            fechaFin: `${new Date().getFullYear()}-12-31`
+        });
 }
 
-/**
- * Renderiza el gráfico completo en el modal
- */
+// Asegúrate de tener también esta función actualizada para pintar el gráfico
+function renderizarGraficoModalAgente(datos, kpiKey) {
+    const modalBody = document.getElementById('modal-grafico-body');
+    
+    // Validación de seguridad
+    if (!datos || !datos.evolucionMensual) {
+        modalBody.innerHTML = '<div style="text-align:center; padding:50px;">❌ Datos vacíos o agente no encontrado.</div>';
+        return;
+    }
+
+    const nombreAgente = datos.agente || "Agente Desconocido"; // Fallback por si llega null
+    const kpiLabel = kpiNames[kpiKey] || kpiKey;
+    const labels = datos.evolucionMensual.labels;
+    const dataReal = datos.evolucionMensual[kpiKey]?.realizado || [];
+    const dataObj = datos.evolucionMensual[kpiKey]?.objetivo || [];
+
+    // Calcular total para cabecera
+    const totalReal = dataReal.reduce((a, b) => a + b, 0);
+    
+    // Render
+    modalBody.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div>
+                <h2 style="margin:0; color:var(--color-primary);">${kpiLabel}</h2>
+                <div style="color:#888; font-weight:bold; font-size:1.1em;">👤 ${nombreAgente}</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:2.5em; font-weight:bold; color:var(--color-accent-good);">
+                    ${totalReal.toLocaleString('es-ES', {maximumFractionDigits: 0})}
+                </div>
+                <div style="font-size:0.8em; color:#aaa;">Acumulado 2025</div>
+            </div>
+        </div>
+
+        <div class="chart-container" style="height: 60vh; width: 100%;">
+            <canvas id="modal-chart-detalle"></canvas>
+        </div>
+    `;
+
+    setTimeout(() => {
+        const ctx = document.getElementById('modal-chart-detalle');
+        if (chartInstances['modal-chart-detalle']) chartInstances['modal-chart-detalle'].destroy();
+
+        chartInstances['modal-chart-detalle'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Realizado (App + Histórico)',
+                        data: dataReal,
+                        backgroundColor: 'rgba(0, 255, 136, 0.6)',
+                        borderColor: '#00ff88',
+                        borderWidth: 1,
+                        order: 2
+                    },
+                    {
+                        label: 'Objetivo',
+                        data: dataObj,
+                        type: 'line',
+                        borderColor: '#ffd700',
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        borderWidth: 2,
+                        order: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }, 100);
+}
+
 function renderizarGraficoModalCompleto(datosCompletos, kpiKey) {
     const modalBody = document.getElementById('modal-analisis-body');
     
