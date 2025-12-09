@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-funnel@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js..."></script>
 
     <style>
       canvas { cursor: pointer; } /* Para indicar que se puede clicar */
@@ -1501,6 +1502,19 @@ body[data-theme="claro"] canvas,
 body[data-theme="kw-claro"] canvas {
     filter: none !important; /* A veces se invierte */
 }
+/* Ocultar todos los modales por defecto */
+.modal {
+    display: none !important;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Solo se muestran cuando tienen clase 'active' */
+.modal.active {
+    display: flex !important;
+    opacity: 1;
+    visibility: visible;
+}
     </style>
 </head>
 <body data-theme="kw-dark"> <div class="animated-bg"></div>
@@ -1725,7 +1739,9 @@ body[data-theme="kw-claro"] canvas {
 <button class="btn-role" onclick="mostrarModalCargaHistorico()">
     <span class="role-icon">📜</span>
     Histórico Agentes
-    <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Cargar datos año anterior (Anual o Mensual).</div>
+    <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">
+        Cargar datos año anterior (Anual o Mensual).
+    </div>
 </button>
 <button class="btn-role" onclick="mostrarModalImportador()">
     <span class="role-icon">📥</span>
@@ -1898,7 +1914,10 @@ body[data-theme="kw-claro"] canvas {
         </div>
     </div>
 </div>
-    <div class="modal-body">
+<div id="modal-carga-historico" class="modal">
+    <div class="modal-content" style="max-width: 1300px; height: 95vh;">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-carga-historico')">&times;</span>
+        <div class="modal-body">
         <div class="section-title">📜 Historial Detallado del Agente</div>
         
         <div style="background:var(--color-surface); padding:20px; border-radius:15px; display:flex; gap:20px; align-items:end; margin-bottom:20px;">
@@ -10273,10 +10292,542 @@ function crearNuevoAgente(event) {
         })
         .crearAgenteCompleto(datos);
 }
+function mostrarGraficoAgente(idAgente, kpiKey) {
+    console.log('📊 Abriendo gráfico:', kpiKey, 'para:', idAgente);
+    
+    const year = new Date().getFullYear();
+    const modalAnalisis = document.getElementById('modal-analisis');
+    const modalBody = document.getElementById('modal-analisis-body');
+    
+    if (!modalAnalisis || !modalBody) {
+        console.error('❌ Modal no encontrado');
+        return;
+    }
+    
+    // Mostrar loading
+    modalBody.innerHTML = `
+        <div class="loading">
+            <div class="loader"></div>
+            <div>Cargando datos de ${kpiKey}...</div>
+        </div>
+    `;
+    
+    modalAnalisis.classList.add('active');
+    document.body.classList.add('modal-open');
+    
+    // Llamar backend
+    google.script.run
+        .withSuccessHandler(function(datosCompletos) {
+            console.log('✅ Datos completos recibidos:', datosCompletos);
+            
+            if (!datosCompletos || !datosCompletos.evolucionMensual) {
+                modalBody.innerHTML = '<div class="section">❌ No se pudieron cargar los datos</div>';
+                return;
+            }
+            
+            renderizarGraficoModalCompleto(datosCompletos, kpiKey);
+        })
+        .withFailureHandler(function(error) {
+            console.error('❌ Error backend:', error);
+            modalBody.innerHTML = `<div class="section">❌ Error: ${error.message}</div>`;
+        })
+        .obtenerDatosAgenteCompleto(idAgente, year);
+}
 
-// ════════════════════════════════════════════════════════════════════════════════
-// FIN DE FUNCIONES GESTIÓN DE AGENTES
-// ════════════════════════════════════════════════════════════════════════════════
+/**
+ * Renderiza el gráfico completo en el modal
+ */
+function renderizarGraficoModalCompleto(datosCompletos, kpiKey) {
+    const modalBody = document.getElementById('modal-analisis-body');
+    
+    const evolucion = datosCompletos.evolucionMensual[kpiKey];
+    
+    if (!evolucion) {
+        modalBody.innerHTML = '<div class="section">⚠️ KPI no disponible</div>';
+        return;
+    }
+    
+    const meta = getKpiMetadata(kpiKey, 0);
+    const realizado = evolucion.realizado || [];
+    const objetivo = evolucion.objetivo || [];
+    
+    const totalRealizado = realizado.reduce((a, b) => a + b, 0);
+    const totalObjetivo = objetivo.reduce((a, b) => a + b, 0);
+    const cumplimiento = totalObjetivo > 0 ? ((totalRealizado / totalObjetivo) * 100).toFixed(1) : 0;
+    
+    // HTML del modal
+    modalBody.innerHTML = `
+        <div class="section-title">${meta.icon} ${meta.label}</div>
+        <div style="text-align:center; font-size:1.2em; opacity:0.8; margin:-10px 0 20px 0;">
+            ${datosCompletos.agente.nombre} - ${datosCompletos.year}
+        </div>
+        
+        <div class="chart-container" style="height:450px; background:var(--color-surface); border-radius:15px; padding:20px; margin-bottom:20px;">
+            <canvas id="chart-modal-kpi-agente"></canvas>
+        </div>
+        
+        <div style="padding:20px; background:var(--color-surface); border-radius:15px;">
+            <h3 style="color:var(--color-secondary); margin-bottom:15px; text-align:center;">📊 Resumen Anual</h3>
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px;">
+                <div style="text-align:center; padding:15px; background:rgba(0,255,136,0.1); border-radius:10px;">
+                    <div style="font-size:2.5em; color:var(--color-accent-good); font-weight:900;">
+                        ${formatearValor(totalRealizado, meta.unidad)}
+                    </div>
+                    <div style="font-size:1em; opacity:0.8; margin-top:5px;">Realizado</div>
+                </div>
+                <div style="text-align:center; padding:15px; background:rgba(255,215,0,0.1); border-radius:10px;">
+                    <div style="font-size:2.5em; color:var(--color-accent-warn); font-weight:900;">
+                        ${formatearValor(totalObjetivo, meta.unidad)}
+                    </div>
+                    <div style="font-size:1em; opacity:0.8; margin-top:5px;">Objetivo</div>
+                </div>
+                <div style="text-align:center; padding:15px; background:rgba(183,0,0,0.1); border-radius:10px;">
+                    <div style="font-size:2.5em; color:${cumplimiento >= 90 ? 'var(--color-accent-good)' : 'var(--color-primary)'}; font-weight:900;">
+                        ${cumplimiento}%
+                    </div>
+                    <div style="font-size:1em; opacity:0.8; margin-top:5px;">Cumplimiento</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Crear gráfico
+    setTimeout(() => {
+        crearGraficoBarrasModal('chart-modal-kpi-agente', realizado, objetivo, meta);
+    }, 100);
+}
+
+/**
+ * Crea gráfico de barras con Chart.js
+ */
+function crearGraficoBarrasModal(canvasId, realizado, objetivo, meta) {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    
+    // Destruir gráfico previo
+    if (chartInstances[canvasId]) {
+        chartInstances[canvasId].destroy();
+    }
+    
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    
+    chartInstances[canvasId] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: meses,
+            datasets: [
+                {
+                    label: 'Realizado',
+                    data: realizado,
+                    backgroundColor: 'rgba(0,255,136,0.7)',
+                    borderColor: 'rgba(0,255,136,1)',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Objetivo',
+                    data: objetivo,
+                    type: 'line',
+                    borderColor: 'rgba(255,215,0,1)',
+                    backgroundColor: 'rgba(255,215,0,0.2)',
+                    borderWidth: 3,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: { 
+                        color: 'var(--color-text-primary)',
+                        font: { size: 14, weight: 'bold' }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: meta.label + ' - Evolución Mensual',
+                    color: 'var(--color-text-primary)',
+                    font: { size: 18, weight: 'bold' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: 'var(--color-text-secondary)',
+                        callback: function(value) {
+                            return formatearValor(value, meta.unidad);
+                        }
+                    },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                },
+                x: {
+                    ticks: { color: 'var(--color-text-secondary)', font: { size: 12 } },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                }
+            }
+        }
+    });
+    
+    console.log('✅ Gráfico creado correctamente');
+}
+
+/**
+ * Formatea valores según unidad
+ */
+function formatearValor(valor, unidad) {
+    const num = parseFloat(valor);
+    if (isNaN(num)) return '0';
+    
+    if (unidad === '€') {
+        return Math.round(num).toLocaleString('es-ES') + '€';
+    } else if (unidad === '%') {
+        return num.toFixed(1) + '%';
+    } else {
+        return Math.round(num).toLocaleString('es-ES');
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 🎯 FUNCIÓN 2: MODAL DE HISTÓRICO
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Abre el modal de carga de histórico
+ */
+function mostrarModalCargaHistorico() {
+    console.log('📜 Abriendo modal de histórico');
+    
+    // Cerrar Centro de Acciones
+    cerrarModalSuperior('modal-acciones');
+    
+    // Abrir modal histórico
+    const modal = document.getElementById('modal-carga-historico');
+    if (!modal) {
+        console.error('❌ Modal no encontrado: modal-carga-historico');
+        alert('❌ Error: Modal de histórico no encontrado en el HTML');
+        return;
+    }
+    
+    modal.classList.add('active');
+    document.body.classList.add('modal-open');
+    
+    // Cargar agentes
+    cargarSelectAgentesHistorico();
+    
+    // Modo ANUAL por defecto
+    setModoHistorico('ANUAL');
+}
+
+/**
+ * Carga lista de agentes en el selector
+ */
+function cargarSelectAgentesHistorico() {
+    const select = document.getElementById('hist-agente-select');
+    if (!select) {
+        console.error('❌ Select no encontrado');
+        return;
+    }
+    
+    select.innerHTML = '<option value="">-- Cargando agentes... --</option>';
+    
+    google.script.run
+        .withSuccessHandler(function(agentes) {
+            select.innerHTML = '<option value="">-- Selecciona un agente --</option>';
+            
+            agentes.forEach(ag => {
+                const option = document.createElement('option');
+                option.value = ag.id;
+                option.textContent = ag.nombre;
+                select.appendChild(option);
+            });
+            
+            console.log('✅ ' + agentes.length + ' agentes cargados');
+        })
+        .withFailureHandler(function(error) {
+            console.error('❌ Error al cargar agentes:', error);
+            select.innerHTML = '<option value="">❌ Error al cargar</option>';
+        })
+        .obtenerListaAgentes();
+}
+
+/**
+ * Cambia entre modo ANUAL y MENSUAL
+ */
+function setModoHistorico(modo) {
+    console.log('🔄 Modo:', modo);
+    
+    const panelAnual = document.getElementById('hist-panel-anual');
+    const panelMensual = document.getElementById('hist-panel-mensual');
+    const btnAnual = document.getElementById('btn-hist-anual');
+    const btnMensual = document.getElementById('btn-hist-mensual');
+    
+    if (!panelAnual || !panelMensual) {
+        console.error('❌ Paneles no encontrados');
+        return;
+    }
+    
+    if (modo === 'ANUAL') {
+        panelAnual.style.display = 'block';
+        panelMensual.style.display = 'none';
+        
+        btnAnual.style.background = 'var(--color-primary)';
+        btnAnual.style.opacity = '1';
+        btnMensual.style.background = 'transparent';
+        btnMensual.style.opacity = '0.6';
+    } else {
+        panelAnual.style.display = 'none';
+        panelMensual.style.display = 'block';
+        
+        btnMensual.style.background = 'var(--color-primary)';
+        btnMensual.style.opacity = '1';
+        btnAnual.style.background = 'transparent';
+        btnAnual.style.opacity = '0.6';
+        
+        generarTablaMensual();
+    }
+}
+
+/**
+ * Genera tabla de 12 meses
+ */
+function generarTablaMensual() {
+    const tbody = document.getElementById('hist-tabla-body');
+    if (!tbody) return;
+    
+    // Solo generar si está vacía
+    if (tbody.children.length > 0) return;
+    
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    
+    let html = '';
+    meses.forEach((mes, idx) => {
+        const m = idx + 1;
+        html += `
+        <tr>
+            <td style="font-weight:bold; text-align:left;">${mes}</td>
+            <td><input type="number" id="hm-gci-${m}" class="form-input" style="width:100px; padding:8px;" value="0"></td>
+            <td><input type="number" id="hm-ventas-${m}" class="form-input" style="width:70px; padding:8px;" value="0"></td>
+            <td><input type="number" id="hm-citasCapt-${m}" class="form-input" style="width:70px; padding:8px;" value="0"></td>
+            <td><input type="number" id="hm-exclVenta-${m}" class="form-input" style="width:70px; padding:8px;" value="0"></td>
+            <td><input type="number" id="hm-captAbierto-${m}" class="form-input" style="width:70px; padding:8px;" value="0"></td>
+            <td><input type="number" id="hm-citasComp-${m}" class="form-input" style="width:70px; padding:8px;" value="0"></td>
+            <td><input type="number" id="hm-exclComp-${m}" class="form-input" style="width:70px; padding:8px;" value="0"></td>
+            <td><input type="number" id="hm-visitas-${m}" class="form-input" style="width:70px; padding:8px;" value="0"></td>
+        </tr>
+        `;
+    });
+    
+    tbody.innerHTML = html;
+    console.log('✅ Tabla mensual generada');
+}
+
+/**
+ * Carga datos históricos existentes
+ */
+function cargarDatosHistoricosExistentes() {
+    const selectAgente = document.getElementById('hist-agente-select');
+    const selectAnio = document.getElementById('hist-anio');
+    
+    if (!selectAgente || !selectAnio) return;
+    
+    const idAgente = selectAgente.value;
+    const anio = parseInt(selectAnio.value);
+    
+    if (!idAgente) {
+        limpiarFormularioHistorico();
+        return;
+    }
+    
+    console.log('📖 Cargando histórico:', idAgente, anio);
+    
+    google.script.run
+        .withSuccessHandler(function(datos) {
+            if (!datos) {
+                console.log('⚠️ Sin histórico previo');
+                limpiarFormularioHistorico();
+                mostrarNotificacion('ℹ️ No hay histórico previo para este agente/año', 'info');
+                return;
+            }
+            
+            console.log('✅ Histórico cargado:', datos);
+            poblarFormularioHistorico(datos);
+            mostrarNotificacion('✅ Histórico cargado correctamente', 'success');
+        })
+        .withFailureHandler(function(error) {
+            console.error('❌ Error:', error);
+            limpiarFormularioHistorico();
+            mostrarNotificacion('❌ Error al cargar histórico', 'error');
+        })
+        .obtenerHistoricoExistente(idAgente, anio);
+}
+
+/**
+ * Puebla formulario con datos
+ */
+function poblarFormularioHistorico(datos) {
+    // Panel ANUAL
+    document.getElementById('ha-gci').value = datos.gci || 0;
+    document.getElementById('ha-ventas').value = datos.ventas || 0;
+    document.getElementById('ha-citasCapt').value = datos.citasCapt || 0;
+    document.getElementById('ha-exclVenta').value = datos.exclVenta || 0;
+    document.getElementById('ha-captAbierto').value = datos.captAbierto || 0;
+    document.getElementById('ha-citasComp').value = datos.citasComp || 0;
+    document.getElementById('ha-exclComp').value = datos.exclComp || 0;
+    document.getElementById('ha-visitas').value = datos.visitas || 0;
+    
+    // Panel MENSUAL
+    if (datos.mensual && Array.isArray(datos.mensual)) {
+        datos.mensual.forEach(mes => {
+            const m = mes.mes;
+            
+            ['gci', 'ventas', 'citasCapt', 'exclVenta', 'captAbierto', 
+             'citasComp', 'exclComp', 'visitas'].forEach(campo => {
+                const input = document.getElementById(`hm-${campo}-${m}`);
+                if (input) input.value = mes[campo] || 0;
+            });
+        });
+    }
+}
+
+/**
+ * Limpia formulario
+ */
+function limpiarFormularioHistorico() {
+    const campos = ['gci', 'ventas', 'citasCapt', 'exclVenta', 'captAbierto', 
+                    'citasComp', 'exclComp', 'visitas'];
+    
+    // Panel ANUAL
+    campos.forEach(campo => {
+        const input = document.getElementById('ha-' + campo);
+        if (input) input.value = 0;
+    });
+    
+    // Panel MENSUAL
+    for (let mes = 1; mes <= 12; mes++) {
+        campos.forEach(campo => {
+            const input = document.getElementById(`hm-${campo}-${mes}`);
+            if (input) input.value = 0;
+        });
+    }
+}
+
+/**
+ * Guarda histórico
+ */
+function guardarHistoricoAgenteHTML() {
+    console.log('💾 Iniciando guardado...');
+    
+    const selectAgente = document.getElementById('hist-agente-select');
+    const selectAnio = document.getElementById('hist-anio');
+    
+    if (!selectAgente || !selectAnio) {
+        mostrarNotificacion('❌ Formulario incompleto', 'error');
+        return;
+    }
+    
+    const idAgente = selectAgente.value;
+    const anio = parseInt(selectAnio.value);
+    
+    if (!idAgente) {
+        mostrarNotificacion('⚠️ Selecciona un agente', 'error');
+        return;
+    }
+    
+    // Determinar modo
+    const panelAnual = document.getElementById('hist-panel-anual');
+    const modo = panelAnual.style.display !== 'none' ? 'ANUAL' : 'MENSUAL';
+    
+    let datosGuardar = {
+        idAgente: idAgente,
+        anio: anio,
+        modo: modo
+    };
+    
+    if (modo === 'ANUAL') {
+        datosGuardar.totales = {
+            gci: parseFloat(document.getElementById('ha-gci').value) || 0,
+            ventas: parseInt(document.getElementById('ha-ventas').value) || 0,
+            citasCapt: parseInt(document.getElementById('ha-citasCapt').value) || 0,
+            exclVenta: parseInt(document.getElementById('ha-exclVenta').value) || 0,
+            captAbierto: parseInt(document.getElementById('ha-captAbierto').value) || 0,
+            citasComp: parseInt(document.getElementById('ha-citasComp').value) || 0,
+            exclComp: parseInt(document.getElementById('ha-exclComp').value) || 0,
+            visitas: parseInt(document.getElementById('ha-visitas').value) || 0
+        };
+    } else {
+        datosGuardar.mensual = [];
+        
+        for (let mes = 1; mes <= 12; mes++) {
+            datosGuardar.mensual.push({
+                mes: mes,
+                gci: parseFloat(document.getElementById(`hm-gci-${mes}`).value) || 0,
+                ventas: parseInt(document.getElementById(`hm-ventas-${mes}`).value) || 0,
+                citasCapt: parseInt(document.getElementById(`hm-citasCapt-${mes}`).value) || 0,
+                exclVenta: parseInt(document.getElementById(`hm-exclVenta-${mes}`).value) || 0,
+                captAbierto: parseInt(document.getElementById(`hm-captAbierto-${mes}`).value) || 0,
+                citasComp: parseInt(document.getElementById(`hm-citasComp-${mes}`).value) || 0,
+                exclComp: parseInt(document.getElementById(`hm-exclComp-${mes}`).value) || 0,
+                visitas: parseInt(document.getElementById(`hm-visitas-${mes}`).value) || 0
+            });
+        }
+    }
+    
+    console.log('📦 Enviando:', datosGuardar);
+    
+    // Enviar al backend
+    google.script.run
+        .withSuccessHandler(function(resultado) {
+            if (resultado.success) {
+                mostrarNotificacion('✅ ' + resultado.message, 'success');
+                cerrarModalSuperior('modal-carga-historico');
+            } else {
+                mostrarNotificacion('❌ ' + resultado.message, 'error');
+            }
+        })
+        .withFailureHandler(function(error) {
+            console.error('❌ Error:', error);
+            mostrarNotificacion('❌ Error: ' + error.message, 'error');
+        })
+        .guardarHistoricoAgenteHTML(datosGuardar);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 🎯 FUNCIÓN 3: NOTIFICACIONES (Toast)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Muestra notificación tipo toast
+ */
+function mostrarNotificacion(mensaje, tipo = 'info') {
+    let notif = document.getElementById('app-notification');
+    
+    if (!notif) {
+        // Crear elemento si no existe
+        notif = document.createElement('div');
+        notif.id = 'app-notification';
+        document.body.appendChild(notif);
+    }
+    
+    notif.textContent = mensaje;
+    notif.className = tipo; // 'success', 'error', 'info'
+    
+    notif.classList.add('show');
+    
+    setTimeout(() => {
+        notif.classList.remove('show');
+    }, 3000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 📝 INSTALACIÓN COMPLETA
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log('✅ JavaScript de Histórico y Gráficos cargado correctamente');
+
  </script>
  <div id="modal-grafico-secundario" class="modal" style="z-index: 1150;">
     <div class="modal-content" style="max-width: 1100px; height: 80vh;">
