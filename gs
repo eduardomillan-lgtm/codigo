@@ -8,22 +8,48 @@
  */
 
 const kpiNames = {
+  // FINANCIERO
   gci: 'GCI',
+  volumenNegocio: 'Volumen Negocio',
+  beneficioNeto: 'Beneficio Neto',
+  totalTransacciones: 'Transacciones',
+  
+  // RATIOS
+  cumplimientoGlobal: 'Cumplimiento',
+  conversionCaptacion: 'Conversión Capt.',
+  conversionComprador: 'Conversión Comp.',
+  ratioCierreExclusivas: 'Ratio Cierre (GCI/EXCL)',
+  productividad: 'Productividad',
+  ticketPromedio: 'Ticket Promedio',
+  actividadTotal: 'Actividad Total',
+  
+  // CAPTACIÓN - ORIGINALES
   citasCaptacion: 'Citas Captación',
   exclusivasVenta: 'Exclusivas Venta',
+  captacionesAbierto: 'Captaciones Abierto',
+  
+  // CAPTACIÓN - NUEVOS 🆕
+  captacionesAlquiler: 'Captaciones Alquiler',
+  leadVendedor: 'Lead Vendedor',
+  tresBs: '3Bs Activadas',
+  bajadasPrecio: 'Bajadas Precio',
+  
+  // COMPRADOR - ORIGINALES
+  citasCompradores: 'Citas Comprador',
   exclusivasComprador: 'Exclusivas Comprador',
-  captacionesAbierto: 'Captaciones en Abierto',
-  citasCompradores: 'Citas Compradores',
   casasEnsenadas: 'Casas Enseñadas',
   leadsCompradores: 'Leads Compradores',
+  
+  // COMPRADOR - NUEVOS 🆕
+  leadComprador: 'Lead Comprador',
+  propuestasCompra: 'Propuestas Compra',
+  leadSeguimiento: 'Lead Seguimiento',
+  
+  // GENERAL - ORIGINALES
   llamadas: 'Llamadas',
-  volumenNegocio: 'Volumen de Negocio',
-  cumplimientoGlobal: 'Cumplimiento Global',
-  conversionCaptacion: 'Conversión (Cita a Capt.)',
-  ratioCierre: 'Ratio de Cierre (GCI/Excl)',
-  productividad: 'Productividad (Casas/Cita)',
-  ticketPromedio: 'Ticket Promedio',
-  actividadTotal: 'Actividad Total'
+  
+  // GENERAL - NUEVOS 🆕
+  arras: 'Arras Firmadas'
 };
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
@@ -943,9 +969,28 @@ function cargarMapaHistoricoOptimizado(datosHistRaw, anio) {
 // ====== TODAS LAS DEMÁS FUNCIONES SIGUEN IGUALES (NO TOQUE NADA MÁS) ======
 function obtenerActividadAgente(idAgente, fechaInicio, fechaFin, todasActividades) {
   const actividad = {
-    citasCaptacion: 0, exclusivasVenta: 0, exclusivasComprador: 0,
-    captacionesAbierto: 0, citasCompradores: 0, casasEnsenadas: 0,
-    leadsCompradores: 0, llamadas: 0, gci: 0, volumenNegocio: 0, ventas: 0
+    // CAMPOS ORIGINALES
+    citasCaptacion: 0,
+    exclusivasVenta: 0,
+    exclusivasComprador: 0,
+    captacionesAbierto: 0,
+    citasCompradores: 0,
+    casasEnsenadas: 0,
+    leadsCompradores: 0,
+    llamadas: 0,
+    gci: 0,
+    volumenNegocio: 0,
+    ventas: 0,
+    
+    // 🆕 CAMPOS NUEVOS (al final)
+    captacionesAlquiler: 0,
+    leadVendedor: 0,
+    tresBs: 0,
+    bajadasPrecio: 0,
+    leadComprador: 0,
+    propuestasCompra: 0,
+    leadSeguimiento: 0,
+    arras: 0
   };
 
   const targetID = String(idAgente).trim().toUpperCase();
@@ -960,20 +1005,31 @@ function obtenerActividadAgente(idAgente, fechaInicio, fechaFin, todasActividade
 
     const fecha = new Date(fechaRaw);
     if (fecha >= fechaInicio && fecha <= fechaFin) {
-      actividad.citasCaptacion += parseFloat(row[4]) || 0;
-      actividad.exclusivasVenta += parseFloat(row[5]) || 0;
-      actividad.exclusivasComprador += parseFloat(row[6]) || 0;
-      actividad.captacionesAbierto += parseFloat(row[7]) || 0;
-      actividad.citasCompradores += parseFloat(row[8]) || 0;
-      actividad.casasEnsenadas += parseFloat(row[9]) || 0;
-      actividad.leadsCompradores += parseFloat(row[10]) || 0;
-      actividad.llamadas += parseFloat(row[11]) || 0;
+      // ✅ ÍNDICES ORIGINALES (4-17)
+      actividad.citasCaptacion += parseFloat(row[4]) || 0;       // E
+      actividad.exclusivasVenta += parseFloat(row[5]) || 0;      // F
+      actividad.exclusivasComprador += parseFloat(row[6]) || 0;  // G
+      actividad.captacionesAbierto += parseFloat(row[7]) || 0;   // H
+      actividad.citasCompradores += parseFloat(row[8]) || 0;     // I
+      actividad.casasEnsenadas += parseFloat(row[9]) || 0;       // J
+      actividad.leadsCompradores += parseFloat(row[10]) || 0;    // K
+      actividad.llamadas += parseFloat(row[11]) || 0;            // L
       
-      const gci = parseFloat(row[12]) || 0;
+      const gci = parseFloat(row[12]) || 0;                      // M (GCI)
       actividad.gci += gci;
-      actividad.volumenNegocio += parseFloat(row[13]) || 0;
+      actividad.volumenNegocio += parseFloat(row[13]) || 0;      // N
 
       if (gci > 0) actividad.ventas += 1;
+      
+      // 🆕 ÍNDICES NUEVOS (18-25)
+      actividad.captacionesAlquiler += parseFloat(row[18]) || 0;  // S
+      actividad.leadVendedor += parseFloat(row[19]) || 0;         // T
+      actividad.tresBs += parseFloat(row[20]) || 0;               // U
+      actividad.bajadasPrecio += parseFloat(row[21]) || 0;        // V
+      actividad.leadComprador += parseFloat(row[22]) || 0;        // W
+      actividad.propuestasCompra += parseFloat(row[23]) || 0;     // X
+      actividad.leadSeguimiento += parseFloat(row[24]) || 0;      // Y
+      actividad.arras += parseFloat(row[25]) || 0;                // Z
     }
   }
   return actividad;
@@ -1125,10 +1181,13 @@ function calcularMesesEnPeriodo(fechaInicio, fechaFin) {
 
 function calcularObjetivosAcumuladosPendientes(idAgente, fechaInicio, todasActividades, todosObjetivos) {
   const pendientes = {
-    citasCaptacion: 0, exclusivasVenta: 0, exclusivasComprador: 0,
-    captacionesAbierto: 0, citasCompradores: 0, casasEnsenadas: 0,
-    leadsCompradores: 0, llamadas: 0, gci: 0, volumenNegocio: 0
-  };
+  citasCaptacion: 0, exclusivasVenta: 0, exclusivasComprador: 0,
+  captacionesAbierto: 0, citasCompradores: 0, casasEnsenadas: 0,
+  leadsCompradores: 0, llamadas: 0, gci: 0, volumenNegocio: 0,
+  // 🆕 NUEVOS
+  captacionesAlquiler: 0, leadVendedor: 0, tresBs: 0, bajadasPrecio: 0,
+  leadComprador: 0, propuestasCompra: 0, leadSeguimiento: 0, arras: 0
+};
   const inicioAno = new Date(fechaInicio.getFullYear(), 0, 1);
  
   if (inicioAno >= fechaInicio) return pendientes;
@@ -1170,14 +1229,31 @@ function obtenerObjetivoMes(idAgente, year, mes, todosObjetivos) {
 // --- FIX: LEER MES A MES IGNORANDO ESPACIOS EN EL ID ---
 function obtenerActividadMes(idAgente, year, mes, todasActividades) {
   const actividad = {
-    citasCaptacion: 0, exclusivasVenta: 0, exclusivasComprador: 0,
-    captacionesAbierto: 0, citasCompradores: 0, casasEnsenadas: 0,
-    leadsCompradores: 0, llamadas: 0, gci: 0, volumenNegocio: 0
+    // CAMPOS ORIGINALES
+    citasCaptacion: 0,
+    exclusivasVenta: 0,
+    exclusivasComprador: 0,
+    captacionesAbierto: 0,
+    citasCompradores: 0,
+    casasEnsenadas: 0,
+    leadsCompradores: 0,
+    llamadas: 0,
+    gci: 0,
+    volumenNegocio: 0,
+    
+    // 🆕 CAMPOS NUEVOS (al final)
+    captacionesAlquiler: 0,
+    leadVendedor: 0,
+    tresBs: 0,
+    bajadasPrecio: 0,
+    leadComprador: 0,
+    propuestasCompra: 0,
+    leadSeguimiento: 0,
+    arras: 0
   };
 
   const targetID = String(idAgente).trim().toUpperCase();
 
-  // ✅ CAMBIO: i=0 en lugar de i=1
   for (let i = 0; i < todasActividades.length; i++) {
     const fechaRaw = todasActividades[i][1];
     if (!fechaRaw) continue;
@@ -1187,6 +1263,7 @@ function obtenerActividadMes(idAgente, year, mes, todasActividades) {
     if (rowID === targetID) {
       const fecha = new Date(fechaRaw);
       if (fecha instanceof Date && !isNaN(fecha) && fecha.getFullYear() === year && (fecha.getMonth() + 1) === mes) {
+        // ✅ ÍNDICES ORIGINALES (4-13)
         actividad.citasCaptacion += parseFloat(todasActividades[i][4]) || 0;
         actividad.exclusivasVenta += parseFloat(todasActividades[i][5]) || 0;
         actividad.exclusivasComprador += parseFloat(todasActividades[i][6]) || 0;
@@ -1197,6 +1274,16 @@ function obtenerActividadMes(idAgente, year, mes, todasActividades) {
         actividad.llamadas += parseFloat(todasActividades[i][11]) || 0;
         actividad.gci += parseFloat(todasActividades[i][12]) || 0;
         actividad.volumenNegocio += parseFloat(todasActividades[i][13]) || 0;
+        
+        // 🆕 ÍNDICES NUEVOS (18-25)
+        actividad.captacionesAlquiler += parseFloat(todasActividades[i][18]) || 0;
+        actividad.leadVendedor += parseFloat(todasActividades[i][19]) || 0;
+        actividad.tresBs += parseFloat(todasActividades[i][20]) || 0;
+        actividad.bajadasPrecio += parseFloat(todasActividades[i][21]) || 0;
+        actividad.leadComprador += parseFloat(todasActividades[i][22]) || 0;
+        actividad.propuestasCompra += parseFloat(todasActividades[i][23]) || 0;
+        actividad.leadSeguimiento += parseFloat(todasActividades[i][24]) || 0;
+        actividad.arras += parseFloat(todasActividades[i][25]) || 0;
       }
     }
   }
@@ -1209,10 +1296,28 @@ function calcularEvolucionMensual(idAgente, mesesPeriodo, esAcumulativo, todasAc
       evolucion[key] = { realizado: [], objetivo: [] };
   });
   let pendientes = {
-    citasCaptacion: 0, exclusivasVenta: 0, exclusivasComprador: 0,
-    captacionesAbierto: 0, citasCompradores: 0, casasEnsenadas: 0,
-    leadsCompradores: 0, llamadas: 0, gci: 0, volumenNegocio: 0
-  };
+  // ORIGINALES
+  citasCaptacion: 0,
+  exclusivasVenta: 0,
+  exclusivasComprador: 0,
+  captacionesAbierto: 0,
+  citasCompradores: 0,
+  casasEnsenadas: 0,
+  leadsCompradores: 0,
+  llamadas: 0,
+  gci: 0,
+  volumenNegocio: 0,
+  
+  // 🆕 NUEVOS
+  captacionesAlquiler: 0,
+  leadVendedor: 0,
+  tresBs: 0,
+  bajadasPrecio: 0,
+  leadComprador: 0,
+  propuestasCompra: 0,
+  leadSeguimiento: 0,
+  arras: 0
+};
   const inicioAno = new Date(mesesPeriodo[0].year, 0, 1);
   const primerMesPeriodo = new Date(mesesPeriodo[0].year, mesesPeriodo[0].mes - 1, 1);
   if (esAcumulativo && inicioAno < primerMesPeriodo) {
@@ -5115,7 +5220,426 @@ function obtenerTodosHistoricosAgentes(anio) {
     return {};
   }
 }
-
+function backupCompleto() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Backup Actividad_Diaria
+  const hojaActividad = ss.getSheetByName('Actividad_Diaria');
+  if (hojaActividad) {
+    const backup = hojaActividad.copyTo(ss);
+    backup.setName('Actividad_Diaria_BACKUP_' + new Date().getTime());
+    ss.moveActiveSheet(ss.getNumSheets()); // Mover al final
+  }
+  
+  // Backup Historico_Agentes
+  const hojaHistorico = ss.getSheetByName('Historico_Agentes');
+  if (hojaHistorico) {
+    const backup = hojaHistorico.copyTo(ss);
+    backup.setName('Historico_Agentes_BACKUP_' + new Date().getTime());
+    ss.moveActiveSheet(ss.getNumSheets());
+  }
+  
+  Logger.log('✅ Backups creados');
+}
+function paso3c_AnadirColumnasCorrectamente() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hoja = ss.getSheetByName('Actividad_Diaria');
+  
+  const headers = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getValues()[0];
+  Logger.log('📊 Partiendo de ' + headers.length + ' columnas');
+  
+  if (headers.length !== 18) {
+    Logger.log('⚠️ ERROR: Se esperaban 18 columnas, hay ' + headers.length);
+    return;
+  }
+  
+  // Orden actual (18 cols):
+  // A:ID, B:Fecha, C:ID_Agente, D:Nombre_Agente,
+  // E:Citas_Captacion, F:Exclusivas_Venta, G:Exclusivas_Comprador, H:Captaciones_Abierto,
+  // I:Citas_Compradores, J:Casas_Ensenadas, K:Leads_Compradores, L:Llamadas,
+  // M:GCI, N:Volumen_Negocio, O:Notas, P:Timestamp, Q:Comision_Pagada, R:Pct_Comision
+  
+  // Insertar después de H (Captaciones_Abierto) → col 8
+  hoja.insertColumnsAfter(8, 4); // Insertar 4 columnas
+  hoja.getRange(1, 9).setValue('Captaciones_Alquiler');
+  hoja.getRange(1, 10).setValue('Lead_Vendedor');
+  hoja.getRange(1, 11).setValue('3Bs_Activadas');
+  hoja.getRange(1, 12).setValue('Bajadas_Precio');
+  Logger.log('✅ Insertadas 4 columnas después de Captaciones_Abierto');
+  
+  // Ahora tenemos 22 cols. Casas_Ensenadas está en col 14 (J→N)
+  // Insertar después de Exclusivas_Comprador (ahora en col 7)
+  // No, mejor insertar después de Citas_Compradores (ahora en col 13)
+  hoja.insertColumnsAfter(13, 1);
+  hoja.getRange(1, 14).setValue('Lead_Comprador');
+  Logger.log('✅ Insertada Lead_Comprador');
+  
+  // Ahora 23 cols. Casas_Ensenadas en col 15
+  // Insertar después de Casas_Ensenadas
+  hoja.insertColumnsAfter(15, 2);
+  hoja.getRange(1, 16).setValue('Propuestas_Compra');
+  hoja.getRange(1, 17).setValue('Lead_Seguimiento');
+  Logger.log('✅ Insertadas Propuestas y Lead_Seguimiento');
+  
+  // Ahora 25 cols. Llamadas en col 19 (L+7)
+  // Insertar después de Llamadas
+  hoja.insertColumnsAfter(19, 1);
+  hoja.getRange(1, 20).setValue('Arras_Firmadas');
+  Logger.log('✅ Insertada Arras_Firmadas');
+  
+  // Ahora 26 cols. Añadir 2 al final
+  hoja.getRange(1, 27).setValue('Lado_Transaccion');
+  hoja.getRange(1, 28).setValue('Tipo_Transaccion');
+  Logger.log('✅ Añadidas columnas finales');
+  
+  // Formato encabezados
+  hoja.getRange(1, 1, 1, 28)
+    .setBackground('#b70000')
+    .setFontColor('#ffffff')
+    .setFontWeight('bold');
+  
+  const headersFinal = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getValues()[0];
+  Logger.log('✅ RESULTADO FINAL: ' + headersFinal.length + ' columnas');
+  Logger.log('✅ Columnas: ' + headersFinal.join(', '));
+}
+function paso3e_MigrarDatos18a27() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Buscar hoja de backup más reciente
+  const hojas = ss.getSheets();
+  let hojaBackup = null;
+  
+  for (let i = hojas.length - 1; i >= 0; i--) {
+    if (hojas[i].getName().startsWith('Actividad_Diaria_18cols_')) {
+      hojaBackup = hojas[i];
+      break;
+    }
+  }
+  
+  if (!hojaBackup) {
+    Logger.log('❌ No se encontró backup de 18 columnas');
+    return;
+  }
+  
+  Logger.log('📊 Migrando desde: ' + hojaBackup.getName());
+  
+  const hojaNueva = ss.getSheetByName('Actividad_Diaria');
+  const datosViejos = hojaBackup.getDataRange().getValues();
+  
+  Logger.log('📊 Total filas a migrar: ' + (datosViejos.length - 1));
+  
+  // Saltar encabezados (fila 0)
+  for (let i = 1; i < datosViejos.length; i++) {
+    const filaVieja = datosViejos[i];
+    
+    // Mapeo 18 cols → 27 cols
+    const filaNueva = [
+      filaVieja[0],     // A: ID
+      filaVieja[1],     // B: Fecha
+      filaVieja[2],     // C: ID_Agente
+      filaVieja[3],     // D: Nombre_Agente
+      filaVieja[4],     // E: Citas_Captacion
+      filaVieja[5],     // F: Exclusivas_Venta
+      filaVieja[7],     // G: Captaciones_Abierto (era col H)
+      0,                // H: Captaciones_Alquiler 🆕
+      0,                // I: Lead_Vendedor 🆕
+      0,                // J: 3Bs_Activadas 🆕
+      0,                // K: Bajadas_Precio 🆕
+      filaVieja[8],     // L: Citas_Comprador (era col I)
+      filaVieja[6],     // M: Exclusivas_Comprador (era col G)
+      0,                // N: Lead_Comprador 🆕
+      filaVieja[9],     // O: Casas_Ensenadas (era col J)
+      0,                // P: Propuestas_Compra 🆕
+      0,                // Q: Lead_Seguimiento 🆕
+      filaVieja[11],    // R: Llamadas (era col L)
+      0,                // S: Arras_Firmadas 🆕
+      filaVieja[12],    // T: GCI (era col M)
+      filaVieja[13],    // U: Volumen_Negocio (era col N)
+      filaVieja[16] || 0,  // V: Comision_Pagada (era col Q)
+      filaVieja[17] || 0,  // W: Pct_Comision (era col R)
+      filaVieja[14] || '', // X: Notas (era col O)
+      filaVieja[15] || new Date(), // Y: Timestamp (era col P)
+      '',               // Z: Lado_Transaccion 🆕
+      ''                // AA: Tipo_Transaccion 🆕
+    ];
+    
+    hojaNueva.appendRow(filaNueva);
+  }
+  
+  Logger.log('✅ Migrados ' + (datosViejos.length - 1) + ' registros');
+  Logger.log('✅ Total filas en nueva hoja: ' + hojaNueva.getLastRow());
+}
+function paso3f_AnadirColumnasAlFinal() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hoja = ss.getSheetByName('Actividad_Diaria');
+  
+  if (!hoja) {
+    Logger.log('❌ No existe Actividad_Diaria');
+    return;
+  }
+  
+  // Leer estructura actual
+  const headers = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getValues()[0];
+  Logger.log('📊 Estructura actual: ' + headers.length + ' columnas');
+  Logger.log('📊 Columnas: ' + headers.join(', '));
+  
+  if (headers.length !== 18) {
+    Logger.log('⚠️ ERROR: Se esperaban 18 columnas, hay ' + headers.length);
+    return;
+  }
+  
+  // Estructura original (18):
+  // A-R: ID, Fecha, ID_Agente, Nombre_Agente, Citas_Captacion, Exclusivas_Venta, 
+  //      Exclusivas_Comprador, Captaciones_Abierto, Citas_Compradores, Casas_Ensenadas,
+  //      Leads_Compradores, Llamadas, GCI, Volumen_Negocio, Notas, Timestamp,
+  //      Comision_Pagada, Pct_Comision
+  
+  // Añadir 9 columnas nuevas (S-AA)
+  const columnasNuevas = [
+    'Captaciones_Alquiler',    // S (19)
+    'Lead_Vendedor',           // T (20)
+    '3Bs_Activadas',           // U (21)
+    'Bajadas_Precio',          // V (22)
+    'Lead_Comprador',          // W (23)
+    'Propuestas_Compra',       // X (24)
+    'Lead_Seguimiento',        // Y (25)
+    'Arras_Firmadas',          // Z (26)
+    'Lado_Transaccion',        // AA (27)
+    'Tipo_Transaccion'         // AB (28)
+  ];
+  
+  const colInicio = 19; // Columna S
+  
+  columnasNuevas.forEach((nombre, idx) => {
+    hoja.getRange(1, colInicio + idx).setValue(nombre);
+  });
+  
+  // Formato encabezados nuevos
+  hoja.getRange(1, colInicio, 1, columnasNuevas.length)
+    .setBackground('#b70000')
+    .setFontColor('#ffffff')
+    .setFontWeight('bold')
+    .setFontSize(11)
+    .setHorizontalAlignment('center');
+  
+  // Verificar
+  const headersFinal = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getValues()[0];
+  Logger.log('✅ Estructura nueva: ' + headersFinal.length + ' columnas');
+  Logger.log('✅ Columnas: ' + headersFinal.join(', '));
+  
+  if (headersFinal.length === 28) {
+    Logger.log('✅ PERFECTO: 18 originales + 10 nuevas = 28 columnas');
+  } else {
+    Logger.log('⚠️ Se esperaban 28 columnas, hay ' + headersFinal.length);
+  }
+  
+  // Rellenar con 0 las nuevas columnas en filas existentes
+  const ultimaFila = hoja.getLastRow();
+  if (ultimaFila > 1) {
+    Logger.log('📊 Rellenando ' + (ultimaFila - 1) + ' filas con valores por defecto...');
+    
+    for (let i = 2; i <= ultimaFila; i++) {
+      // Columnas S-Z (19-26): números, poner 0
+      hoja.getRange(i, 19, 1, 8).setValue(0);
+      // Columnas AA-AB (27-28): texto, poner vacío
+      hoja.getRange(i, 27, 1, 2).setValue('');
+    }
+    
+    Logger.log('✅ Valores por defecto añadidos');
+  }
+}
+function paso4c_VerDatosRealesAG006() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hoja = ss.getSheetByName('Actividad_Diaria');
+  const datos = hoja.getDataRange().getValues();
+  
+  Logger.log('📊 Buscando filas de AG006...');
+  
+  let encontrados = 0;
+  let totalGCI = 0;
+  
+  for (let i = 1; i < datos.length; i++) {
+    const row = datos[i];
+    const idAgente = String(row[2]).trim().toUpperCase();
+    
+    if (idAgente === 'AG006') {
+      encontrados++;
+      const gci = parseFloat(row[12]) || 0;
+      totalGCI += gci;
+      
+      Logger.log('--- Fila ' + (i + 1) + ' ---');
+      Logger.log('  ID: ' + row[0]);
+      Logger.log('  Fecha: ' + row[1]);
+      Logger.log('  ID_Agente: ' + row[2]);
+      Logger.log('  Nombre: ' + row[3]);
+      Logger.log('  Citas_Captacion [4]: ' + row[4]);
+      Logger.log('  Exclusivas_Venta [5]: ' + row[5]);
+      Logger.log('  GCI [12]: ' + row[12]);
+      Logger.log('  Volumen_Negocio [13]: ' + row[13]);
+      Logger.log('  Notas [14]: ' + row[14]);
+      
+      if (encontrados >= 5) break; // Mostrar las primeras 5
+    }
+  }
+  
+  Logger.log('');
+  Logger.log('✅ Total registros AG006: ' + encontrados);
+  Logger.log('✅ Total GCI sumado: ' + totalGCI);
+  
+  // Buscar transacciones con GCI
+  Logger.log('');
+  Logger.log('🔍 Buscando TRANSACCIONES con GCI > 0 de AG006...');
+  
+  let txEncontradas = 0;
+  
+  for (let i = 1; i < datos.length; i++) {
+    const row = datos[i];
+    const idAgente = String(row[2]).trim().toUpperCase();
+    const notas = String(row[14] || '').toUpperCase();
+    const gci = parseFloat(row[12]) || 0;
+    
+    if (idAgente === 'AG006' && gci > 0) {
+      txEncontradas++;
+      Logger.log('--- Transacción fila ' + (i + 1) + ' ---');
+      Logger.log('  Fecha: ' + row[1]);
+      Logger.log('  GCI [12]: ' + row[12]);
+      Logger.log('  Volumen [13]: ' + row[13]);
+      Logger.log('  Notas [14]: ' + notas);
+    }
+  }
+  
+  Logger.log('');
+  Logger.log('🔍 Total transacciones con GCI > 0: ' + txEncontradas);
+}
+function paso4_TestObtenerActividadAgente() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hoja = ss.getSheetByName('Actividad_Diaria');
+  const datos = hoja.getDataRange().getValues();
+  
+  Logger.log('📊 Total filas: ' + datos.length);
+  Logger.log('📊 Total columnas: ' + datos[0].length);
+  
+  const fechaInicio = new Date(2025, 0, 1);
+  const fechaFin = new Date();
+  
+  const actividad = obtenerActividadAgente('AG001', fechaInicio, fechaFin, datos);
+  
+  Logger.log('✅ Resultado para AG001:');
+  Logger.log('   citasCaptacion: ' + actividad.citasCaptacion);
+  Logger.log('   exclusivasVenta: ' + actividad.exclusivasVenta);
+  Logger.log('   gci: ' + actividad.gci);
+  Logger.log('   🆕 captacionesAlquiler: ' + actividad.captacionesAlquiler);
+  Logger.log('   🆕 leadVendedor: ' + actividad.leadVendedor);
+  Logger.log('   🆕 arras: ' + actividad.arras);
+}
+function paso4d_TestAG006() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hoja = ss.getSheetByName('Actividad_Diaria');
+  const datos = hoja.getDataRange().getValues();
+  
+  const fechaInicio = new Date(2025, 0, 1);   // 1 enero 2025
+  const fechaFin = new Date(2025, 11, 31);    // 31 diciembre 2025
+  
+  Logger.log('📊 Probando obtenerActividadAgente con AG006');
+  Logger.log('📊 Fecha inicio: ' + fechaInicio);
+  Logger.log('📊 Fecha fin: ' + fechaFin);
+  
+  const actividad = obtenerActividadAgente('AG006', fechaInicio, fechaFin, datos);
+  
+  Logger.log('');
+  Logger.log('✅ RESULTADO:');
+  Logger.log('   gci: ' + actividad.gci);
+  Logger.log('   volumenNegocio: ' + actividad.volumenNegocio);
+  Logger.log('   ventas: ' + actividad.ventas);
+  Logger.log('   citasCaptacion: ' + actividad.citasCaptacion);
+  Logger.log('   exclusivasVenta: ' + actividad.exclusivasVenta);
+  
+  if (actividad.gci === 10000) {
+    Logger.log('');
+    Logger.log('✅✅✅ ÉXITO: obtenerActividadAgente lee correctamente el GCI');
+  } else {
+    Logger.log('');
+    Logger.log('❌ ERROR: Se esperaba GCI=10000, se obtuvo: ' + actividad.gci);
+  }
+}
+function paso5_TestObtenerActividadMes() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hoja = ss.getSheetByName('Actividad_Diaria');
+  const datos = hoja.getDataRange().getValues();
+  
+  Logger.log('📊 Probando obtenerActividadMes con AG006, diciembre 2025');
+  
+  const actividad = obtenerActividadMes('AG006', 2025, 12, datos);
+  
+  Logger.log('');
+  Logger.log('✅ RESULTADO:');
+  Logger.log('   gci: ' + actividad.gci);
+  Logger.log('   volumenNegocio: ' + actividad.volumenNegocio);
+  
+  if (actividad.gci === 10000) {
+    Logger.log('');
+    Logger.log('✅✅✅ ÉXITO: obtenerActividadMes funciona correctamente');
+  } else {
+    Logger.log('');
+    Logger.log('❌ ERROR: Se esperaba GCI=10000, se obtuvo: ' + actividad.gci);
+  }
+}
+function paso6_TestKpiNames() {
+  Logger.log('📊 Total KPIs en kpiNames: ' + Object.keys(kpiNames).length);
+  Logger.log('📊 KPIs: ' + Object.keys(kpiNames).join(', '));
+  
+  // Verificar que existen los nuevos
+  const nuevos = ['captacionesAlquiler', 'leadVendedor', 'tresBs', 'bajadasPrecio',
+                  'leadComprador', 'propuestasCompra', 'leadSeguimiento', 'arras'];
+  
+  Logger.log('');
+  Logger.log('🔍 Verificando KPIs nuevos:');
+  
+  let todosExisten = true;
+  nuevos.forEach(kpi => {
+    if (kpiNames[kpi]) {
+      Logger.log('   ✅ ' + kpi + ': ' + kpiNames[kpi]);
+    } else {
+      Logger.log('   ❌ ' + kpi + ': NO EXISTE');
+      todosExisten = false;
+    }
+  });
+  
+  if (todosExisten) {
+    Logger.log('');
+    Logger.log('✅✅✅ ÉXITO: Todos los KPIs nuevos están definidos');
+  }
+}
+function paso7_TestBackendCompleto() {
+  try {
+    Logger.log('📊 Probando obtenerDatosDashboard completo...');
+    
+    const resultado = obtenerDatosDashboard(null);
+    
+    if (!resultado) {
+      Logger.log('❌ ERROR: obtenerDatosDashboard devolvió null');
+      return;
+    }
+    
+    Logger.log('✅ Datos obtenidos correctamente');
+    Logger.log('   Número de agentes: ' + resultado.agentes.length);
+    
+    if (resultado.agentes.length > 0) {
+      const ag = resultado.agentes[0];
+      Logger.log('   Primer agente: ' + ag.agente);
+      Logger.log('   GCI: ' + ag.realizado.gci);
+      Logger.log('   🆕 captacionesAlquiler: ' + ag.realizado.captacionesAlquiler);
+      Logger.log('   🆕 arras: ' + ag.realizado.arras);
+    }
+    
+    Logger.log('');
+    Logger.log('✅✅✅ ÉXITO: Backend completo funciona correctamente');
+    
+  } catch (error) {
+    Logger.log('❌ ERROR: ' + error.message);
+    Logger.log('   Stack: ' + error.stack);
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 📝 NOTA: Estas funciones se añaden al final del archivo .gs
