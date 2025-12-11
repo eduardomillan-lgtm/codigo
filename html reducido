@@ -1,4 +1,2779 @@
-<script>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard Inmobiliario KW Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-funnel@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js..."></script>
+
+    <style>
+      canvas { cursor: pointer; } /* Para indicar que se puede clicar */
+        /* =================================
+        ⭐ SISTEMA DE TEMAS (PALETAS) ⭐
+        ================================= */
+        :root {
+            /* KW Dark (Default) */
+            --color-bg: #090A0F;
+            --color-bg-alt: #000;
+            --color-surface: rgba(255, 255, 255, 0.05);
+            --color-surface-blur: rgba(255, 255, 255, 0.05);
+            --color-border: rgba(255, 255, 255, 0.1);
+            --color-border-accent: rgba(255, 255, 255, 0.2);
+            --color-primary: #b70000;
+            --color-primary-dark: #8b0000;
+            --color-secondary: #ff6b6b;
+            --color-text-primary: #ffffff;
+            --color-text-secondary: rgba(255, 255, 255, 0.8);
+            --color-text-faded: rgba(255, 255, 255, 0.7);
+            --color-accent-good: #00ff88;
+            --color-accent-good-dark: #00c060;
+            --color-accent-warn: #ffd700;
+            --color-accent-bad: #ff4444;
+            --color-accent-ia: #667eea;
+            --color-accent-ia-dark: #764ba2;
+            
+            --gradient-header: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark), var(--color-primary));
+            --gradient-good: linear-gradient(135deg, var(--color-accent-good), var(--color-accent-good-dark));
+            --gradient-bad: linear-gradient(135deg, var(--color-accent-bad), var(--color-primary));
+            --gradient-ia: linear-gradient(135deg, var(--color-accent-ia), var(--color-accent-ia-dark));
+            --gradient-signos-bg: linear-gradient(135deg, rgba(183, 0, 0, 0.1), rgba(139, 0, 0, 0.2));
+            --shadow-header: rgba(183, 0, 0, 0.6);
+            --shadow-ia: rgba(102,126,234,0.5);
+            --shadow-good: rgba(0, 255, 136, 0.5);
+        }
+        /* Corrección Scroll Centro de Acciones */
+#modal-acciones .modal-content {
+    max-height: 90vh; /* Altura máxima del 90% de la pantalla */
+    display: flex;
+    flex-direction: column;
+}
+#modal-acciones .modal-body {
+    overflow-y: auto; /* Scroll vertical habilitado */
+    flex-grow: 1;
+}
+        
+        body[data-theme="azul"] {
+            --color-primary: #005fB7;
+            --color-primary-dark: #003a70;
+            --color-secondary: #6bbdff;
+            --gradient-header: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark), var(--color-primary));
+            --gradient-signos-bg: linear-gradient(135deg, rgba(0, 95, 183, 0.1), rgba(0, 58, 112, 0.2));
+            --shadow-header: rgba(0, 95, 183, 0.6);
+        }
+        
+        body[data-theme="luxury"] {
+            --color-bg: #1a1a1a;
+            --color-bg-alt: #000;
+            --color-surface: rgba(212, 175, 55, 0.05);
+            --color-surface-blur: rgba(212, 175, 55, 0.05);
+            --color-border: rgba(212, 175, 55, 0.2);
+            --color-border-accent: rgba(212, 175, 55, 0.4);
+            --color-primary: #D4AF37; /* Oro */
+            --color-primary-dark: #b38600;
+            --color-secondary: #f0e68c; /* Khaki pálido */
+            --color-accent-good: #DAA520; /* Goldenrod */
+            --color-accent-good-dark: #B8860B;
+            --color-accent-warn: #FFD700;
+            --color-accent-bad: #CD5C5C; /* Indian Red */
+            --gradient-header: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            --gradient-good: linear-gradient(135deg, var(--color-accent-good), var(--color-accent-good-dark));
+            --gradient-bad: linear-gradient(135deg, var(--color-accent-bad), #a04040);
+            --gradient-signos-bg: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(179, 134, 0, 0.2));
+            --shadow-header: rgba(212, 175, 55, 0.4);
+            --shadow-good: rgba(218, 165, 32, 0.5);
+        }
+
+        body[data-theme="claro"] {
+            --color-bg: #f4f7f6;
+            --color-bg-alt: #ffffff; /* Fondo de modales blanco */
+            --color-surface: rgba(0, 0, 0, 0.03);
+            --color-surface-blur: rgba(255, 255, 255, 0.5);
+            --color-border: rgba(0, 0, 0, 0.1);
+            --color-border-accent: rgba(0, 0, 0, 0.2);
+            --color-primary: #b70000;
+            --color-primary-dark: #8b0000;
+            --color-secondary: #D81B60;
+            --color-text-primary: #121212;
+            --color-text-secondary: #333333;
+            --color-text-faded: #555555;
+            --color-accent-good: #009688;
+            --color-accent-good-dark: #00796B;
+            --color-accent-warn: #FBC02D;
+            --color-accent-bad: #D32F2F;
+            --color-accent-ia: #3949AB;
+            --color-accent-ia-dark: #303F9F;
+            
+            --gradient-header: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            --gradient-good: linear-gradient(135deg, var(--color-accent-good), var(--color-accent-good-dark));
+            --gradient-bad: linear-gradient(135deg, var(--color-accent-bad), #a02020);
+            --gradient-ia: linear-gradient(135deg, var(--color-accent-ia), var(--color-accent-ia-dark));
+            --gradient-signos-bg: linear-gradient(135deg, rgba(183, 0, 0, 0.05), rgba(139, 0, 0, 0.1));
+            --shadow-header: rgba(183, 0, 0, 0.3);
+            --shadow-ia: rgba(57, 73, 171, 0.4);
+            --shadow-good: rgba(0, 150, 136, 0.4);
+        }
+        
+        body[data-theme="kw-claro"] {
+            --color-bg: #f4f7f6;
+            --color-bg-alt: #ffffff; /* Fondo de modales blanco */
+            --color-surface: rgba(0, 0, 0, 0.03);
+            --color-surface-blur: rgba(255, 255, 255, 0.5);
+            --color-border: rgba(0, 0, 0, 0.1);
+            --color-border-accent: rgba(0, 0, 0, 0.2);
+            --color-primary: #b70000;
+            --color-primary-dark: #8b0000;
+            --color-secondary: #ff6b6b;
+            --color-text-primary: #121212;
+            --color-text-secondary: #333333;
+            --color-text-faded: #555555;
+            --color-accent-good: #009688;
+            --color-accent-good-dark: #00796B;
+            --color-accent-warn: #FBC02D;
+            --color-accent-bad: #D32F2F;
+            --color-accent-ia: #3949AB;
+            --color-accent-ia-dark: #303F9F;
+            
+            --gradient-header: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            --gradient-good: linear-gradient(135deg, var(--color-accent-good), var(--color-accent-good-dark));
+            --gradient-bad: linear-gradient(135deg, var(--color-accent-bad), #a02020);
+            --gradient-ia: linear-gradient(135deg, var(--color-accent-ia), var(--color-accent-ia-dark));
+            --gradient-signos-bg: linear-gradient(135deg, rgba(183, 0, 0, 0.05), rgba(139, 0, 0, 0.1));
+            --shadow-header: rgba(183, 0, 0, 0.3);
+            --shadow-ia: rgba(57, 73, 171, 0.4);
+            --shadow-good: rgba(0, 150, 136, 0.4);
+        }
+        
+
+        /* =================================
+        ESTILOS BASE
+        ================================= */
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {    
+            font-family: 'Montserrat', sans-serif;    
+            background: var(--color-bg);    
+            color: var(--color-text-primary);    
+            overflow-x: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+        body.modal-open { overflow: hidden; }
+
+        /* --- FONDOS Y ANIMACIONES --- */
+        .animated-bg {    
+            position: fixed;    
+            top: 0; left: 0;    
+            width: 100%; height: 100%;    
+            background: var(--color-bg-alt);    
+            z-index: -2;    
+        }
+        
+        /* El fondo de estrellas solo es visible en temas oscuros */
+        .stars {    
+            position: fixed;    
+            top: 0; left: 0;    
+            width: 100%; height: 100%;    
+            pointer-events: none;    
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        body[data-theme="kw-dark"] .stars,
+        body[data-theme="azul"] .stars,
+        body[data-theme="luxury"] .stars {
+            opacity: 1;
+        }
+
+        .star {    
+            position: absolute;    
+            background: var(--color-text-primary);    
+            border-radius: 50%;    
+            animation: twinkle 3s infinite;    
+        }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        
+        /* --- DISEÑO PRINCIPAL --- */
+        .container { position: relative; z-index: 1; max-width: 98%; margin: 0 auto; padding: 15px; }
+        .view-container { position: relative; z-index: 1; width: 100%; min-height: 100vh; display: none; }
+        .view-container.active { display: block; }
+
+        /* --- VISTA LOGIN --- */
+        .login-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; min-height: 100vh; }
+        .login-box {    
+            background: var(--color-surface-blur);    
+            backdrop-filter: blur(20px);    
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;    
+            padding: 40px;    
+            border: 1px solid var(--color-border);    
+            text-align: center;    
+            max-width: 600px;    
+            width: 100%;    
+        }
+        .login-title {    
+            font-size: 2.5em;    
+            font-weight: 900;    
+            background: var(--gradient-header);    
+            -webkit-background-clip: text;    
+            -webkit-text-fill-color: transparent;    
+            margin-bottom: 10px;    
+        }
+        .login-subtitle { font-size: 1.1em; color: var(--color-text-secondary); margin-bottom: 30px; }
+        .role-selection { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .btn-role {    
+            background: var(--color-surface);    
+            border: 2px solid var(--color-border-accent);    
+            border-radius: 15px;    
+            padding: 30px;    
+            cursor: pointer;    
+            transition: all 0.3s;    
+            font-size: 1.1em;    
+            font-weight: 700;    
+            color: var(--color-text-primary);    
+        }
+        .btn-role:hover {    
+            transform: translateY(-5px);    
+            background: rgba(183, 0, 0, 0.3); /* Color KW hover mantenido */
+            border-color: var(--color-primary);    
+        }
+        .role-icon { font-size: 3em; display: block; margin-bottom: 15px; }
+
+        /* --- CABECERA --- */
+        .header {    
+            background: var(--gradient-header);    
+            border-radius: 20px;    
+            padding: 30px;    
+            margin-bottom: 20px;    
+            box-shadow: 0 20px 60px var(--shadow-header);    
+            border: 2px solid var(--color-border);
+            position: relative;
+            z-index: 20;
+        }
+        .header-content { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; }
+        .header h1 { font-size: clamp(1.8em, 4vw, 2.5em); font-weight: 900; text-transform: uppercase; letter-spacing: 3px; color: #fff; }
+        .subtitle { font-size: clamp(0.9em, 2vw, 1em); opacity: 0.9; letter-spacing: 1px; margin-top: 5px; color: #fff; }
+        .header-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        /* --- BOTONES --- */
+        .btn {
+            border: 2px solid var(--color-border-accent);
+            padding: 12px 25px;
+            border-radius: 50px;
+            color: var(--color-text-primary);
+            font-weight: 800;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            background: var(--color-surface);
+        }
+        .btn:hover { transform: translateY(-3px) scale(1.05); }
+        .btn-refresh { background: var(--gradient-header); box-shadow: 0 10px 30px var(--shadow-header); color: #fff; }
+        .btn-logout { background: linear-gradient(135deg, #555, #333); color: #fff;}
+        .btn-ia {
+            background: var(--gradient-ia);    
+            box-shadow: 0 10px 30px var(--shadow-ia);
+            color: #fff;
+        }
+        .btn-primary-action {
+            background: var(--gradient-good);
+            box-shadow: 0 10px 30px var(--shadow-good);
+            color: var(--color-bg-alt);
+        }
+        .btn-ia-agente {
+            background: var(--gradient-ia);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.2em;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: 0 5px 15px var(--shadow-ia);
+        }
+        .btn-ia-agente:hover { transform: scale(1.1); }
+        
+        /* --- FORMULARIOS --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .form-grupo {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-label {
+            font-size: 0.85em;
+            margin-bottom: 8px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-text-faded);
+        }
+        .form-input, .form-select {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border-accent);
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: var(--color-text-primary);
+            font-size: 1em;
+            font-family: 'Montserrat', sans-serif;
+        }
+        body[data-theme="claro"] .form-input,
+body[data-theme="kw-claro"] .form-input,
+body[data-theme="claro"] .form-select,
+body[data-theme="kw-claro"] .form-select {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #cccccc !important;
+}
+
+body[data-theme="claro"] .form-input::placeholder,
+body[data-theme="kw-claro"] .form-input::placeholder {
+    color: #999999 !important;
+}
+        .form-input[type="date"] {
+            color-scheme: dark;
+        }
+        body[data-theme="claro"] .form-input[type="date"],
+        body[data-theme="kw-claro"] .form-input[type="date"] {
+            color-scheme: light;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--color-accent-good);
+        }
+        .form-submit {
+            grid-column: 1 / -1;
+            background: var(--gradient-good);
+            box-shadow: 0 10px 30px var(--shadow-good);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            color: var(--color-bg-alt);
+            font-weight: 800;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        /* --- ESTILOS GPS (Estilo Papel) --- */
+.gps-modal-content {
+    background: #555;
+    padding: 30px 0; /* Espacio arriba y abajo */
+    display: block;  /* Importante para el scroll */
+    overflow-y: auto; /* Habilita el SCROLL vertical */
+    height: 100vh;    /* Ocupa toda la altura */
+    width: 100%;
+    position: fixed;  /* Fijo para que el scroll sea interno */
+    top: 0;
+    left: 0;
+}
+
+.gps-paper {
+    background: white;
+    color: black;
+    width: 210mm; /* Ancho A4 */
+    min-height: 297mm; /* Alto A4 */
+    margin: 0 auto 50px auto; /* Centrado y margen inferior para scroll */
+    padding: 40px 50px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    font-family: 'Arial', sans-serif;
+    position: relative;
+}
+
+/* Estilo para inputs del encabezado (Agente y Año) */
+.gps-header-input {
+    border: none;
+    border-bottom: 1px solid #000;
+    font-size: 1em;
+    font-weight: bold;
+    color: #333;
+    background: transparent;
+    padding: 2px 5px;
+    outline: none;
+}
+.gps-header-input:focus { border-bottom: 2px solid #b70000; }
+
+.gps-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 4px solid #b70000;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+}
+
+.gps-logo { font-size: 4em; line-height: 0.8; }
+.gps-agent-info { font-size: 1.2em; }
+
+.gps-onething-box {
+    background: #f9f9f9;
+    border: 2px solid #b70000;
+    padding: 15px;
+    margin-bottom: 30px;
+    border-radius: 10px;
+}
+
+.gps-input-area {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-family: 'Montserrat', sans-serif;
+    resize: none;
+    outline: none;
+}
+.gps-input-area.big {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #b70000;
+    height: 3em;
+    border-bottom: 1px dashed #ccc;
+}
+
+.gps-priority-block { margin-bottom: 25px; }
+
+.gps-priority-header {
+    display: flex;
+    align-items: center;
+    background: #eee;
+    padding: 5px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.p-number {
+    background: #b70000;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.gps-input-line {
+    width: 100%;
+    border: none;
+    background: transparent;
+    border-bottom: 1px dotted #ccc;
+    padding: 5px;
+    font-size: 1em;
+    outline: none;
+}
+.gps-input-line.bold { font-weight: 800; font-size: 1.1em; }
+
+.strategy-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    padding-left: 20px;
+}ESTILOS gps
+.strategy-row span { margin-right: 10px; font-size: 1.5em; line-height: 0; color: #b70000; }
+
+.gps-helper { font-size: 0.8em; color: #666; font-style: italic; margin-bottom: 5px; padding-left: 20px; }
+
+.gps-actions {
+    position: fixed;
+    bottom: 20px;
+    right: 40px; /* A la derecha para no molestar */
+    z-index: 9999;
+    background: rgba(0,0,0,0.8);
+    padding: 10px 20px;
+    border-radius: 50px;
+    display: flex;
+    gap: 15px;
+}
+
+/* --- ESTILOS DE IMPRESIÓN (PDF) CORREGIDOS --- */
+/* --- IMPRESIÓN INTELIGENTE --- */
+@media print {
+    /* REGLA BASE: Ocultar botones flotantes siempre */
+    .header-buttons, .filtros-rapidos, .btn, .scroll-to-top, .no-print {
+        display: none !important;
+    }
+
+    /* CASO A: IMPRIMIR GPS (Solo si el body tiene la clase 'print-mode-gps') */
+    body.print-mode-gps > * { display: none !important; } /* Oculta todo */
+    body.print-mode-gps #modal-plantilla-gps {
+        display: block !important;
+        position: absolute; left: 0; top: 0; width: 100%;
+        background: white; z-index: 9999;
+    }
+    body.print-mode-gps #modal-plantilla-gps .gps-paper {
+        visibility: visible !important;
+        box-shadow: none; margin: 0; width: 100%;
+    }
+    body.print-mode-gps .gps-header-input { border: none; border-bottom: 1px solid #000; }
+
+    /* CASO B: IMPRIMIR DASHBOARD (Por defecto) */
+    body:not(.print-mode-gps) .view-container.active {
+        display: block !important;
+    }
+    body:not(.print-mode-gps) .header {
+        box-shadow: none; border: 1px solid #ddd;
+    }
+    body:not(.print-mode-gps) .chart-container, 
+    body:not(.print-mode-gps) .section {
+        break-inside: avoid; /* No cortar gráficos a la mitad */
+        page-break-inside: avoid;
+        box-shadow: none; border: 1px solid #ddd;
+    }
+}
+
+        /* --- SIGNOS VITALES --- */
+        .signos-vitales {
+            background: var(--gradient-signos-bg);
+            border: 2px solid var(--color-primary);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 40px var(--shadow-header);
+            position: relative;    
+            z-index: 5;
+        }
+        .signos-title {
+            font-size: 1.5em;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--color-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .signos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        .signo-card {
+            background: var(--color-surface-blur);    
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid var(--color-border);
+            transition: all 0.3s;
+            cursor: pointer;    
+        }
+        .signo-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px var(--shadow-good);
+            border-color: var(--color-accent-good);
+        }
+        .signo-card.critical:hover {
+            box-shadow: 0 10px 25px var(--shadow-header);
+            border-color: var(--color-accent-bad);
+        }
+        .signo-icon { font-size: 2em; margin-bottom: 8px; }
+        .signo-label {    
+            font-size: 0.75em;    
+            color: var(--color-text-faded);
+            text-transform: uppercase;    
+            margin-bottom: 5px;
+            height: 2.5em;    
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .signo-value {    
+            font-size: 1.8em;    
+            font-weight: 900;    
+            background: var(--gradient-good);    
+            -webkit-background-clip: text;    
+            -webkit-text-fill-color: transparent;    
+        }
+        .signo-value.critical {
+            background: var(--gradient-bad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- FILTROS RÁPIDOS (FIJOS) --- */
+        .filtros-rapidos {
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--color-border);
+            position: relative;    
+            top: auto;
+            width: 100%;
+            z-index: 100;
+            transition: top 0.3s ease-in-out;
+        }
+        /* Filtros en tema claro */
+        body[data-theme="claro"] .filtros-rapidos,
+        body[data-theme="kw-claro"] .filtros-rapidos {
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        .filtros-rapidos.is-sticky {
+            position: fixed;
+            top: 15px;
+            left: 1%;    
+            right: 1%;
+            width: 98%;
+            margin-top: 0;
+            animation: fadeInUp 0.3s;
+        }
+        .filter-placeholder {
+            display: none;
+            height: 120px;
+        }
+
+        .filtros-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        .filtro-btn {
+            background: var(--color-surface);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            color: var(--color-text-primary);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+        .filtro-btn.active {
+            background: var(--gradient-header);
+            color: #fff;
+            box-shadow: 0 5px 15px var(--shadow-header);
+            animation: pulse 2s infinite;
+        }
+        .filtro-btn:hover {
+            background: rgba(183, 0, 0, 0.3); /* Color KW hover mantenido */
+            transform: translateY(-2px);
+        }
+        .filtro-custom-date {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--color-surface);
+            padding: 5px 15px;
+            border-radius: 25px;
+        }
+        .filtro-custom-date label {
+            font-size: 0.9em;
+            font-weight: 700;
+            color: var(--color-text-faded);
+        }
+        .filtro-custom-date input[type="date"] {
+            background: transparent;
+            border: none;
+            color: var(--color-text-primary);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        .filtro-custom-date .btn {
+            padding: 8px 15px;
+            font-size: 0.8em;
+        }
+
+        /* --- COMPONENTES DE VISTA --- */
+        .loading { text-align: center; padding: 80px 20px; font-size: 1.3em; }
+        .loader {    
+            width: 80px;    
+            height: 80px;    
+            border: 8px solid var(--color-border);    
+            border-top-color: var(--color-primary);    
+            border-radius: 50%;    
+            animation: spin 1s linear infinite;    
+            margin: 0 auto 20px;    
+        }
+        .section {
+            background: var(--color-surface-blur);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid var(--color-border);
+        }
+        .section-title {
+            font-size: 1.8em;
+            font-weight: 800;
+            text-align: center;
+            margin: 0 0 20px 0;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .vista-tabs {    
+            display: flex;    
+            gap: 10px;    
+            margin-bottom: 20px;    
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 5;
+        }
+        .tab-btn {    
+            background: var(--color-surface);    
+            border: 2px solid var(--color-border);    
+            padding: 12px 25px;    
+            border-radius: 10px;    
+            color: var(--color-text-primary);    
+            font-weight: 700;    
+            cursor: pointer;    
+            transition: all 0.3s;    
+        }
+        .tab-btn.active {    
+            background: var(--gradient-header);    
+            border-color: var(--color-primary);
+            color: #fff;
+        }
+        .tab-btn:hover { background: rgba(183, 0, 0, 0.3); } /* Color KW hover mantenido */
+
+        /* Contenido principal */
+        #vistaContenido, #selection-controls {
+            position: relative;
+            z-index: 5;
+        }
+
+        /* --- TARJETA AGENTE MEJORADA --- */
+        .agent-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 20px;
+        }
+        .agent-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 15px;
+            border: 2px solid var(--color-border);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        body[data-theme="claro"] .agent-card,
+        body[data-theme="kw-claro"] .agent-card {
+            background: #fff;
+        }
+        
+        .agent-card-clickable {
+            cursor: pointer;
+        }
+        .agent-card-clickable:hover {    
+            transform: translateY(-8px);    
+            box-shadow: 0 20px 50px var(--shadow-header);    
+            border-color: var(--color-primary);    
+        }
+        .agent-card-header {
+            display: flex;    
+            justify-content: space-between;    
+            align-items: center;    
+            padding: 20px 20px 15px 20px;
+            border-bottom: 2px solid var(--color-border);
+        }
+        .agent-card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .agent-card-checkbox {
+            transform: scale(1.5);
+            accent-color: var(--color-primary);
+        }
+        .agent-card-header .agent-name {
+            font-size: 1.4em;    
+            font-weight: 800;
+            color: var(--color-text-primary);
+        }
+        .agent-card-header .agent-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .agent-card-body {
+    padding: 15px; /* Menos relleno alrededor */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 Columnas idénticas */
+    gap: 8px; /* Menos espacio entre cajas para que quepan bien */
+    align-items: stretch; /* Estirar para que todas tengan la misma altura */
+}
+        .agent-stat-box {
+    background: rgba(255, 255, 255, 0.05); /* Fondo sutil para encuadrar */
+    padding: 8px 4px; /* Relleno interno ajustado */
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 75px; /* Altura mínima uniforme */
+}
+        .agent-stat-label {
+    font-size: 0.65em; /* Letra un poco más pequeña para que quepa */
+    color: var(--color-text-faded);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    line-height: 1.1;
+    height: 22px; /* Altura fija para alinear títulos de 1 o 2 líneas */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+        .agent-stat-value {
+    font-size: 1.1em; /* Número claro */
+    font-weight: 800;
+    color: var(--color-text-primary);
+    line-height: 1;
+}
+        .agent-stat-value .unit {
+    font-size: 0.7em;
+    opacity: 0.7;
+    margin-left: 1px;
+    font-weight: 400;
+}
+/* Ajuste de contraste para que se lea bien en fondo claro/oscuro */
+body[data-theme="claro"] .agent-stat-box,
+body[data-theme="kw-claro"] .agent-stat-box {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0,0,0,0.1);
+}
+        .agent-card-footer {
+            padding: 0 20px 20px 20px;
+        }
+        .cumplimiento-bar {    
+            width:100%;    
+            height:12px;    
+            background: var(--color-border-accent);    
+            border-radius:10px;    
+            overflow:hidden;    
+            margin:10px 0;    
+        }
+        .cumplimiento-fill {    
+            height:100%;    
+            border-radius:10px;    
+            transition:width 1.5s ease-out;    
+        }
+        .cumplimiento-fill.bajo { background: var(--gradient-bad); }
+        .cumplimiento-fill.bueno { background: linear-gradient(90deg, var(--color-accent-warn), #ffb000); }
+        .cumplimiento-fill.excelente { background: var(--gradient-good); }
+        
+        /* --- COMPONENTES TABLAS --- */
+        .top-selector {
+            display: inline-flex;
+            gap: 5px;
+            margin-left: 15px;
+        }
+        .top-selector button {
+            background: var(--color-surface);
+            border: 2px solid var(--color-border-accent);
+            padding: 5px 12px;
+            border-radius: 15px;
+            color: var(--color-text-primary);
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+        }
+        .top-selector button.active {
+            background: var(--color-accent-good);
+            color: var(--color-bg-alt);
+            border-color: var(--color-accent-good);
+        }
+        .top-selector button:hover {
+            background: rgba(0, 255, 136, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .comparativa-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .comparativa-card {
+            background: var(--color-surface-blur);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid var(--color-border);
+        }
+        .comparativa-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+            color: var(--color-secondary);
+        }
+        .ranking-item {    
+            display: flex;    
+            justify-content: space-between;    
+            align-items: center;    
+            padding: 12px 15px;    
+            background: var(--color-surface);    
+            margin-bottom: 8px;    
+            border-radius: 10px;    
+            cursor: pointer;    
+            transition: all 0.3s;
+        }
+        .ranking-item:hover {
+            background: rgba(0, 255, 136, 0.1);
+        }
+        .ranking-item-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .ranking-item-pos {
+            font-size: 1.2em;
+            font-weight: 900;
+            color: var(--color-accent-warn);
+            width: 30px;
+            text-align: center;
+        }
+        .ranking-item-name {
+            font-weight: 700;
+            color: var(--color-text-primary);
+        }
+        .ranking-item-value {
+            font-weight: 900;    
+            color: var(--color-accent-good);    
+            font-size: 1.1em;
+        }
+        body[data-theme="luxury"] .ranking-item-value {
+            color: var(--color-text-primary);
+        }
+
+        .tabla-container {
+            background: var(--color-surface-blur);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        .tabla {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+        }
+        .tabla thead {
+            background: linear-gradient(135deg, rgba(183, 0, 0, 0.4), rgba(139, 0, 0, 0.4));
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        body[data-theme="claro"] .tabla thead,
+body[data-theme="kw-claro"] .tabla thead {
+    background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
+}
+
+body[data-theme="claro"] .tabla th,
+body[data-theme="kw-claro"] .tabla th {
+    color: #000000 !important;
+}
+
+body[data-theme="claro"] .tabla td,
+body[data-theme="kw-claro"] .tabla td {
+    color: #333333 !important;
+}
+        .tabla th {
+            padding: 15px 10px;
+            text-align: center;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.75em;
+            letter-spacing: 1px;
+            border: 1px solid var(--color-border);
+            white-space: nowrap;
+        }
+        .tabla td {
+            padding: 12px 10px;
+            border: 1px solid var(--color-border);
+            text-align: center;
+        }
+        .tabla tbody tr {
+            transition: all 0.2s;
+        }
+        .tabla tbody tr:hover {
+            background: rgba(183, 0, 0, 0.2); /* Color KW hover mantenido */
+        }
+        .tabla .agente-nombre {
+            font-weight: 700;
+            text-align: left;
+            position: sticky;
+            left: 0;
+            background: var(--color-bg-alt);
+            z-index: 4;
+        }
+        .ratio-excelente { color: var(--color-accent-good); font-weight: 700; }
+        .ratio-bueno { color: var(--color-accent-warn); font-weight: 700; }
+        .ratio-bajo { color: var(--color-accent-bad); font-weight: 700; }
+
+        /* --- MODALES --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            overflow: hidden;    
+        }
+        .modal.active { display: block; }
+        .modal-content {
+    background: var(--color-bg-alt); /* Esto cambiará a blanco en tema claro */
+    color: var(--color-text-primary); /* Esto cambiará a negro en tema claro */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    margin: 2% auto;
+    padding: 30px;
+    border: 2px solid var(--color-border);
+    border-radius: 20px;
+    width: 95%;
+    max-width: 1400px;
+    position: relative;
+    animation: fadeInUp 0.3s;
+    height: 95vh;    
+    display: flex;
+    flex-direction: column;
+}
+        .modal-body {
+            overflow-y: auto;    
+            flex-grow: 1;
+        }
+        .modal-close {
+            color: var(--color-text-primary);
+            float: right;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 30px;
+            transition: all 0.3s;
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            z-index: 10;
+        }
+        .modal-close:hover { color: var(--color-primary); transform: rotate(90deg); }
+        
+        #modal-ia-content {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        body[data-theme="claro"] #modal-ia-content,
+        body[data-theme="kw-claro"] #modal-ia-content {
+            background: rgba(0,0,0,0.05);
+        }
+        
+        /* --- LEYENDA KPI --- */
+        .kpi-legend {
+            background: var(--color-surface);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        .kpi-legend-title {
+            font-weight: 700;
+            color: var(--color-secondary);
+            margin-bottom: 10px;
+        }
+        .kpi-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .kpi-legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+
+        /* Distribución Mensual */
+        .distribucion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .distribucion-total {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+        .distribucion-total.invalid {
+            color: var(--color-accent-bad);
+        }
+
+        /* --- Gráficos --- */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .chart-container {
+            background: var(--color-surface-blur);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid var(--color-border);
+            height: 400px;    
+        }
+        .chart-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+            color: var(--color-secondary);
+        }
+
+        /* --- Botón Scroll Top --- */
+        .scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--gradient-header);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 10px 30px var(--shadow-header);
+            transition: all 0.3s;
+        }
+        .scroll-to-top:hover { transform: translateY(-3px) scale(1.1); }
+
+        /* --- REPARACIÓN VISUAL SELECTOR --- */
+        .form-select option {
+            color: #000;
+            background: #fff;
+        }
+
+        /* --- NUEVO: MODAL DE TEMAS --- */
+        .theme-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .btn-theme {
+            border-radius: 15px;
+            padding: 25px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid var(--color-border);
+        }
+        .btn-theme:hover {
+            transform: scale(1.05);
+            border-color: var(--color-text-primary);
+        }
+        .theme-colors {
+            display: flex;
+            gap: 5px;
+            margin-top: 15px;
+            height: 25px;
+        }
+        .theme-color-box {
+            width: 100%;
+            height: 100%;
+            border-radius: 5px;
+        }
+
+        /* --- NUEVO: MODAL TRANSACCIÓN --- */
+        #transaccion-agentes-lista {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: var(--color-surface);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .agente-item-transaccion {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--color-bg-alt);
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+        .agente-item-transaccion-info {
+            font-weight: 700;
+        }
+        .agente-item-transaccion-info span {
+            font-weight: 500;
+            color: var(--color-text-faded);
+            margin-left: 10px;
+        }
+        .agente-item-transaccion-gci {
+            font-weight: 800;
+            font-size: 1.1em;
+            color: var(--color-accent-good);
+        }
+        .btn-eliminar-agente-tx {
+            background: var(--color-accent-bad);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-weight: 900;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+        #transaccion-gci-restante {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        #transaccion-gci-restante.completo {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--color-accent-good);
+        }
+        #transaccion-gci-restante.incompleto {
+            background: rgba(255, 68, 68, 0.1);
+            color: var(--color-accent-bad);
+        }
+        .tx-adder-grid {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            gap: 15px;
+            align-items: end;
+            background: var(--color-surface);
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+
+        /* --- Media Queries --- */
+        @media (max-width: 768px) {
+            .role-selection { grid-template-columns: 1fr; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .signos-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+            .header-buttons { justify-content: flex-end; }
+            .btn { padding: 10px 20px; font-size: 0.9em; }
+            .filtros-buttons { flex-direction: column; gap: 8px; }
+            .filtro-custom-date { flex-direction: column; gap: 8px; padding: 10px; }
+            .filtro-custom-date .btn { width: 100%; }
+            .agent-card-grid { grid-template-columns: 1fr; }
+            .agent-card-body { grid-template-columns: repeat(2, 1fr); }
+            .tx-adder-grid { grid-template-columns: 1fr; }
+        }
+        
+
+        /* --- ESTILOS PARA IMPRESIÓN --- */
+        @media print {
+            body {
+                background: #fff !important;
+                color: #000 !important;
+                overflow: visible !important;
+            }
+            
+            /* Ocultar todos los elementos que no se imprimen */
+            .header, .filtros-rapidos, .btn, .modal, .scroll-to-top,    
+            .login-container, .vista-tabs, #selection-controls,    
+            .header-buttons, .form-submit, #data-entry-form, #agent-select {
+                display: none !important;
+            }
+
+            /* Mostrar solo la vista activa */
+            .view-container:not(.active) {
+                display: none;
+            }
+            
+            .view-container.active {
+                display: block;
+                min-height: auto;
+            }
+            
+            .container {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            
+            /* Resetear estilos visuales */
+            .section, .signo-card, .chart-container, .agent-card,    
+            .tabla-container, .comparativa-card {
+                background: #fff !important;
+                color: #000 !important;
+                border: 1px solid #ccc !important;
+                box-shadow: none !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                page-break-inside: avoid; /* Evitar que se corten las tarjetas */
+            }
+            
+            .section-title, .signos-title, .chart-title, .comparativa-title, .login-title {
+                color: #b70000 !important;
+                background: none !important;
+                -webkit-text-fill-color: #b70000 !important;
+            }
+
+            .signo-value, .ranking-item-value {
+                color: #000 !important;
+                background: none !important;
+                -webkit-text-fill-color: #000 !important;
+            }
+            
+            .signo-value.critical {
+                color: #b70000 !important;
+                -webkit-text-fill-color: #b70000 !important;
+            }
+
+            /* Forzar que los gráficos se dibujen */
+            canvas {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+        }
+        /* --- NOTIFICACIONES INTEGRADAS (TOAST) --- */
+#app-notification {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 50px; /* Bordes redondeados */
+    padding: 16px;
+    position: fixed;
+    z-index: 10000; /* Muy alto para que se vea sobre todo */
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    font-size: 17px;
+    font-weight: 500;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 0.3s, bottom 0.3s;
+}
+
+#app-notification.show {
+    visibility: visible;
+    opacity: 1;
+    bottom: 50px; /* Pequeña animación hacia arriba */
+}
+
+#app-notification.success {
+    background-color: #00c060; /* Verde éxito */
+    border: 2px solid #00ff88;
+}
+
+#app-notification.error {
+    background-color: #d32f2f; /* Rojo error */
+    border: 2px solid #ff4444;
+}
+/* --- CORRECCIÓN COLORES TEMA CLARO --- */
+/* Fuerza el color de los inputs y textos cuando se selecciona el tema claro */
+
+body[data-theme="claro"] .form-input,
+body[data-theme="kw-claro"] .form-input,
+body[data-theme="claro"] .form-select,
+body[data-theme="kw-claro"] .form-select {
+    background-color: #ffffff !important; /* Fondo blanco */
+    color: #000000 !important;            /* Texto negro */
+    border: 1px solid #999 !important;    /* Borde visible */
+}
+
+body[data-theme="claro"] .form-label,
+body[data-theme="kw-claro"] .form-label {
+    color: #333333 !important; /* Etiquetas oscuras */
+    font-weight: bold;
+}
+
+/* Corrección específica para la cuadrícula de meses en objetivos */
+body[data-theme="claro"] .dist-mes,
+body[data-theme="kw-claro"] .dist-mes {
+    background-color: #fff !important;
+    color: #000 !important;
+}
+
+/* Títulos y textos en el modal */
+body[data-theme="claro"] .section-title,
+body[data-theme="kw-claro"] .section-title {
+    -webkit-text-fill-color: #b70000 !important; /* Asegurar rojo KW */
+    color: #b70000 !important;
+}
+
+body[data-theme="claro"] h3, 
+body[data-theme="kw-claro"] h3,
+body[data-theme="claro"] .distribucion-total,
+body[data-theme="kw-claro"] .distribucion-total {
+     color: #000 !important; /* Textos secundarios en negro */
+}
+/* --- CORRECCIÓN VISIBILIDAD MODO CLARO --- */
+
+/* Forzar texto oscuro en tarjetas dentro de modales claros */
+body[data-theme="claro"] .signo-card .signo-label,
+body[data-theme="kw-claro"] .signo-card .signo-label,
+body[data-theme="claro"] .signo-card .signo-value,
+body[data-theme="kw-claro"] .signo-card .signo-value,
+body[data-theme="claro"] .chart-title,
+body[data-theme="kw-claro"] .chart-title,
+body[data-theme="claro"] .section-title,
+body[data-theme="kw-claro"] .section-title,
+body[data-theme="claro"] h2,
+body[data-theme="kw-claro"] h2,
+body[data-theme="claro"] .agent-stat-label,
+body[data-theme="kw-claro"] .agent-stat-label,
+body[data-theme="claro"] .agent-stat-value,
+body[data-theme="kw-claro"] .agent-stat-value {
+    color: #333333 !important;
+}
+/* DESPUÉS de la línea 797, AÑADIR: */
+body[data-theme="claro"] .signo-value,
+body[data-theme="kw-claro"] .signo-value {
+    background: linear-gradient(135deg, #009688, #00796B) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+body[data-theme="claro"] .signo-value.critical,
+body[data-theme="kw-claro"] .signo-value.critical {
+    background: linear-gradient(135deg, #D32F2F, #a02020) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+/* Fondo de las tarjetas en modo claro para que resalten */
+body[data-theme="claro"] .signo-card,
+body[data-theme="kw-claro"] .signo-card {
+    background: #ffffff !important;
+    border: 1px solid #ddd !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
+}
+
+/* Corrección del gráfico de barras (Texto negro en ejes) */
+body[data-theme="claro"] canvas,
+body[data-theme="kw-claro"] canvas {
+    filter: none !important; /* A veces se invierte */
+}
+/* Ocultar todos los modales por defecto */
+.modal {
+    display: none !important;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Solo se muestran cuando tienen clase 'active' */
+.modal.active {
+    display: flex !important;
+    opacity: 1;
+    visibility: visible;
+}
+    </style>
+</head>
+<body data-theme="kw-dark"> <div class="animated-bg"></div>
+    <div class="stars" id="stars"></div>
+
+    <div id="view-login" class="view-container active">
+        <div class="login-container">
+            <div class="login-box">
+                <div class="login-title">🏠 DASHBOARD KW PRO</div>
+                <div class="login-subtitle">Sistema Avanzado de Control</div>
+                <div class="role-selection">
+                    <button id="btn-gerente" class="btn-role">
+                        <span class="role-icon">👔</span>
+                        <div>GERENTE</div>
+                        <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Control Total</div>
+                    </button>
+                    <button id="btn-agente" class="btn-role">
+                        <span class="role-icon">🏡</span>
+                        <div>AGENTE</div>
+                        <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Mi Dashboard</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-manager" class="view-container">
+        <div class="container" id="top-container">
+            <div id="manager-filter-placeholder" class="filter-placeholder" style="display: none;"></div>
+            <div id="content" class="loading">
+                <div class="loader"></div>
+                <div>Cargando dashboard...</div>
+            </div>
+        </div>
+        <a id="scrollTopButton" class="scroll-to-top" onclick="scrollToTop()">▲</a>
+    </div>
+
+    <div id="view-agent" class="view-container">
+        <div class="container">
+            <div class="header" id="agent-header">
+                <div class="header-content">
+                    <div>
+                        <h1>📊 MI DASHBOARD</h1>
+                        <div class="subtitle" id="agent-subtitle">AGENTE INMOBILIARIO</div>
+                    </div>
+                    <div class="header-buttons">
+                        <button class="btn" onclick="mostrarModalFiltros('agente')">📅 Filtros</button>
+                        <button class="btn btn-ia" onclick="analizarAgenteIA(event, agenteActual.id)">✨ Analizar</button>
+                        <button class="btn" onclick="mostrarModalTemas()">🎨 Tema</button>
+                        <button class="btn" onclick="toggleFullScreen()">↔️</button>
+                        <button class="btn" onclick="tomarCaptura()">📸</button>
+                        <button class="btn" onclick="window.print()">🖨️</button>
+                        <button id="btn-logout-header" class="btn-logout">⬅️ SALIR</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="agent-filter-placeholder" class="filter-placeholder" style="display: none;"></div>
+
+            <div class="section">
+                <select id="agent-select" class="form-select" onchange="seleccionarAgente()">
+                    <option value="">-- Selecciona tu nombre --</option>
+                </select>
+            </div>
+
+            <div id="agent-content" style="display: none;">
+                
+                <div id="agent-filters-container" class="filtros-rapidos" style="display: none;">
+                </div>
+
+                <div class="section">
+                    <div class="section-title">✍️ REGISTRAR ACTIVIDAD</div>
+                    
+                    <form id="data-entry-form" onsubmit="guardarActividad(event)" class="form-grid">
+                        <input type="hidden" id="form-agent-id">
+                        <input type="hidden" id="form-agent-name">
+                        
+                        <div class="form-grupo">
+                            <label class="form-label">📅 Fecha</label>
+                            <input type="date" id="form-fecha" class="form-input" required onchange="verificarActividadExistente()">
+                        </div>
+                        <div id="aviso-actividad-existente" style="display: none; grid-column: 1 / -1; background: rgba(255,215,0,0.1); border: 1px solid #ffd700; border-radius: 8px; padding: 15px; margin: 10px 0;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.5em;">⚠️</span>
+        <div>
+            <strong>Ya existe actividad para esta fecha</strong>
+            <div style="font-size: 0.9em; opacity: 0.8; margin-top: 5px;" id="resumen-actividad-existente"></div>
+        </div>
+    </div>
+</div>
+                        <div class="form-grupo">
+                            <label class="form-label">📞 Citas Captación</label>
+                            <input type="number" id="form-citas-captacion" class="form-input" min="0" value="0">
+                        </div>
+                        <div class="form-grupo">
+                            <label class="form-label">🏠 Exclusivas Venta</label>
+                            <input type="number" id="form-exclusivas-venta" class="form-input" min="0" value="0">
+                        </div>
+                        <div class="form-grupo">
+                            <label class="form-label">🔑 Exclusivas Comprador</label>
+                            <input type="number" id="form-exclusivas-comprador" class="form-input" min="0" value="0">
+                        </div>
+                        <div class="form-grupo">
+                            <label class="form-label">🏘️ Captaciones Abierto</label>
+                            <input type="number" id="form-captaciones-abierto" class="form-input" min="0" value="0">
+                        </div>
+                        <div class="form-grupo">
+                            <label class="form-label">👥 Citas Compradores</label>
+                            <input type="number" id="form-citas-compradores" class="form-input" min="0" value="0">
+                        </div>
+                        <div class="form-grupo">
+                            <label class="form-label">🏡 Casas Enseñadas</label>
+                            <input type="number" id="form-casas-ensenadas" class="form-input" min="0" value="0">
+                        </div>
+                        <div class="form-grupo">
+    <label class="form-label">📧 Leads Compradores</label>
+    <input type="number" id="form-leads-compradores" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">📞 Llamadas</label>
+    <input type="number" id="form-llamadas" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">💰 GCI (€)</label>
+    <input type="number" id="form-gci" class="form-input" min="0" step="0.01" value="0">
+</div>
+                        <button type="submit" id="btn-submit-actividad" class="form-submit">💾 GUARDAR ACTIVIDAD</button>
+                        <div id="form-success-message" style="grid-column: 1 / -1; text-align: center; padding: 15px; background: rgba(0,255,136,0.2); border: 1px solid var(--color-accent-good); color: var(--color-accent-good); border-radius: 10px; display: none;">✅ Actividad guardada correctamente</div>
+                    </form>
+                </div>
+
+                <div id="agent-dashboard-content" class="loading">
+                    <div class="loader"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-analisis" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="cerrarModal()">&times;</span>
+            <div class="modal-body" id="modal-analisis-body">
+            </div>
+        </div>
+    </div>
+    
+    <div id="modal-acciones" class="modal">
+        <div class="modal-content" style="height: auto; max-width: 1000px;">
+            <span class="modal-close" onclick="cerrarModal()">&times;</span>
+            <div class="modal-body">
+    <div class="section-title">🎯 Centro de Acciones</div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+        
+        <!-- BOTONES EXISTENTES -->
+        <button class="btn-role" onclick="mostrarModalTransaccion()">
+            <span class="role-icon">💰</span>
+            Registrar Transacción (GCI)
+            <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Asignar una venta/GCI a uno o más agentes.</div>
+        </button>
+        <button class="btn-role" onclick="mostrarModalActividad()">
+            <span class="role-icon">✍️</span>
+            Registrar Actividad de Agente
+            <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Añadir citas, exclusivas, etc.</div>
+        </button>
+        <button class="btn-role" onclick="mostrarModalObjetivos()">
+            <span class="role-icon">🎯</span>
+            Establecer Objetivos
+            <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Definir objetivos anuales.</div>
+        </button>
+        <button 
+    class="btn-role" 
+    onclick="mostrarModalGestionAgentes()"
+    style="background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(30,30,30,0.9)); border: 2px solid #d4af37; cursor: pointer; transition: all 0.3s;"
+    onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 20px 50px rgba(212,175,55,0.5)'; this.style.borderColor='#ffd700';"
+    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.borderColor='#d4af37';">
+    
+    <span class="role-icon">👥</span>
+    
+    <div style="font-size: 1.1em; font-weight: 700;">Gestionar Agentes</div>
+    
+    <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">
+        Dashboard + Crear + Listado
+    </div>
+</button>
+
+        <!-- 🆕 NUEVOS BOTONES -->
+        <button class="btn-role" onclick="mostrarModalModeloEconomico()">
+            <span class="role-icon">📊</span>
+            Modelo Económico
+            <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Calculadora de 6 preguntas.</div>
+        </button>
+        <button class="btn-role" onclick="mostrarModalModeloPresupuestario()">
+            <span class="role-icon">💰</span>
+            Modelo Presupuestario
+            <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Gastos vs GCI mensual.</div>
+        </button>
+        <button class="btn-role" onclick="mostrarModalModeloOrganizativo()">
+            <span class="role-icon">👥</span>
+            Modelo Organizativo
+            <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Organigrama del equipo.</div>
+        </button>
+        <button class="btn-role" onclick="mostrarModalPlantillaGPS()">
+            <span class="role-icon">🎯</span>
+            Plantilla GPS
+            <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Seguimiento de métricas clave.</div>
+        </button>
+        <button class="btn-role" onclick="mostrarModalFacturacionPasada()">
+            <span class="role-icon">📈</span>
+            Facturación Pasada
+            <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Análisis de fuentes de ingreso.</div>
+        </button>
+        <button class="btn-role" onclick="mostrarModalRentabilidad()">
+            <span class="role-icon">💎</span>
+            Rentabilidad Agentes
+            <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Coste/hora, valor/hora.</div>
+        </button>
+        <button class="btn-role" type="button" onclick="mostrarModalRegistrarGasto()">
+    <span class="role-icon"> 💸 </span>
+    Registrar Gasto
+    <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Añadir facturas y gastos operativos.</div>
+</button>
+<button class="btn-role" onclick="mostrarModalCargaHistorico()">
+    <span class="role-icon">📜</span>
+    Histórico Agentes
+    <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">
+        Cargar datos año anterior (Anual o Mensual).
+    </div>
+</button>
+<button class="btn-role" onclick="mostrarModalImportador()">
+    <span class="role-icon">📥</span>
+    Importar Excel Masivo
+    <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">
+        Copiar y pegar desde Excel (Crea agentes e histórico).
+    </div>
+</button>
+
+    </div>
+</div>
+</div>
+</div>
+    
+    <div id="modal-transaccion" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <span class="modal-close" onclick="cerrarModalSuperior('modal-transaccion')">&times;</span>
+            <div class="modal-body">
+                <div class="section-title">💰 Registrar Transacción (GCI)</div>
+                <form id="form-transaccion" onsubmit="guardarTransaccionGCI(event)" class="form-grid">
+                    
+                    <div class="form-grupo">
+                        <label class="form-label">📅 Fecha de Cierre</label>
+                        <input type="date" id="transaccion-fecha" class="form-input" required>
+                    </div>
+                    <div class="form-grupo">
+    <label class="form-label">💰 GCI Total (€)</label>
+    <input type="number" id="transaccion-gci-total" class="form-input" min="0" step="0.01" oninput="actualizarGCIRestante()" required>
+</div>
+<div class="form-grupo">
+    <label class="form-label">💵 Precio Venta (€)</label>
+    <input type="number" id="transaccion-precio-venta" class="form-input" min="0" step="0.01" placeholder="Ej: 250000">
+</div>
+<div class="form-grupo">
+    <label class="form-label">Tipo</label>
+    <select id="transaccion-tipo" class="form-select">
+                            <option value="Venta">Venta</option>
+                            <option value="Alquiler">Alquiler</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">Descripción (Ref. o ID Inmueble)</label>
+                        <input type="text" id="transaccion-descripcion" class="form-input" placeholder="Ej: Ref 1234, ID INM002...">
+                    </div>
+
+                    <div class="tx-adder-grid">
+                        <div class="form-grupo">
+                            <label class="form-label">👤 Agente</label>
+                            <select id="tx-agente-select" class="form-select">
+                                <option value="">-- Seleccionar agente --</option>
+                            </select>
+                        </div>
+                        <div class="form-grupo">
+                            <label class="form-label">Lado</label>
+                            <select id="tx-lado-select" class="form-select">
+                                <option value="Vendedor">Vendedor</option>
+                                <option value="Comprador">Comprador</option>
+                                <option value="Ambos">Ambos</option>
+                            </select>
+                        </div>
+                        <div class="form-grupo">
+                            <label class="form-label">GCI Parcial (€)</label>
+                            <input type="number" id="tx-gci-parcial" class="form-input" min="0" step="0.01" oninput="recalcularComisionTransaccion('pct')">
+                        </div>
+                        <div class="form-grupo">
+    <label class="form-label">% Comis.</label>
+    <input type="number" id="tx-comision-pct" class="form-input" min="0" max="100" value="40" placeholder="%" oninput="recalcularComisionTransaccion('pct')">
+</div>
+<div class="form-grupo">
+    <label class="form-label">Importe Comis. (€)</label>
+    <input type="number" id="tx-comision-importe" class="form-input" min="0" step="0.01" placeholder="0.00" oninput="recalcularComisionTransaccion('importe')">
+</div>
+                        <div class="form-grupo">
+                            <button type="button" class="btn btn-primary-action" onclick="agregarAgenteATransaccion()" style="width: 100%; padding: 12px;">Añadir</button>
+                        </div>
+                    </div>
+
+                    <div id="transaccion-agentes-lista">
+                    </div>
+                    
+                    <div id="transaccion-gci-restante" class="incompleto">
+                        Total Asignado: 0.00€ (Restante: 0.00€)
+                    </div>
+
+                    <button type="submit" id="form-transaccion-submit" class="form-submit">💾 Guardar Transacción</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-actividad" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-actividad')">&times;</span>
+        <div class="modal-body">
+            <div class="section-title">✍️ Registrar Actividad (Gerente)</div>
+            
+            <!-- BOTÓN TOGGLE VISTA MÚLTIPLE -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button type="button" id="btn-mostrar-todos-gerente" class="btn btn-primary-action" 
+                        onclick="toggleMostrarTodosGerente()">
+                    👥 Mostrar Todos los Agentes
+                </button>
+            </div>
+            
+            <!-- CONTENEDOR DINÁMICO -->
+            <div id="formularios-container-gerente">
+                <form id="form-actividad-gerente" onsubmit="guardarActividadGerente(event)" class="form-grid">
+                    
+                    <div class="form-grupo" style="grid-column: 1 / -1;">
+                        <label class="form-label">👤 Seleccionar Agente</label>
+                        <select id="actividad-agente-select" class="form-select" required>
+                            <option value="">-- Elige un agente --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-grupo">
+                        <label class="form-label">📅 Fecha</label>
+                        <input type="date" id="gerente-form-fecha" class="form-input" required>
+                    </div>
+                    <div id="aviso-actividad-existente-gerente" style="display: none; grid-column: 1 / -1; background: rgba(255,215,0,0.1); border: 1px solid #ffd700; border-radius: 8px; padding: 15px; margin: 10px 0;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.5em;">⚠️</span>
+        <div>
+            <strong>Ya existe actividad para esta fecha</strong>
+            <div style="font-size: 0.9em; opacity: 0.8; margin-top: 5px;" id="resumen-actividad-existente-gerente"></div>
+        </div>
+    </div>
+</div>
+                    <div class="form-grupo">
+                        <label class="form-label">📞 Citas Captación</label>
+                        <input type="number" id="gerente-form-citas-captacion" class="form-input" min="0" value="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">🏠 Exclusivas Venta</label>
+                        <input type="number" id="gerente-form-exclusivas-venta" class="form-input" min="0" value="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">🔑 Exclusivas Comprador</label>
+                        <input type="number" id="gerente-form-exclusivas-comprador" class="form-input" min="0" value="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">🏘️ Captaciones Abierto</label>
+                        <input type="number" id="gerente-form-captaciones-abierto" class="form-input" min="0" value="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">👥 Citas Compradores</label>
+                        <input type="number" id="gerente-form-citas-compradores" class="form-input" min="0" value="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">🏡 Casas Enseñadas</label>
+                        <input type="number" id="gerente-form-casas-ensenadas" class="form-input" min="0" value="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">📧 Leads Compradores</label>
+                        <input type="number" id="gerente-form-leads-compradores" class="form-input" min="0" value="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">📞 Llamadas</label>
+                        <input type="number" id="gerente-form-llamadas" class="form-input" min="0" value="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">💰 GCI (€)</label>
+                        <input type="number" id="gerente-form-gci" class="form-input" min="0" step="0.01" value="0">
+                    </div>
+                    <button type="submit" id="btn-submit-actividad-gerente" class="form-submit">💾 Guardar Actividad</button>
+                </form>
+            </div> <!-- Cierra formularios-container-gerente -->
+            
+        </div>
+    </div>
+</div>
+<div id="modal-carga-historico" class="modal">
+    <div class="modal-content" style="max-width: 1300px; height: 95vh;">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-carga-historico')">&times;</span>
+        <div class="modal-body">
+        <div class="section-title">📜 Historial Detallado del Agente</div>
+        
+        <div style="background:var(--color-surface); padding:20px; border-radius:15px; display:flex; gap:20px; align-items:end; margin-bottom:20px;">
+            <div class="form-grupo" style="flex-grow:1;">
+                <label class="form-label">Seleccionar Agente</label>
+                <select id="hist-agente-select" class="form-select" onchange="cargarDatosHistoricosExistentes()"></select>
+            </div>
+            <div class="form-grupo">
+                <label class="form-label">Año Histórico</label>
+                <select id="hist-anio" class="form-select" onchange="cargarDatosHistoricosExistentes()">
+                    <option value="2025" selected>2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                </select>
+            </div>
+            <div style="background:rgba(0,0,0,0.2); padding:5px; border-radius:10px; display:flex;">
+                <button id="btn-hist-anual" class="btn" style="border:none; background:var(--color-primary); color:white;" onclick="setModoHistorico('ANUAL')">Total Anual</button>
+                <button id="btn-hist-mensual" class="btn" style="border:none; background:transparent; opacity:0.6;" onclick="setModoHistorico('MENSUAL')">Por Meses</button>
+            </div>
+        </div>
+
+        <div id="hist-panel-anual" style="display:block;">
+            <div class="form-grid" style="background:var(--color-surface); padding:20px; border-radius:15px; border:1px solid var(--color-border);">
+                <div class="form-grupo"><label class="form-label">💰 GCI Total (€)</label><input type="number" id="ha-gci" class="form-input"></div>
+                <div class="form-grupo"><label class="form-label">🤝 Ventas (Cierres)</label><input type="number" id="ha-ventas" class="form-input"></div>
+                
+                <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">📞 Citas Captación</label><input type="number" id="ha-citasCapt" class="form-input"></div>
+                <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">🏠 Exclusivas Venta</label><input type="number" id="ha-exclVenta" class="form-input"></div>
+                <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">🏘️ Capt. Abierto</label><input type="number" id="ha-captAbierto" class="form-input"></div>
+                
+                <div class="form-grupo"><label class="form-label" style="color:#667eea">👥 Citas Comprador</label><input type="number" id="ha-citasComp" class="form-input"></div>
+                <div class="form-grupo"><label class="form-label" style="color:#667eea">🔑 Exclusivas Comp.</label><input type="number" id="ha-exclComp" class="form-input"></div>
+                <div class="form-grupo"><label class="form-label" style="color:#667eea">🏡 Visitas (Showings)</label><input type="number" id="ha-visitas" class="form-input"></div>
+            </div>
+        </div>
+
+        <div id="hist-panel-mensual" style="display:none;">
+            <div class="tabla-container" style="max-height:55vh; overflow-y:auto;">
+                <table class="tabla" style="font-size:0.85em;">
+                    <thead>
+                        <tr>
+                            <th style="position:sticky; left:0; z-index:2;">Mes</th>
+                            <th>GCI (€)</th><th>Ventas</th>
+                            <th style="color:#ff6b6b">Citas Capt.</th><th style="color:#ff6b6b">Excl. Venta</th><th style="color:#ff6b6b">Abierto</th>
+                            <th style="color:#667eea">Citas Comp.</th><th style="color:#667eea">Excl. Comp.</th><th style="color:#667eea">Visitas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hist-tabla-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <button class="btn-primary-action" onclick="guardarHistoricoAgenteHTML()" style="margin-top:20px; width:100%;">💾 Guardar Histórico Completo</button>
+    </div>
+    </div>
+</div>
+
+    <div id="modal-nuevo-agente" class="modal">
+        <div class="modal-content" style="height: auto; max-width: 800px;">
+            <span class="modal-close" onclick="cerrarModalSuperior('modal-nuevo-agente')">&times;</span>
+            <div class="modal-body">
+                <div class="section-title">➕ CREAR NUEVO AGENTE</div>
+                <form id="form-nuevo-agente" onsubmit="crearAgente(event)" class="form-grid">
+                    <div class="form-grupo">
+                        <label class="form-label">👤 Nombre Completo</label>
+                        <input type="text" id="nuevo-nombre" class="form-input" required>
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">📧 Email</label>
+                        <input type="email" id="nuevo-email" class="form-input" required>
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">📞 Teléfono</label>
+                        <input type="tel" id="nuevo-telefono" class="form-input" placeholder="+34 600 000 000">
+                    </div>
+                    <div class="form-grupo">
+    <label class="form-label">💶 Sueldo Fijo Mensual (€)</label>
+    <input type="number" id="nuevo-sueldo" class="form-input" min="0" value="0" placeholder="Ej: 1000">
+</div>
+                    <div class="form-grupo">
+                        <label class="form-label">🎯 Objetivos Acumulados</label>
+                        <select id="nuevo-objetivos-acumulados" class="form-select">
+                            <option value="NO">NO</option>
+                            <option value="SI">SI</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="form-submit">💾 CREAR AGENTE</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-ia" class="modal">
+        <div class="modal-content" style="height: auto; max-width: 800px;">
+            <span class="modal-close" onclick="cerrarModal()">&times;</span>
+            <div class="modal-body">
+                <div class="section-title">🤖 Asistente IA KW Pro</div>
+                <div id="modal-ia-content">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="modal-registrar-gasto" class="modal">
+  <div class="modal-content" style="max-width: 600px;">
+    <span class="modal-close" onclick="cerrarModalSuperior('modal-registrar-gasto')">&times;</span>
+    <div class="modal-body">
+      <div class="section-title"> 💸  Registrar Gasto Operativo</div>
+      <form id="form-gasto" onsubmit="guardarGasto(event)" class="form-grid">
+        
+        <div class="form-grupo">
+          <label class="form-label">Fecha</label>
+          <input type="date" id="gasto-fecha" class="form-input" required>
+        </div>
+
+        <div class="form-grupo">
+          <label class="form-label">Importe (€)</label>
+          <input type="number" id="gasto-importe" class="form-input" step="0.01" min="0" required>
+        </div>
+
+        <div class="form-grupo" style="grid-column: 1/-1;">
+          <label class="form-label">Partida (Selecciona o Escribe)</label>
+          <input list="partidas-list" id="gasto-partida" class="form-input" placeholder="Ej: Marketing" required>
+          <datalist id="partidas-list">
+    <!-- Se llenará dinámicamente con las 13 partidas -->
+</datalist>
+        </div>
+
+        <div class="form-grupo" style="grid-column: 1/-1;">
+          <label class="form-label">Descripción / Notas</label>
+          <input type="text" id="gasto-descripcion" class="form-input" placeholder="Detalle de la factura...">
+        </div>
+
+        <button type="submit" class="form-submit"> 💾  Guardar Gasto</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="modal-detalle-gasto-mes" class="modal" style="z-index: 1100;"> <div class="modal-content" style="max-width: 800px; height: auto; max-height: 80vh;">
+    <span class="modal-close" onclick="document.getElementById('modal-detalle-gasto-mes').classList.remove('active')">&times;</span>
+    <div class="modal-body">
+      <div class="section-title" id="detalle-titulo">Detalle de Gastos</div>
+      <div class="tabla-container">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Concepto/Agente</th>
+              <th>Descripción</th>
+              <th>Importe</th>
+            </tr>
+          </thead>
+          <tbody id="detalle-tabla-body">
+            </tbody>
+          <tfoot>
+             <tr>
+               <td colspan="3" style="text-align:right; font-weight:bold;">TOTAL:</td>
+               <td id="detalle-total" style="font-weight:bold;">0.00 €</td>
+             </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    <div id="modal-objetivos" class="modal">
+    <div class="modal-content" style="max-width: 900px;"> <span class="modal-close" onclick="cerrarModalSuperior('modal-objetivos')">&times;</span>
+        <div class="modal-body">
+            <div class="section-title">🎯 Establecer Objetivos de Agente</div>
+            <form id="form-objetivos" onsubmit="guardarObjetivosAgente(event)">
+                <div class="form-grupo" style="margin-bottom: 20px;">
+                    <label class="form-label">👤 Seleccionar Agente</label>
+                    <select id="objetivos-agente-select" class="form-select" onchange="cargarObjetivosActuales()" required>
+                        <option value="">-- Elige un agente --</option>
+                    </select>
+                </div>
+
+                <div id="objetivos-container" style="display: none;">
+                    <h3 style="color: var(--color-secondary); margin-bottom: 15px;">Objetivos Anuales</h3>
+                    <div class="form-grid">
+                        <div class="form-grupo">
+                            <label class="form-label">💰 GCI (€)</label>
+                            <input type="number" id="obj-gci" class="form-input" min="0" step="1000" value="96000">
+                        </div>
+                        <div class="form-grupo">
+                            <label class="form-label">📞 Citas Captación</label>
+                            <input type="number" id="obj-citasCaptacion" class="form-input" min="0" value="180">
+                        </div>
+                        <div class="form-grupo">
+                            <label class="form-label">🏠 Exclusivas Venta</label>
+                            <input type="number" id="obj-exclusivasVenta" class="form-input" min="0" value="60">
+                        </div>
+                        <div class="form-grupo">
+                            <label class="form-label">🔑 Exclusivas Comprador</label>
+                            <input type="number" id="obj-exclusivasComprador" class="form-input" min="0" value="48">
+                        </div>
+                        <div class="form-grupo">
+                            <label class="form-label">🏘️ Capt. Abierto</label>
+                            <input type="number" id="obj-captacionesAbierto" class="form-input" min="0" value="36">
+                        </div>
+                        <div class="form-grupo">
+                            <label class="form-label">👥 Citas Compradores</label>
+                            <input type="number" id="obj-citasCompradores" class="form-input" min="0" value="120">
+                        </div>
+                        <div class="form-grupo">
+                            <label class="form-label">🏡 Casas Enseñadas</label>
+                            <input type="number" id="obj-casasEnsenadas" class="form-input" min="0" value="96">
+                        </div>
+                        <div class="form-grupo">
+    <label class="form-label">📧 Leads Compradores</label>
+    <input type="number" id="obj-leadsCompradores" class="form-input" min="0" value="240">
+</div>
+<div class="form-grupo">
+    <label class="form-label">📞 Llamadas</label>
+    <input type="number" id="obj-llamadas" class="form-input" min="0" value="600">
+</div>
+<div class="form-grupo">
+    <label class="form-label">💼 Volumen Negocio (€)</label>
+    <input type="number" id="obj-volumenNegocio" class="form-input" min="0" step="10000" value="1200000">
+</div>
+</div>
+
+                    <h3 style="color: var(--color-secondary); margin-top: 30px; margin-bottom: 15px;">Distribución Mensual (%)</h3>
+                    <div class="distribucion-grid" oninput="calcularTotalDistribucion()">
+                        <div class="form-grupo"><label class="form-label">Ene</label><input type="number" id="dist-0" class="form-input dist-mes" value="8" min="0" max="100" step="0.1"></div>
+                        <div class="form-grupo"><label class="form-label">Feb</label><input type="number" id="dist-1" class="form-input dist-mes" value="8" min="0" max="100" step="0.1"></div>
+                        <div class="form-grupo"><label class="form-label">Mar</label><input type="number" id="dist-2" class="form-input dist-mes" value="9" min="0" max="100" step="0.1"></div>
+                        <div class="form-grupo"><label class="form-label">Abr</label><input type="number" id="dist-3" class="form-input dist-mes" value="9" min="0" max="100" step="0.1"></div>
+                        <div class="form-grupo"><label class="form-label">May</label><input type="number" id="dist-4" class="form-input dist-mes" value="10" min="0" max="100" step="0.1"></div>
+                        <div class="form-grupo"><label class="form-label">Jun</label><input type="number" id="dist-5" class="form-input dist-mes" value="10" min="0" max="100" step="0.1"></div>
+                        <div class="form-grupo"><label class="form-label">Jul</label><input type="number" id="dist-6" class="form-input dist-mes" value="9" min="0" max="100" step="0.1"></div>
+                        <div class="form-grupo"><label class="form-label">Ago</label><input type="number" id="dist-7" class="form-input dist-mes" value="5" min="0" max="100" step="0.1"></div>
+                        <div class="form-grupo"><label class="form-label">Sep</label><input type="number" id="dist-8" class="form-input dist-mes" value="9" min="0" max="100" step="0.1"></div>
+                        <div class="form-grupo"><label class="form-label">Oct</label><input type="number" id="dist-9" class="form-input dist-mes" value="9" min="0" max="100" step="0.1"></div>
+                        <div class="form-grupo"><label class="form-label">Nov</label><input type="number" id="dist-10" class="form-input dist-mes" value="8" min="0" max="100" step="0.1"></div>
+                        <div class="form-grupo"><label class="form-label">Dic</label><input type="number" id="dist-11" class="form-input dist-mes" value="6" min="0" max="100" step="0.1"></div>
+                    </div>
+                    <div id="distribucion-total" class="distribucion-total">Total: 100%</div>
+
+                    <button type="submit" class="form-submit">💾 Guardar Objetivos</button>
+                </div>
+            </form>
+        </div>
+    </div> </div>
+    
+    <div id="modal-filtros" class="modal">
+        <div class="modal-content" style="height: auto; max-width: 800px;">
+            <span class="modal-close" onclick="cerrarModal()">&times;</span>
+            <div class="modal-body">
+                <div class="section-title" id="modal-filtros-title">Aplicar Filtros</div>
+                <div id="modal-filtros-body">    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-temas" class="modal">
+        <div class="modal-content" style="height: auto; max-width: 800px;">
+            <span class="modal-close" onclick="cerrarModal()">&times;</span>
+            <div class="modal-body">
+                <div class="section-title">🎨 Seleccionar Tema</div>
+                <div class="theme-selection">
+                    
+                    <button class="btn-theme" onclick="aplicarTema('kw-dark')">
+                        KW Oscuro (Default)
+                        <div class="theme-colors">
+                            <div class="theme-color-box" style="background: #b70000;"></div>
+                            <div class="theme-color-box" style="background: #090A0F;"></div>
+                            <div class="theme-color-box" style="background: #00ff88;"></div>
+                            <div class="theme-color-box" style="background: #667eea;"></div>
+                        </div>
+                    </button>
+
+                    <button class="btn-theme" onclick="aplicarTema('kw-claro')">
+                        KW Claro
+                        <div class="theme-colors">
+                            <div class="theme-color-box" style="background: #b70000;"></div>
+                            <div class="theme-color-box" style="background: #f4f7f6;"></div>
+                            <div class="theme-color-box" style="background: #009688;"></div>
+                            <div class="theme-color-box" style="background: #3949AB;"></div>
+                        </div>
+                    </button>
+                    
+                    <button class="btn-theme" onclick="aplicarTema('azul')">
+                        Azul Profesional
+                        <div class="theme-colors">
+                            <div class="theme-color-box" style="background: #005fB7;"></div>
+                            <div class="theme-color-box" style="background: #090A0F;"></div>
+                            <div class="theme-color-box" style="background: #00ff88;"></div>
+                            <div class="theme-color-box" style="background: #6bbdff;"></div>
+                        </div>
+                    </button>
+                    
+                    <button class="btn-theme" onclick="aplicarTema('luxury')">
+                        Luxury (Oro y Negro)
+                        <div class="theme-colors">
+                            <div class="theme-color-box" style="background: #D4AF37;"></div>
+                            <div class="theme-color-box" style="background: #1a1a1a;"></div>
+                            <div class="theme-color-box" style="background: #DAA520;"></div>
+                            <div class="theme-color-box" style="background: #f0e68c;"></div>
+                        </div>
+                    </button>
+
+                    <button class="btn-theme" onclick="aplicarTema('claro')">
+                        Modo Claro
+                        <div class="theme-colors">
+                            <div class="theme-color-box" style="background: #D32F2F;"></div>
+                            <div class="theme-color-box" style="background: #f4f7f6;"></div>
+                            <div class="theme-color-box" style="background: #009688;"></div>
+                            <div class="theme-color-box" style="background: #3949AB;"></div>
+                        </div>
+                    </button>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="loader-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9998; flex-direction: column; align-items: center; justify-content: center; color: white; font-size: 1.3em;">
+        <div class="loader" style="border-top-color: var(--color-accent-good);"></div>
+        <div>Generando captura...</div>
+    </div>
+<div id="modal-modelo-economico" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-modelo-economico')">&times;</span>
+        <div class="modal-body">
+            <div class="section-title">📊 Modelo Económico</div>
+            <form id="form-modelo-economico" class="form-grid">
+                <div class="form-grupo">
+                    <label class="form-label">💰 GCI Objetivo Anual (€)</label>
+                    <input type="number" id="me-gci-objetivo" class="form-input" value="96000" step="1000">
+                </div>
+                <div class="form-grupo">
+                    <label class="form-label">% Conversión Captación → Exclusiva</label>
+                    <input type="number" id="me-conv-capt-excl" class="form-input" value="65" step="1">
+                </div>
+                <div class="form-grupo">
+                    <label class="form-label">% Conversión Exclusiva → Venta</label>
+                    <input type="number" id="me-conv-excl-venta" class="form-input" value="90" step="1">
+                </div>
+                <div class="form-grupo">
+                    <label class="form-label">💵 GCI Medio por Transacción (€)</label>
+                    <input type="number" id="me-gci-medio" class="form-input" value="3000" step="100">
+                </div>
+                <div class="form-grupo">
+                    <label class="form-label">📞 Citas Captación por Semana</label>
+                    <input type="number" id="me-citas-semana" class="form-input" value="3" step="0.5">
+                </div>
+                <div class="form-grupo">
+                    <label class="form-label">📅 Semanas Productivas al Año</label>
+                    <input type="number" id="me-semanas-ano" class="form-input" value="46" step="1">
+                </div>
+                <button type="button" class="form-submit" onclick="calcularModeloEconomico()">🧮 CALCULAR</button>
+            </form>
+            <div id="resultados-modelo-economico" style="margin-top: 30px; padding: 20px; background: var(--color-surface); border-radius: 15px; display: none;">
+                <h3 style="color: var(--color-secondary); margin-bottom: 15px;">📊 Resultados</h3>
+                <div id="me-resultados-content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-modelo-presupuestario" class="modal">
+    <div class="modal-content" style="max-width: 1400px;">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-modelo-presupuestario')">&times;</span>
+        <div class="modal-body">
+            <div class="section-title">💰 Modelo Presupuestario 40-30-30</div>
+            
+            <!-- ANÁLISIS ANUAL (4 CARDS) -->
+            <div id="presup-cards-anual" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px;">
+                <!-- Se llenarán dinámicamente -->
+            </div>
+            
+            <!-- MENSAJE CUMPLIMIENTO ANUAL -->
+            <div id="presup-mensaje-cumplimiento" style="padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: center; font-weight: bold;"></div>
+            
+            <!-- GRÁFICOS (2) -->
+            <div class="charts-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 25px;">
+                <div class="chart-container" style="height: 350px;">
+                    <div class="chart-title">GCI vs Gastos Mensuales</div>
+                    <canvas id="chart-presup-barras"></canvas>
+                </div>
+                <div class="chart-container" style="height: 350px;">
+                    <div class="chart-title">% Distribución Mensual</div>
+                    <canvas id="chart-presup-lineas"></canvas>
+                </div>
+            </div>
+            
+            <!-- TABLA MENSUAL (12 FILAS) -->
+            <div class="tabla-container">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>Mes</th>
+                            <th>GCI (€)</th>
+                            <th>G. Ventas (€)</th>
+                            <th>G. Operativos (€)</th>
+                            <th>Beneficio (€)</th>
+                            <th>% Benef.</th>
+                            <th>% Ventas</th>
+                            <th>% Oper.</th>
+                            <th>Cumple</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="presup-tabla-body"></tbody>
+                </table>
+            </div>
+            
+            <!-- OBJETIVOS 40-30-30 -->
+            <div style="margin-top: 30px; padding: 20px; background: var(--color-surface); border-radius: 15px;">
+                <h3 style="color: var(--color-secondary); margin-bottom: 15px; text-align: center;">🎯 Objetivos Modelo 40-30-30</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                    <div style="text-align: center; padding: 15px; background: rgba(0,255,136,0.1); border-radius: 10px;">
+                        <div style="font-size: 2em; color: var(--color-accent-good);">40%</div>
+                        <div style="font-weight: 700;">Beneficio</div>
+                        <div style="font-size: 0.85em; opacity: 0.8; margin-top: 5px;">Rango: 35-45%</div>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: rgba(255,152,0,0.1); border-radius: 10px;">
+                        <div style="font-size: 2em; color: #ff9800;">30%</div>
+                        <div style="font-weight: 700;">Gastos Ventas</div>
+                        <div style="font-size: 0.85em; opacity: 0.8; margin-top: 5px;">Rango: 25-35%</div>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: rgba(244,67,54,0.1); border-radius: 10px;">
+                        <div style="font-size: 2em; color: #f44336;">30%</div>
+                        <div style="font-weight: 700;">Gastos Operativos</div>
+                        <div style="font-size: 0.85em; opacity: 0.8; margin-top: 5px;">Rango: 25-35%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SECUNDARIO: DETALLE DE GASTOS POR MES -->
+<div id="modal-detalle-gasto-mes" class="modal" style="z-index: 1100;">
+    <div class="modal-content" style="max-width: 900px; height: auto; max-height: 85vh;">
+        <span class="modal-close" onclick="document.getElementById('modal-detalle-gasto-mes').classList.remove('active')">&times;</span>
+        <div class="modal-body">
+            <div class="section-title" id="detalle-mes-titulo">Detalle de Gastos - Mes</div>
+            
+            <!-- GASTOS DE VENTAS -->
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #ff9800; margin-bottom: 10px;">💼 Gastos de Ventas (Comisiones)</h3>
+                <div class="tabla-container">
+                    <table class="tabla">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Agente</th>
+                                <th>Descripción</th>
+                                <th>Importe</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detalle-ventas-body"></tbody>
+                        <tfoot>
+                            <tr style="background: rgba(255,152,0,0.1);">
+                                <td colspan="3" style="text-align: right; font-weight: bold;">SUBTOTAL VENTAS:</td>
+                                <td id="detalle-ventas-subtotal" style="font-weight: bold;">0.00 €</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- GASTOS OPERATIVOS -->
+            <div>
+                <h3 style="color: #f44336; margin-bottom: 10px;">🏢 Gastos Operativos</h3>
+                <div class="tabla-container">
+                    <table class="tabla">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Partida</th>
+                                <th>Descripción</th>
+                                <th>Importe</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detalle-operativos-body"></tbody>
+                        <tfoot>
+                            <tr style="background: rgba(244,67,54,0.1);">
+                                <td colspan="3" style="text-align: right; font-weight: bold;">SUBTOTAL OPERATIVOS:</td>
+                                <td id="detalle-operativos-subtotal" style="font-weight: bold;">0.00 €</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- TOTAL GENERAL -->
+            <div style="margin-top: 20px; padding: 15px; background: var(--color-surface); border-radius: 10px; text-align: right;">
+                <span style="font-size: 1.2em; font-weight: bold;">TOTAL GENERAL: </span>
+                <span id="detalle-total-general" style="font-size: 1.5em; font-weight: bold; color: var(--color-primary);">0.00 €</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🆕 MODAL: MODELO ORGANIZATIVO -->
+<div id="modal-modelo-organizativo" class="modal">
+    <div class="modal-content" style="max-width: 1400px; height: 95vh;">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-modelo-organizativo')">&times;</span>
+        <div class="modal-body">
+            <div class="section-title">👥 Modelo Organizativo (7 Niveles)</div>
+            <p style="text-align:center; color:#888; margin-bottom:20px;">Escribe los nombres de las personas en cada rol para planificar tu crecimiento.</p>
+            
+            <div id="org-container" style="overflow-x: auto; padding-bottom: 20px;">
+                <style>
+                    .org-level { display: flex; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
+                    .org-level-title { width: 120px; font-size: 0.8em; font-weight: bold; color: var(--color-primary); text-align: right; margin-right: 15px; }
+                    .org-roles-container { display: flex; gap: 5px; flex-wrap: wrap; }
+                    .org-role-box { 
+                        display: flex; flex-direction: column; width: 130px; background: #222; border: 1px solid #444; border-radius: 4px; overflow: hidden; 
+                    }
+                    .org-role-header { 
+                        font-size: 0.65em; font-weight: bold; text-align: center; padding: 4px; color: #000; text-transform: uppercase;
+                        height: 35px; display: flex; align-items: center; justify-content: center; word-break: break-word;
+                    }
+                    /* Colores de Roles */
+                    .role-red { background-color: #ff4444; } /* Gerente/CEO */
+                    .role-blue { background-color: #4488ff; } /* Admin/Ops */
+                    .role-yellow { background-color: #ffcc00; } /* Ventas/Showing */
+                    .role-green { background-color: #00cc66; } /* Leads/ISA */
+                    .role-purple { background-color: #cc66ff; } /* Runner/Otros */
+                    
+                    .org-role-input {
+                        width: 100%; border: none; background: transparent; color: white; font-size: 0.8em; padding: 5px; text-align: center; outline: none;
+                    }
+                    .org-role-input:focus { background: rgba(255,255,255,0.1); }
+                    .tx-count { font-size: 0.7em; color: #888; display: block; }
+                </style>
+
+                <div class="org-level">
+                    <div class="org-level-title">NIVEL 1<span class="tx-count">(24 Tx)</span></div>
+                    <div class="org-roles-container">
+                        <div class="org-role-box"><div class="org-role-header role-red">GERENTE</div><input class="org-role-input" id="org-n1-gerente" placeholder="Nombre"></div>
+                    </div>
+                </div>
+
+                <div class="org-level">
+                    <div class="org-level-title">NIVEL 2<span class="tx-count">(48 Tx)</span></div>
+                    <div class="org-roles-container">
+                        <div class="org-role-box"><div class="org-role-header role-red">GERENTE</div><input class="org-role-input" id="org-n2-gerente" placeholder="Nombre"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">ADMIN</div><input class="org-role-input" id="org-n2-admin" placeholder="Nombre"></div>
+                    </div>
+                </div>
+
+                <div class="org-level">
+                    <div class="org-level-title">NIVEL 3<span class="tx-count">(96 Tx)</span></div>
+                    <div class="org-roles-container">
+                        <div class="org-role-box"><div class="org-role-header role-red">GERENTE</div><input class="org-role-input" id="org-n3-gerente" placeholder="Nombre"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">ADMIN MGR</div><input class="org-role-input" id="org-n3-admin" placeholder="Nombre"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">COORD. TX</div><input class="org-role-input" id="org-n3-coord" placeholder="Nombre"></div>
+                    </div>
+                </div>
+
+                <div class="org-level">
+                    <div class="org-level-title">NIVEL 4<span class="tx-count">(170 Tx)</span></div>
+                    <div class="org-roles-container">
+                        <div class="org-role-box"><div class="org-role-header role-red">GERENTE</div><input class="org-role-input" id="org-n4-gerente"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">ADMIN MGR</div><input class="org-role-input" id="org-n4-admin"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">COORD. TX</div><input class="org-role-input" id="org-n4-coord"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">MGR CAPT.</div><input class="org-role-input" id="org-n4-mgrcapt"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">SHOWING 1</div><input class="org-role-input" id="org-n4-show1"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">SHOWING 2</div><input class="org-role-input" id="org-n4-show2"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">SHOWING 3</div><input class="org-role-input" id="org-n4-show3"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">MGR COMPR.</div><input class="org-role-input" id="org-n4-mgrcomp"></div>
+                        <div class="org-role-box"><div class="org-role-header role-green">MGR LEADS</div><input class="org-role-input" id="org-n4-mgrleads"></div>
+                        <div class="org-role-box"><div class="org-role-header role-green">ISA/OSA</div><input class="org-role-input" id="org-n4-isa"></div>
+                        <div class="org-role-box"><div class="org-role-header role-purple">RUNNER</div><input class="org-role-input" id="org-n4-runner"></div>
+                    </div>
+                </div>
+
+                <div class="org-level">
+                    <div class="org-level-title">NIVEL 5<span class="tx-count">(270 Tx)</span></div>
+                    <div class="org-roles-container">
+                        <div class="org-role-box"><div class="org-role-header role-red">GERENTE</div><input class="org-role-input" id="org-n5-gerente"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">DIR. OPS</div><input class="org-role-input" id="org-n5-dirops"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">COORD. TX</div><input class="org-role-input" id="org-n5-coord"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">MGR CAPT.</div><input class="org-role-input" id="org-n5-mgrcapt"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">AGT CAPT 1</div><input class="org-role-input" id="org-n5-capt1"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">SHOWING 1</div><input class="org-role-input" id="org-n5-show1"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">SHOWING 2</div><input class="org-role-input" id="org-n5-show2"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">SHOWING 3</div><input class="org-role-input" id="org-n5-show3"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">MGR COMPR.</div><input class="org-role-input" id="org-n5-mgrcomp"></div>
+                        <div class="org-role-box"><div class="org-role-header role-green">MGR LEADS</div><input class="org-role-input" id="org-n5-mgrleads"></div>
+                        <div class="org-role-box"><div class="org-role-header role-green">ISA</div><input class="org-role-input" id="org-n5-isa"></div>
+                        <div class="org-role-box"><div class="org-role-header role-green">OSA</div><input class="org-role-input" id="org-n5-osa"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">AGT CAPT 2</div><input class="org-role-input" id="org-n5-capt2"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">AGT COMP 1</div><input class="org-role-input" id="org-n5-comp1"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">AGT COMP 2</div><input class="org-role-input" id="org-n5-comp2"></div>
+                         <div class="org-role-box"><div class="org-role-header role-yellow">AGT COMP 3</div><input class="org-role-input" id="org-n5-comp3"></div>
+                        <div class="org-role-box"><div class="org-role-header role-purple">RUNNER</div><input class="org-role-input" id="org-n5-runner"></div>
+                    </div>
+                </div>
+
+                 <div class="org-level">
+                    <div class="org-level-title">NIVEL 6<span class="tx-count">(335 Tx)</span></div>
+                    <div class="org-roles-container">
+                        <div class="org-role-box"><div class="org-role-header role-red">GERENTE</div><input class="org-role-input" id="org-n6-gerente"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">DIR. OPS</div><input class="org-role-input" id="org-n6-dirops"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">COORD. TX</div><input class="org-role-input" id="org-n6-coord"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">DIR. VENTAS</div><input class="org-role-input" id="org-n6-dirventas"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">MGR CAPT.</div><input class="org-role-input" id="org-n6-mgrcapt"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">AGT CAPT 1</div><input class="org-role-input" id="org-n6-capt1"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">SHOWING 1</div><input class="org-role-input" id="org-n6-show1"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">SHOWING 2</div><input class="org-role-input" id="org-n6-show2"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">SHOWING 3</div><input class="org-role-input" id="org-n6-show3"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">MGR COMPR.</div><input class="org-role-input" id="org-n6-mgrcomp"></div>
+                        <div class="org-role-box"><div class="org-role-header role-green">DIR LEADS</div><input class="org-role-input" id="org-n6-dirleads"></div>
+                        <div class="org-role-box"><div class="org-role-header role-green">ISA</div><input class="org-role-input" id="org-n6-isa"></div>
+                        <div class="org-role-box"><div class="org-role-header role-green">OSA</div><input class="org-role-input" id="org-n6-osa"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">AGT CAPT 2</div><input class="org-role-input" id="org-n6-capt2"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">AGT COMP 1</div><input class="org-role-input" id="org-n6-comp1"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">AGT COMP 2</div><input class="org-role-input" id="org-n6-comp2"></div>
+                         <div class="org-role-box"><div class="org-role-header role-yellow">AGT COMP 3</div><input class="org-role-input" id="org-n6-comp3"></div>
+                        <div class="org-role-box"><div class="org-role-header role-purple">RUNNER</div><input class="org-role-input" id="org-n6-runner"></div>
+                         <div class="org-role-box"><div class="org-role-header role-purple">AGT EXPANSION</div><input class="org-role-input" id="org-n6-agtexp"></div>
+                    </div>
+                </div>
+
+                 <div class="org-level" style="border-bottom: none;">
+                    <div class="org-level-title">NIVEL 7<span class="tx-count">(416 Tx)</span></div>
+                    <div class="org-roles-container">
+                        <div class="org-role-box"><div class="org-role-header role-red">GERENTE</div><input class="org-role-input" id="org-n7-gerente"></div>
+                        <div class="org-role-box"><div class="org-role-header role-red">CEO</div><input class="org-role-input" id="org-n7-ceo"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">DIR. OPS</div><input class="org-role-input" id="org-n7-dirops"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">COORD. TX</div><input class="org-role-input" id="org-n7-coord"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">DIR. VENTAS</div><input class="org-role-input" id="org-n7-dirventas"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">MGR CAPT.</div><input class="org-role-input" id="org-n7-mgrcapt"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">AGT CAPT 1</div><input class="org-role-input" id="org-n7-capt1"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">SHOWING 1</div><input class="org-role-input" id="org-n7-show1"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">SHOWING 2</div><input class="org-role-input" id="org-n7-show2"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">SHOWING 3</div><input class="org-role-input" id="org-n7-show3"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">MGR COMPR.</div><input class="org-role-input" id="org-n7-mgrcomp"></div>
+                        <div class="org-role-box"><div class="org-role-header role-green">DIR LEADS</div><input class="org-role-input" id="org-n7-dirleads"></div>
+                        <div class="org-role-box"><div class="org-role-header role-green">ISA</div><input class="org-role-input" id="org-n7-isa"></div>
+                        <div class="org-role-box"><div class="org-role-header role-green">OSA</div><input class="org-role-input" id="org-n7-osa"></div>
+                        <div class="org-role-box"><div class="org-role-header role-blue">AGT CAPT 2</div><input class="org-role-input" id="org-n7-capt2"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">AGT COMP 1</div><input class="org-role-input" id="org-n7-comp1"></div>
+                        <div class="org-role-box"><div class="org-role-header role-yellow">AGT COMP 2</div><input class="org-role-input" id="org-n7-comp2"></div>
+                         <div class="org-role-box"><div class="org-role-header role-yellow">AGT COMP 3</div><input class="org-role-input" id="org-n7-comp3"></div>
+                        <div class="org-role-box"><div class="org-role-header role-purple">RUNNER</div><input class="org-role-input" id="org-n7-runner"></div>
+                        <div class="org-role-box"><div class="org-role-header role-purple">DIR EXPANSION</div><input class="org-role-input" id="org-n7-direxp"></div>
+                         <div class="org-role-box"><div class="org-role-header role-purple">AGT EXPANSION</div><input class="org-role-input" id="org-n7-agtexp"></div>
+                    </div>
+                </div>
+
+            </div>
+            <button class="btn-primary-action" onclick="guardarOrganigramaCompleto()" style="margin-top: 20px; width: 100%;">💾 Guardar Todo el Modelo</button>
+        </div>
+    </div>
+</div>
+
+<!-- 🆕 MODAL: PLANTILLA GPS -->
+<div id="modal-plantilla-gps" class="modal">
+  <div class="modal-content gps-modal-content">
+    <span class="modal-close no-print" onclick="cerrarModalSuperior('modal-plantilla-gps')">&times;</span>
+    
+    <div class="gps-paper" id="gps-documento">
+      <div class="gps-header">
+  <div class="gps-logo">
+    <span style="color:#000;">my</span><span style="color:#b70000; font-weight:900;">GPS</span>
+  </div>
+  <div class="gps-agent-info">
+    <label>Agente:</label>
+    <input type="text" id="gps-display-name" class="gps-header-input" placeholder="Nombre del Agente" style="width: 200px;">
+    
+    <label style="margin-left:15px;">Año:</label>
+    <input type="text" id="gps-display-year" class="gps-header-input" value="2025" style="width: 60px;">
+  </div>
+</div>
+
+      <div class="gps-section">
+        <div class="gps-onething-box">
+          <h3>1. My ONE Thing</h3>
+          <p>Mi ÚNICA COSA para este año es: Facturación / Beneficio de...</p>
+          <textarea id="gps-onething" class="gps-input-area big" placeholder="Escribe tu gran meta aquí..."></textarea>
+        </div>
+      </div>
+
+      <div class="gps-priorities-container">
+        
+        <div class="gps-priority-block">
+          <div class="gps-priority-header">
+            <div class="p-number">1</div>
+            <input type="text" id="gps-p1-title" class="gps-input-line bold" placeholder="Prioridad #1 (Ej: Captación)">
+          </div>
+          <div class="gps-strategies">
+            <p class="gps-helper">¿Qué hacer? ¿Cómo? ¿Quién? ¿Resultado?</p>
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p1-s1" class="gps-input-line" placeholder="Estrategia 1..."></div>
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p1-s2" class="gps-input-line" placeholder="Estrategia 2..."></div>
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p1-s3" class="gps-input-line" placeholder="Estrategia 3..."></div>
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p1-s4" class="gps-input-line" placeholder="Estrategia 4..."></div>
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p1-s5" class="gps-input-line" placeholder="Estrategia 5..."></div>
+          </div>
+        </div>
+
+        <div class="gps-priority-block">
+          <div class="gps-priority-header">
+            <div class="p-number">2</div>
+            <input type="text" id="gps-p2-title" class="gps-input-line bold" placeholder="Prioridad #2 (Ej: Base de Datos)">
+          </div>
+          <div class="gps-strategies">
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p2-s1" class="gps-input-line"></div>
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p2-s2" class="gps-input-line"></div>
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p2-s3" class="gps-input-line"></div>
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p2-s4" class="gps-input-line"></div>
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p2-s5" class="gps-input-line"></div>
+          </div>
+        </div>
+
+        <div class="gps-priority-block">
+          <div class="gps-priority-header">
+            <div class="p-number">3</div>
+            <input type="text" id="gps-p3-title" class="gps-input-line bold" placeholder="Prioridad #3 (Ej: Formación)">
+          </div>
+          <div class="gps-strategies">
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p3-s1" class="gps-input-line"></div>
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p3-s2" class="gps-input-line"></div>
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p3-s3" class="gps-input-line"></div>
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p3-s4" class="gps-input-line"></div>
+            <div class="strategy-row"><span>•</span><input type="text" id="gps-p3-s5" class="gps-input-line"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="gps-actions no-print">
+      <button class="btn btn-primary-action" onclick="guardarDatosGPS()"> 💾  Guardar Mi GPS</button>
+      <button class="btn" onclick="imprimirGPS()"> 🖨️  Descargar PDF / Imprimir</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- 🆕 MODAL: FACTURACIÓN PASADA -->
+<div id="modal-facturacion-pasada" class="modal">
+    <div class="modal-content" style="max-width: 1200px;">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-facturacion-pasada')">&times;</span>
+        <div class="modal-body">
+            <div class="section-title">📉 Datos Históricos (Base Comparativa)</div>
+            <p style="text-align:center; color:#888; margin-bottom:20px;">Introduce los datos totales del año pasado para generar las comparativas de Crecimiento.</p>
+
+            <div style="background:var(--color-surface); padding:20px; border-radius:15px; margin-bottom:20px; border:1px solid var(--color-border);">
+                <h3 style="color:var(--color-primary); margin-bottom:15px;">📊 Actividad y Producción Total</h3>
+                <div class="form-grid">
+                    <div class="form-grupo">
+                        <label class="form-label">📞 Citas Captación</label>
+                        <input type="number" id="hist-citas" class="form-input" placeholder="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">🏠 Exclusivas Venta</label>
+                        <input type="number" id="hist-exclusivas" class="form-input" placeholder="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">🏘️ Capt. Abierto</label>
+                        <input type="number" id="hist-abierto" class="form-input" placeholder="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">👥 Citas Comprador</label>
+                        <input type="number" id="hist-citas-comp" class="form-input" placeholder="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">🏡 Casas Enseñadas</label>
+                        <input type="number" id="hist-visitas" class="form-input" placeholder="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">🔑 Exclusivas Compr.</label>
+                        <input type="number" id="hist-exclusivas-comp" class="form-input" placeholder="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">🤝 Ventas (Cierres)</label>
+                        <input type="number" id="hist-ventas" class="form-input" placeholder="0">
+                    </div>
+                    <div class="form-grupo">
+                        <label class="form-label">💰 GCI Total (€)</label>
+                        <input type="number" id="hist-gci" class="form-input" placeholder="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title">📍 Origen del Negocio</div>
+            <div class="tabla-container">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>Fuente</th>
+                            <th>Nº Captaciones</th>
+                            <th>GCI Generado (€)</th>
+                            <th>% del Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-origenes-negocio">
+    <!-- Se llenará dinámicamente con las 18 partidas -->
+</tbody>
+                    <tfoot>
+                        <tr>
+                            <td style="text-align:right; font-weight:bold;">TOTALES:</td>
+                            <td id="fp-total-capt" style="font-weight:bold;">0</td>
+                            <td id="fp-total-gci" style="font-weight:bold; color:var(--color-accent-good);">0€</td>
+                            <td>100%</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <button class="btn-primary-action" onclick="guardarDatosHistoricos()" style="margin-top: 20px; width: 100%;">💾 Guardar Histórico</button>
+        </div>
+    </div>
+</div>
+<!-- 🆕 MODAL: RENTABILIDAD AGENTES -->
+<div id="modal-rentabilidad" class="modal">
+    <div class="modal-content" style="max-width: 1300px; height: 90vh;">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-rentabilidad')">&times;</span>
+        <div class="modal-body">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="section-title" style="margin:0;">💎 Análisis de Rentabilidad</div>
+                
+                <div style="background: var(--color-surface); padding: 10px 20px; border-radius: 50px; display: flex; align-items: center; gap: 10px; border: 1px solid var(--color-border-accent);">
+                    <span style="font-size: 0.9em; font-weight: bold; color: var(--color-text-secondary);">📅 A la Fecha</span>
+                    <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                        <input type="checkbox" id="rentabilidad-toggle" onchange="cargarRentabilidadAgentes()">
+                        <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                        <style>
+                            .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+                            input:checked + .slider { background-color: var(--color-primary); }
+                            input:checked + .slider:before { transform: translateX(26px); }
+                        </style>
+                    </label>
+                    <span style="font-size: 0.9em; font-weight: bold; color: var(--color-primary);">🚀 Proyección Anual</span>
+                </div>
+            </div>
+            
+            <div class="charts-grid" style="margin-bottom: 30px; grid-template-columns: 1fr 1fr;">
+                <div class="chart-container" style="height: 350px;">
+                    <div class="chart-title">💰 GCI Generado vs Coste Empresa</div>
+                    <canvas id="chart-rentabilidad-barras"></canvas>
+                </div>
+                <div class="chart-container" style="height: 350px;">
+                    <div class="chart-title">⚡ Eficiencia: Valor por Hora (€/h)</div>
+                    <canvas id="chart-rentabilidad-valor"></canvas>
+                </div>
+            </div>
+
+            <div id="rentabilidad-content" class="loading">
+                <div class="loader"></div>
+                <div>Cargando datos financieros...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script>
       // ============================================
 // MEJORA 4: VISTA MÚLTIPLE DE AGENTES
 // ============================================
@@ -180,9 +2955,9 @@ function cargarDatosGerente(periodo) {
 
         // 2. CARGAR HISTÓRICO INDIVIDUAL
         const anioPasado = new Date().getFullYear() - 1;
-google.script.run.withSuccessHandler(function(histAgentes) {
-    historialAgentesCache = histAgentes || {}; // <--- ESTO ES CRUCIAL
-    console.log("✅ Históricos individuales cargados:", Object.keys(historialAgentesCache).length);
+        google.script.run.withSuccessHandler(function(histAgentes) {
+            historialAgentesCache = histAgentes || {};
+            console.log("✅ Históricos individuales cargados:", Object.keys(historialAgentesCache).length);
 
             // 3. CARGAR DATOS ACTUALES
             google.script.run.withSuccessHandler(function(datos) {
@@ -190,41 +2965,30 @@ google.script.run.withSuccessHandler(function(histAgentes) {
                     mostrarError({ message: "Error de datos." });
                     return;
                 }
+                
                 datosGlobales = datos.agentes;
                 datosAgregadosEquipo = datos.evolucionMensualEquipo;
                 datosFiltrados = datosGlobales;
                 
-                // ✅ Extraer transacciones para la vista
-                window.transaccionesGlobales = [];
-                datos.agentes.forEach(agente => {
-                    const actividad = agente.actividadDetallada || [];
-                    actividad.forEach(dia => {
-                        if (dia.gci > 0 && dia.notas && dia.notas.includes('TRANSACCIÓN')) {
-                            let tipo = 'Venta';
-                            let lado = 'Ambos';
-                            let descripcion = dia.notas;
-                            
-                            const match = dia.notas.match(/TRANSACCIÓN:\s*(\w+)\s*\|\s*(\w+)\s*\|\s*([^|]+)/);
-                            if (match) {
-                                tipo = match[1];
-                                lado = match[2];
-                                descripcion = match[3].trim();
-                            }
-                            
-                            window.transaccionesGlobales.push({
-                                fecha: dia.fecha,
-                                agente: agente.nombre,
-                                tipo: tipo,
-                                lado: lado,
-                                descripcion: descripcion,
-                                gci: dia.gci,
-                                comision: dia.comisionPagada || 0,
-                                volumenNegocio: dia.volumenNegocio || 0
-                            });
-                        }
-                    });
-                });
-                console.log('💰 Transacciones extraídas:', window.transaccionesGlobales.length);
+                // ✅ GUARDAR HISTÓRICO 2024
+                if (datos.evolucionMensual2024) {
+                    window.datosHistoricos2024 = datos.evolucionMensual2024;
+                    console.log('✅ Histórico mensual 2024 cargado:', window.datosHistoricos2024);
+                }
+                
+                // ✅ CARGAR TRANSACCIONES DIRECTAMENTE DEL BACKEND
+                if (datos.transacciones && Array.isArray(datos.transacciones)) {
+                    window.transaccionesGlobales = datos.transacciones;
+                    console.log('✅ Transacciones del BACKEND:', datos.transacciones.length);
+                    console.log('   Primera transacción:', datos.transacciones[0]);
+                    
+                    // Verificar nombres únicos de agentes
+                    const agentesConTx = [...new Set(datos.transacciones.map(t => t.agente))];
+                    console.log('   Agentes con transacciones:', agentesConTx);
+                } else {
+                    console.error('❌ Backend NO devolvió transacciones');
+                    window.transaccionesGlobales = [];
+                }
                 
                 // 4. ✅ CARGAR BENEFICIO NETO
                 google.script.run
@@ -234,7 +2998,6 @@ google.script.run.withSuccessHandler(function(histAgentes) {
                             window.beneficioNetoGlobal = resultadoBeneficio.beneficioNeto || 0;
                             console.log('💰 Beneficio Neto:', resultadoBeneficio.beneficioNeto, '€ (' + resultadoBeneficio.porcentajeBeneficio.toFixed(1) + '%)');
                         } else {
-                            // Si falla, poner valores por defecto
                             window.datosBeneficioGlobal = null;
                             window.beneficioNetoGlobal = 0;
                             console.warn('⚠️ No se pudo cargar beneficio neto');
@@ -246,9 +3009,8 @@ google.script.run.withSuccessHandler(function(histAgentes) {
                                 if (resultadoTx && resultadoTx.success) {
                                     window.datosTransaccionesGlobal = resultadoTx;
                                     window.totalTransaccionesGlobal = resultadoTx.stats.total || 0;
-                                    console.log('📊 Transacciones cargadas:', resultadoTx.stats.total);
+                                    console.log('📊 Estadísticas transacciones:', resultadoTx.stats.total);
                                 } else {
-                                    // Si falla, poner valores por defecto
                                     window.datosTransaccionesGlobal = null;
                                     window.totalTransaccionesGlobal = 0;
                                     console.warn('⚠️ No se pudo cargar estadísticas de transacciones');
@@ -261,7 +3023,6 @@ google.script.run.withSuccessHandler(function(histAgentes) {
                                 console.error('❌ Error al cargar transacciones:', error);
                                 window.datosTransaccionesGlobal = null;
                                 window.totalTransaccionesGlobal = 0;
-                                // Continuar renderizando aunque falle
                                 renderizarDashboardGerente();
                             })
                             .obtenerEstadisticasTransacciones(filtros);
@@ -270,7 +3031,6 @@ google.script.run.withSuccessHandler(function(histAgentes) {
                         console.error('❌ Error al cargar beneficio:', error);
                         window.datosBeneficioGlobal = null;
                         window.beneficioNetoGlobal = 0;
-                        // Continuar con transacciones aunque falle beneficio
                         google.script.run
                             .withSuccessHandler(function(resultadoTx) {
                                 if (resultadoTx && resultadoTx.success) {
@@ -482,7 +3242,7 @@ google.script.run.withSuccessHandler(function(histAgentes) {
     `;
 }
 
-        // --- 1. REJILLA DE SIGNOS VITALES CON COMPARATIVA YTD ---
+
 // --- 1. REJILLA DE SIGNOS VITALES CON COMPARATIVA YTD DETALLADA ---
 function renderSignosVitalesGrid(kpiData, idAgente) {
     const isTeam = !idAgente; 
@@ -524,16 +3284,22 @@ function renderSignosVitalesGrid(kpiData, idAgente) {
         'citasCompradores': 'citasComp',
         'exclusivasComprador': 'exclComp',
         'casasEnsenadas': 'visitas',
-        'totalTransacciones': 'ventas', // Corregido para que coincida con tu histórico
-        'llamadas': 'llamadas' // Si tienes histórico de llamadas
+        'totalTransacciones': 'ventas',
+        'llamadas': 'llamadas'
     };
 
     Object.keys(kpiNames).forEach(key => {
         // Corrección para valores undefined o nulos
         const valor = (kpiData[key] !== undefined && kpiData[key] !== null) ? kpiData[key] : 0;
         
-        // Filtrar métricas irrelevantes si están a 0 (excepto las importantes)
-        if (valor === 0 && !['gci', 'actividadTotal', 'cumplimientoGlobal', 'beneficioNeto', 'totalTransacciones'].includes(key)) return;
+        // ✅ CORRECCIÓN 2: Expandir métricas visibles
+        const metricsImportantes = [
+            'gci', 'actividadTotal', 'cumplimientoGlobal', 'beneficioNeto', 
+            'totalTransacciones', 'llamadas', 'leadsCompradores', 'volumenNegocio', 
+            'citasCaptacion', 'exclusivasVenta', 'casasEnsenadas', 'citasCompradores', 
+            'exclusivasComprador', 'captacionesAbierto'
+        ];
+        if (valor === 0 && !metricsImportantes.includes(key)) return;
         
         const meta = getKpiMetadata(key, valor);
         
@@ -559,7 +3325,7 @@ function renderSignosVitalesGrid(kpiData, idAgente) {
                 const pctCrecimiento = ((diff / metaYTD) * 100).toFixed(1);
                 
                 const esPositivo = diff >= 0;
-                const color = esPositivo ? '#00ff88' : '#ff4444'; // Verde o Rojo
+                const color = esPositivo ? '#00ff88' : '#ff4444';
                 const icono = esPositivo ? '▲' : '▼';
                 
                 // Formato del valor anterior (moneda o número)
@@ -577,7 +3343,6 @@ function renderSignosVitalesGrid(kpiData, idAgente) {
                  compHTML = `<div style="font-size:0.65em; color:#888; margin-top:6px;">Sin histórico</div>`;
             }
         } else if (key.includes('conversion') || key.includes('ratio') || key.includes('Cumplimiento')) {
-             // Para porcentajes no hacemos pro-rateo por tiempo, solo comparativa directa si existiera dato
              compHTML = `<div style="font-size:0.65em; color:#888; margin-top:6px;">KPI Ratio</div>`;
         }
 
@@ -1524,8 +4289,45 @@ function mostrarAnalisisDetallado(idAgente) {
     
     const modalBody = document.getElementById('modal-analisis-body');
     
-    // 1. Datos Actuales
+    // 1. Datos Actuales BASE
     const kpi = { ...agente.ratios, ...agente.realizado, cumplimientoGlobal: agente.cumplimientoGlobal };
+    
+    // ✅ 2. CALCULAR TRANSACCIONES DEL AGENTE
+    const transaccionesAgente = (window.transaccionesGlobales || [])
+        .filter(t => t.agente === agente.agente).length;
+    kpi.totalTransacciones = transaccionesAgente;
+    console.log('📊 Transacciones de', agente.agente, '=', transaccionesAgente);
+    
+    // ✅ 3. CALCULAR BENEFICIO NETO DEL AGENTE
+    // Beneficio = GCI - Comisiones - Sueldo Fijo
+    const gciAgente = agente.realizado.gci || 0;
+    
+    // Comisiones: Sumar todas las comisiones de sus transacciones
+    const comisionesAgente = (window.transaccionesGlobales || [])
+        .filter(t => t.agente === agente.agente)
+        .reduce((sum, t) => sum + (parseFloat(t.comision) || 0), 0);
+    
+    // Sueldo Fijo: Obtenerlo de la hoja Agentes
+    // NOTA: Necesitamos tenerlo en el objeto agente, o cargarlo por separado
+    // Por ahora lo dejamos en 0 hasta que me confirmes cómo pasarlo
+    const sueldoFijo = agente.sueldoFijo || 0; // ⚠️ CONFIRMAR SI VIENE EN EL OBJETO
+    
+    kpi.beneficioNeto = gciAgente - comisionesAgente - sueldoFijo;
+    console.log('💰 Beneficio de', agente.agente, '= GCI:', gciAgente, '- Comisiones:', comisionesAgente, '- Sueldo:', sueldoFijo, '=', kpi.beneficioNeto);
+    
+    // ✅ 4. CALCULAR VOLUMEN DE NEGOCIO DEL AGENTE
+    const volumenAgente = (window.transaccionesGlobales || [])
+        .filter(t => t.agente === agente.agente)
+        .reduce((sum, t) => sum + (parseFloat(t.volumenNegocio) || 0), 0);
+    kpi.volumenNegocio = volumenAgente;
+    
+    // ✅ 5. ASEGURAR QUE TODOS LOS KPIs ESTÁN PRESENTES
+    kpi.llamadas = agente.realizado.llamadas || 0;
+    kpi.leadsCompradores = agente.realizado.leadsCompradores || 0;
+    kpi.exclusivasVenta = agente.realizado.exclusivasVenta || 0;
+    kpi.exclusivasComprador = agente.realizado.exclusivasComprador || 0;
+    kpi.citasCaptacion = agente.realizado.citasCaptacion || 0;
+    kpi.casasEnsenadas = agente.realizado.casasEnsenadas || 0;
     
     // 2. Histórico (Puede ser null)
     const hist = historialAgentesCache[idAgente] || null;
@@ -1533,11 +4335,11 @@ function mostrarAnalisisDetallado(idAgente) {
     // 3. Factor Tiempo (Proyección)
     const hoy = new Date();
     const dias = Math.ceil((hoy - new Date(hoy.getFullYear(),0,1)) / 86400000);
-    const factor = Math.max(dias / 365, 0.01); // Evitar div por 0
+    const factor = Math.max(dias / 365, 0.01);
 
-    // 4. CÁLCULO DE PROYECCIÓN (SIEMPRE)
+    // 4. CÁLCULO DE PROYECCIÓN
     const gciActual = parseFloat(agente.realizado.gci) || 0;
-    const gciProyectado = gciActual / factor; // "A este ritmo, acabarás con..."
+    const gciProyectado = gciActual / factor;
     
     // Comparativa (Solo si hay histórico)
     let comparativaHTML = "";
@@ -1547,7 +4349,7 @@ function mostrarAnalisisDetallado(idAgente) {
         const color = diff >= 0 ? '#00ff88' : '#ff4444';
         const icono = diff >= 0 ? '🚀' : '⚠️';
         comparativaHTML = `<div style="font-size:0.8em; color:${color}; font-weight:bold; margin-top:5px;">
-            ${icono} ${Math.abs(pct).toFixed(1)}% vs 2024 (${hist.gci.toLocaleString('es-ES', {maximumFractionDigits:0})}€)
+            ${icono} ${Math.abs(pct).toFixed(1)}% vs año anterior (${hist.gci.toLocaleString('es-ES', {maximumFractionDigits:0})}€)
         </div>`;
     } else {
         comparativaHTML = `<div style="font-size:0.8em; color:#888; margin-top:5px;">(Sin histórico para comparar)</div>`;
@@ -1590,7 +4392,6 @@ function mostrarAnalisisDetallado(idAgente) {
 
     // 7. Gráfico
     setTimeout(() => {
-        // Si no hay histórico, creamos uno "dummy" con ceros para que el gráfico se pinte igual (solo con barras de 2025)
         const histSafe = hist || { gci:0, citasCapt:0, exclVenta:0, ventas:0, captAbierto:0, citasComp:0, exclComp:0, visitas:0 };
         crearGraficoComparativoAgente('chart-agente-comparativa', agente, histSafe, factor);
     }, 200);
@@ -1826,53 +4627,80 @@ function crearGraficoComparativoAgente(canvasId, agente, hist, factor) {
         }
 
 
-        function mostrarAnalisisEquipo(kpiKey) {
+        // =========================================================
+// 📊 FIX DEFINITIVO: GRÁFICO DE EQUIPO (SUMA EN TIEMPO REAL)
+// =========================================================
+
+function mostrarAnalisisEquipo(kpiKey) {
     const kpiLabel = kpiNames[kpiKey] || kpiKey;
     const modalBody = document.getElementById('modal-analisis-body');
 
-    // 1. Datos Actuales
+    // ✅ 1. USAR DATOS QUE YA VIENEN SUMADOS DEL BACKEND
     const labels = datosAgregadosEquipo.labels || ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    const realizado = datosAgregadosEquipo[kpiKey]?.realizado || [];
-    const objetivo = datosAgregadosEquipo[kpiKey]?.objetivo || [];
-
-    // 2. Datos Históricos (Promedio mensual basado en el total anual)
-    let historico = new Array(12).fill(0);
     
-    // Mapeo de claves
-    const mapKeys = {
-        'gci': 'gci', 'citasCaptacion': 'citas', 'exclusivasVenta': 'exclusivas',
-        'captacionesAbierto': 'abierto', 'citasCompradores': 'citasComp', 
-        'exclusivasComprador': 'exclusivasComp', 'casasEnsenadas': 'visitas', 
-        'totalTransacciones': 'ventas'
-    };
-    const histKey = mapKeys[kpiKey];
+    // ✅ DATOS REALES (ya sumados por el backend)
+    let realizadoTotal = datosAgregadosEquipo[kpiKey]?.realizado || new Array(12).fill(0);
+    let objetivoTotal = datosAgregadosEquipo[kpiKey]?.objetivo || new Array(12).fill(0);
+    
+    console.log('✅ DATOS DEL BACKEND para', kpiKey);
+    console.log('   Realizado:', realizadoTotal);
+    console.log('   Objetivo:', objetivoTotal);
+    
+    // ✅ 2. HISTÓRICO AÑO ANTERIOR
+    let historicoRef = new Array(12).fill(0);
+    
+    if (window.datosHistoricos2024 && window.datosHistoricos2024[kpiKey]) {
+        historicoRef = window.datosHistoricos2024[kpiKey].realizado || new Array(12).fill(0);
+        console.log('📊 Histórico 2024:', historicoRef);
+    } 
+    else if (datosHistoricosCache && datosHistoricosCache.totales) {
+         const mapKeys = {
+            'gci': 'gci', 'citasCaptacion': 'citas', 'exclusivasVenta': 'exclusivas',
+            'captacionesAbierto': 'abierto', 'citasCompradores': 'citasComp', 
+            'exclusivasComprador': 'exclusivasComp', 'casasEnsenadas': 'visitas', 
+            'totalTransacciones': 'ventas', 'llamadas': 'llamadas',
+            'leadsCompradores': 'leadsComp', 'volumenNegocio': 'volumen'
+         };
+         const histKey = mapKeys[kpiKey];
 
-    if (datosHistoricosCache && datosHistoricosCache.totales && histKey) {
-        const totalHist = datosHistoricosCache.totales[histKey] || 0;
-        if (totalHist > 0) {
-            const promedioMensual = totalHist / 12;
-            historico = new Array(12).fill(promedioMensual);
-        }
+         if (datosHistoricosCache.totales[histKey]) {
+             const val = datosHistoricosCache.totales[histKey] / 12;
+             historicoRef = new Array(12).fill(val);
+             console.log('📊 Promedio 2024:', val);
+         }
     }
 
-    // 3. Renderizar Modal (SIN interruptores, solo título y gráfico)
+    // 3. CALCULAR TOTAL ACUMULADO
+    const sumaTotal = realizadoTotal.reduce((a,b)=>a+b,0);
+    
+    // 4. RENDERIZAR MODAL
     modalBody.innerHTML = `
-        <h2 style="text-align: center; margin-bottom: 10px; color: var(--color-secondary);">📊 Equipo: ${kpiLabel}</h2>
-        <div style="text-align: center; font-size: 0.8em; color: #888; margin-bottom: 20px;">
-            (Haz clic en la leyenda para ocultar/mostrar series)
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+             <div>
+                <h2 style="margin: 0; color: var(--color-secondary);">📊 Equipo: ${kpiLabel}</h2>
+                <div style="font-size: 0.8em; color: #888;">Suma total de agentes activos</div>
+             </div>
+             <div style="text-align: right;">
+                <div style="font-size: 2.5em; font-weight: 900; color: var(--color-accent-good);">
+                    ${Math.round(sumaTotal).toLocaleString('es-ES')}
+                    <span style="font-size: 0.5em; color: #aaa;">${kpiKey === 'gci' ? '€' : ''}</span>
+                </div>
+                <div style="font-size: 0.8em; color: #888;">Acumulado Año Actual</div>
+             </div>
         </div>
-        <div class="chart-container" style="height: 65vh; border:none; box-shadow:none;">
+        
+        <div class="chart-container" style="height: 500px; border: 1px solid var(--color-border); padding: 10px;">
             <canvas id="modal-chart-detalle"></canvas>
         </div>
         ${getKpiLegend(kpiKey)}
     `;
 
-    document.getElementById('modal-analisis').classList.add('active');
-    document.body.classList.add('modal-open');
+    abrirModalEncima('modal-analisis');
 
+    // 5. PINTAR GRÁFICO
     setTimeout(() => {
-        crearGraficoDetalleComparativo('modal-chart-detalle', labels, realizado, objetivo, historico, kpiLabel);
-    }, 100);
+        crearGraficoDetalleComparativo('modal-chart-detalle', labels, realizadoTotal, objetivoTotal, historicoRef, kpiLabel);
+    }, 200);
 }
 
         function crearGraficoDetalle(canvasId, labels, dataRealizado, dataObjetivo, labelRealizado, labelObjetivo) {
@@ -5968,50 +8796,56 @@ function crearGraficoDetalleComparativo(canvasId, labels, dataRealizado, dataObj
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
     
-    // Destruir gráfico previo si existe para evitar superposiciones
+    // Destruir gráfico previo si existe para evitar superposiciones y errores de "canvas in use"
     if (chartInstances[canvasId]) {
         chartInstances[canvasId].destroy();
     }
 
+    // Configuración de colores
+    const colorReal = '#00ff88'; // Verde neón
+    const colorObj = '#ffd700';  // Amarillo
+    const colorHist = 'rgba(255, 255, 255, 0.1)'; // Blanco transparente
+
     chartInstances[canvasId] = new Chart(ctx, {
-        type: 'bar', // Tipo base bar para permitir mezcla
+        type: 'bar', // El tipo base es barra para permitir la mezcla
         data: {
             labels: labels,
             datasets: [
                 {
+                    type: 'line',
+                    label: 'Realizado 2025 (App + Histórico)',
+                    data: dataRealizado,
+                    borderColor: colorReal,
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)', // Relleno suave bajo la línea
+                    borderWidth: 3,
+                    pointBackgroundColor: colorReal,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.3, // Curva suave
+                    order: 0 // Capa superior (frente)
+                },
+                {
+                    type: 'line',
+                    label: 'Objetivo',
+                    data: dataObjetivo,
+                    borderColor: colorObj,
+                    borderWidth: 2,
+                    borderDash: [5, 5], // Línea punteada
+                    pointRadius: 0,
+                    fill: false,
+                    tension: 0.3,
+                    order: 1 // Capa media
+                },
+                {
                     type: 'bar',
-                    label: 'Año Anterior',
+                    label: 'Referencia Año Anterior',
                     data: dataHistorico,
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Gris muy sutil
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                    backgroundColor: colorHist,
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
                     borderWidth: 1,
                     barPercentage: 0.6,
-                    order: 3 // Al fondo
-                },
-                {
-                    type: 'line',
-                    label: 'Objetivo 2025',
-                    data: dataObjetivo,
-                    borderColor: '#ffd700', // Amarillo
-                    borderWidth: 2,
-                    borderDash: [5, 5], // Línea discontinua
-                    pointRadius: 0, // Sin puntos para limpiar
-                    fill: false,
-                    tension: 0.4,
-                    order: 1
-                },
-                {
-                    type: 'line',
-                    label: 'Realizado 2025',
-                    data: dataRealizado,
-                    borderColor: '#00ff88', // Verde KW
-                    backgroundColor: 'rgba(0, 255, 136, 0.15)', // Relleno verde suave
-                    borderWidth: 3,
-                    pointBackgroundColor: '#00ff88',
-                    pointRadius: 4,
-                    fill: true,
-                    tension: 0.4,
-                    order: 0 // Al frente
+                    order: 2 // Capa fondo
                 }
             ]
         },
@@ -6024,26 +8858,23 @@ function crearGraficoDetalleComparativo(canvasId, labels, dataRealizado, dataObj
             },
             plugins: {
                 legend: {
-                    position: 'bottom',
-                    labels: { color: '#ccc', font: { size: 11 } }
-                },
-                title: {
-                    display: false // Ya tenemos título en HTML
+                    position: 'top',
+                    labels: { color: '#ccc', font: { size: 12 } }
                 },
                 tooltip: {
                     backgroundColor: 'rgba(0,0,0,0.9)',
                     titleColor: '#fff',
-                    bodyFont: { size: 13 },
+                    bodyColor: '#fff',
+                    borderColor: '#333',
+                    borderWidth: 1,
                     callbacks: {
                         label: function(context) {
                             let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
+                            if (label) label += ': ';
                             if (context.parsed.y !== null) {
-                                // Formato moneda si el título incluye 'GCI' o 'Ticket'
-                                if(titulo.includes('GCI') || titulo.includes('Ticket')) {
-                                    label += context.parsed.y.toLocaleString('es-ES') + ' €';
+                                // Formatear si es dinero
+                                if (titulo.toLowerCase().includes('gci') || titulo.toLowerCase().includes('ticket')) {
+                                    label += context.parsed.y.toLocaleString('es-ES', {maximumFractionDigits: 0}) + ' €';
                                 } else {
                                     label += Math.round(context.parsed.y);
                                 }
@@ -6054,18 +8885,20 @@ function crearGraficoDetalleComparativo(canvasId, labels, dataRealizado, dataObj
                 }
             },
             scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#aaa' }
+                },
                 y: {
                     beginAtZero: true,
                     grid: { color: 'rgba(255,255,255,0.05)' },
-                    ticks: { color: '#aaa' }
-                },
-                x: {
-                    grid: { display: false },
                     ticks: { color: '#aaa' }
                 }
             }
         }
     });
+    
+    console.log('✅ Gráfico detallado generado correctamente en', canvasId);
 }
 // =========================================================
 // 🏁 IMPORTADOR V62: PARSER ESPAÑOL + SIN FILTROS
@@ -8049,3 +10882,267 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
 console.log('✅ JavaScript de Histórico y Gráficos cargado correctamente');
 
  </script>
+ <div id="modal-grafico-secundario" class="modal" style="z-index: 1150;">
+    <div class="modal-content" style="max-width: 1100px; height: 80vh;">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-grafico-secundario')">&times;</span>
+        
+        <div class="modal-body" id="modal-grafico-body" style="position: relative; width: 100%; height: 100%;">
+        </div>
+    </div>
+</div>
+ <div id="app-notification"></div>
+<!-- MODAL EDITAR TRANSACCIÓN COMPLETO -->
+<div id="modal-editar-tx" class="modal">
+    <div class="modal-content" style="max-width: 900px; height: auto;">
+        <span class="modal-close" onclick="document.getElementById('modal-editar-tx').classList.remove('active'); document.body.classList.remove('modal-open');">×</span>
+        <div class="modal-body">
+            <div class="section-title">✏️ Editar Transacción Completa</div>
+            <form id="form-editar-tx" onsubmit="guardarEdicionTransaccionCompleta(event)" class="form-grid">
+                <input type="hidden" id="edit-tx-id">
+                
+                <div class="form-grupo">
+                    <label class="form-label">📅 Fecha</label>
+                    <input type="date" id="edit-tx-fecha" class="form-input" required>
+                </div>
+                
+                <div class="form-grupo">
+                    <label class="form-label">👤 Agente</label>
+                    <select id="edit-tx-agente" class="form-select" required>
+                        <option value="">-- Seleccionar --</option>
+                    </select>
+                </div>
+                
+                <div class="form-grupo">
+                    <label class="form-label">📋 Tipo</label>
+                    <select id="edit-tx-tipo" class="form-select" required>
+                        <option value="VENTA">Venta</option>
+                        <option value="ALQUILER">Alquiler</option>
+                        <option value="OTROS">Otros</option>
+                    </select>
+                </div>
+                
+                <div class="form-grupo">
+                    <label class="form-label">🏷️ Lado</label>
+                    <select id="edit-tx-lado" class="form-select" required>
+                        <option value="Vendedor">Vendedor</option>
+                        <option value="Comprador">Comprador</option>
+                        <option value="Ambos">Ambos</option>
+                    </select>
+                </div>
+                
+                <div class="form-grupo">
+    <label class="form-label">💰 GCI (€)</label>
+    <input type="number" id="edit-tx-gci" class="form-input" step="0.01" required oninput="calcularComisionEdicion()">
+</div>
+
+<div class="form-grupo">
+    <label class="form-label">💼 Volumen Negocio (€)</label>
+    <input type="number" id="edit-tx-volumen" class="form-input" step="0.01" required>
+</div>
+
+<div class="form-grupo">
+    <label class="form-label">📊 % Comisión</label>
+    <input type="number" id="edit-tx-pct" class="form-input" min="0" max="100" required oninput="calcularComisionEdicion()">
+</div>
+
+<div class="form-grupo">
+    <label class="form-label">💵 Comisión (€) - Auto (GCI × %)</label>
+    <input type="number" id="edit-tx-comision" class="form-input" step="0.01" readonly style="background: rgba(255,255,255,0.1);">
+</div>
+                
+                <div class="form-grupo" style="grid-column: 1 / -1;">
+                    <label class="form-label">📝 Descripción</label>
+                    <input type="text" id="edit-tx-descripcion" class="form-input" placeholder="Ref, notas...">
+                </div>
+                
+                <button type="submit" class="form-submit">💾 Guardar Todos los Cambios</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div id="modal-importador" class="modal">
+    <div class="modal-content" style="max-width: 900px; height: auto;">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-importador')">&times;</span>
+        <div class="modal-body">
+            <div class="section-title">📥 Carga Masiva desde CSV</div>
+            
+            <div style="background: var(--color-surface); padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--color-border);">
+                <p><strong>Instrucciones:</strong></p>
+                <ol style="margin-left: 20px; line-height: 1.6; color: var(--color-text-secondary);">
+                    <li>Guarda tu Excel como <strong>CSV (delimitado por comas)</strong>.</li>
+                    <li>Sube el archivo aquí abajo.</li>
+                </ol>
+            </div>
+
+            <div style="border: 2px dashed var(--color-border); padding: 40px; text-align: center; border-radius: 10px; cursor: pointer; transition: all 0.3s; background: rgba(255,255,255,0.05);" 
+                 id="drop-zone"
+                 onclick="document.getElementById('file-upload').click()">
+                <div style="font-size: 3em; margin-bottom: 10px;">📂</div>
+                <p style="font-size: 1.2em; font-weight: bold;">Haz clic aquí para subir tu CSV</p>
+                <p style="font-size: 0.9em; color: #aaa;">(O arrastra el archivo aquí)</p>
+                
+                <input type="file" id="file-upload" accept=".csv" style="display: none;" onchange="procesarArchivoCSV(this)">
+            </div>
+
+            <div id="resultado-importacion" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+</div>
+<div id="modal-gestion-agentes" class="modal">
+    <div class="modal-content" style="max-width: 1400px;">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-gestion-agentes')">&times;</span>
+        <div class="modal-body">
+            <div class="section-title">👥 Gestión Completa de Agentes</div>
+            
+            <!-- BOTONES TABS -->
+            <div class="vista-tabs" style="margin-bottom: 25px; position: sticky; top: 0; z-index: 10; background: var(--color-bg-alt); padding: 10px 0;">
+                <button id="tab-btn-dashboard" class="tab-btn active" onclick="cambiarTabAgentes('dashboard')">
+                    📊 Dashboard
+                </button>
+                <button id="tab-btn-crear" class="tab-btn" onclick="cambiarTabAgentes('crear')">
+                    ➕ Crear Nuevo
+                </button>
+                <button id="tab-btn-listado" class="tab-btn" onclick="cambiarTabAgentes('listado')">
+                    📋 Listado Completo
+                </button>
+            </div>
+            
+            <!-- ═══════════════════════════════════════════════════════════════════ -->
+            <!-- TAB 1: DASHBOARD AGENTES -->
+            <!-- ═══════════════════════════════════════════════════════════════════ -->
+            <div id="tab-content-dashboard" class="tab-content" style="display: block;">
+                
+                <!-- KPIs GLOBALES -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px;">
+                    <div class="signo-card" style="background: rgba(66,133,244,0.1); border: 2px solid #4285f4;">
+                        <div class="signo-icon">👥</div>
+                        <div class="signo-label">Total Agentes Activos</div>
+                        <div class="signo-value" id="dashboard-total-agentes" style="color: #4285f4;">0</div>
+                    </div>
+                    <div class="signo-card" style="background: rgba(76,175,80,0.1); border: 2px solid #4caf50;">
+                        <div class="signo-icon">💰</div>
+                        <div class="signo-label">GCI Total</div>
+                        <div class="signo-value" id="dashboard-gci-total" style="color: #4caf50;">0 €</div>
+                    </div>
+                    <div class="signo-card" style="background: rgba(255,152,0,0.1); border: 2px solid #ff9800;">
+                        <div class="signo-icon">🤝</div>
+                        <div class="signo-label">Transacciones Totales</div>
+                        <div class="signo-value" id="dashboard-transacciones-total" style="color: #ff9800;">0</div>
+                    </div>
+                    <div class="signo-card" style="background: rgba(156,39,176,0.1); border: 2px solid #9c27b0;">
+                        <div class="signo-icon">💎</div>
+                        <div class="signo-label">Ticket Promedio</div>
+                        <div class="signo-value" id="dashboard-ticket-promedio" style="color: #9c27b0;">0 €</div>
+                    </div>
+                </div>
+                
+                <!-- GRÁFICO: ALTAS DE AGENTES POR MES -->
+                <div class="chart-container" style="height: 350px; margin-bottom: 25px;">
+                    <div class="chart-title">📈 Evolución de Altas de Agentes (Últimos 12 meses)</div>
+                    <canvas id="chart-altas-agentes"></canvas>
+                </div>
+                
+                <!-- TABLA RENDIMIENTO AGENTES -->
+                <div class="tabla-container">
+                    <h3 style="color: var(--color-secondary); margin-bottom: 15px;">⭐ Rendimiento por Agente</h3>
+                    <table class="tabla">
+                        <thead>
+                            <tr>
+                                <th>Agente</th>
+                                <th>Antigüedad</th>
+                                <th>Sueldo Fijo</th>
+                                <th>GCI</th>
+                                <th>Tx</th>
+                                <th>Ticket Prom.</th>
+                                <th>Comisiones</th>
+                                <th>Rentabilidad</th>
+                                <th>% Rent.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-tabla-agentes"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- ═══════════════════════════════════════════════════════════════════ -->
+            <!-- TAB 2: CREAR NUEVO AGENTE -->
+            <!-- ═══════════════════════════════════════════════════════════════════ -->
+            <div id="tab-content-crear" class="tab-content" style="display: none;">
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <h3 style="color: var(--color-secondary); margin-bottom: 20px; text-align: center;">➕ Alta de Nuevo Agente</h3>
+                    
+                    <form id="form-crear-agente-modal" onsubmit="crearNuevoAgente(event)" class="form-grid">
+                        <div class="form-grupo" style="grid-column: 1 / -1;">
+                            <label class="form-label">👤 Nombre Completo *</label>
+                            <input type="text" id="crear-nombre" class="form-input" required placeholder="Ej: Juan Pérez García">
+                        </div>
+                        
+                        <div class="form-grupo">
+                            <label class="form-label">📧 Email *</label>
+                            <input type="email" id="crear-email" class="form-input" required placeholder="juan.perez@kw.com">
+                        </div>
+                        
+                        <div class="form-grupo">
+                            <label class="form-label">📞 Teléfono</label>
+                            <input type="tel" id="crear-telefono" class="form-input" placeholder="+34 600 000 000">
+                        </div>
+                        
+                        <div class="form-grupo">
+                            <label class="form-label">📅 Fecha de Ingreso *</label>
+                            <input type="date" id="crear-fecha-ingreso" class="form-input" required>
+                        </div>
+                        
+                        <div class="form-grupo">
+                            <label class="form-label">💶 Sueldo Fijo Mensual (€)</label>
+                            <input type="number" id="crear-sueldo" class="form-input" min="0" step="0.01" value="0" placeholder="Ej: 1000">
+                        </div>
+                        
+                        <div class="form-grupo">
+                            <label class="form-label">🎯 Objetivos Acumulados</label>
+                            <select id="crear-objetivos" class="form-select">
+                                <option value="NO" selected>NO</option>
+                                <option value="SI">SI</option>
+                            </select>
+                        </div>
+                        
+                        <div style="grid-column: 1 / -1; display: flex; gap: 15px; margin-top: 20px;">
+                            <button type="button" class="btn" onclick="cambiarTabAgentes('dashboard')" style="flex: 1; background: var(--color-surface);">
+                                ❌ Cancelar
+                            </button>
+                            <button type="submit" class="form-submit" style="flex: 2; margin: 0;">
+                                💾 Crear Agente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- ═══════════════════════════════════════════════════════════════════ -->
+            <!-- TAB 3: LISTADO COMPLETO -->
+            <!-- ═══════════════════════════════════════════════════════════════════ -->
+            <div id="tab-content-listado" class="tab-content" style="display: none;">
+                <h3 style="color: var(--color-secondary); margin-bottom: 15px;">📋 Listado Completo (Activos e Inactivos)</h3>
+                
+                <div class="tabla-container">
+                    <table class="tabla">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Teléfono</th>
+                                <th>Fecha Ingreso</th>
+                                <th>Sueldo Fijo</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listado-tabla-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+</body>
+</html>
