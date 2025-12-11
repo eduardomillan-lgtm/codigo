@@ -2955,51 +2955,46 @@ function cargarDatosGerente(periodo) {
 
         // 2. CARGAR HISTÓRICO INDIVIDUAL
         const anioPasado = new Date().getFullYear() - 1;
-google.script.run.withSuccessHandler(function(histAgentes) {
-    historialAgentesCache = histAgentes || {}; // <--- ESTO ES CRUCIAL
-    console.log("✅ Históricos individuales cargados:", Object.keys(historialAgentesCache).length);
+        google.script.run.withSuccessHandler(function(histAgentes) {
+            historialAgentesCache = histAgentes || {};
+            console.log("✅ Históricos individuales cargados:", Object.keys(historialAgentesCache).length);
 
             // 3. CARGAR DATOS ACTUALES
             google.script.run.withSuccessHandler(function(datos) {
+              console.log('🔍 DATOS RECIBIDOS:', datos);
+        console.log('🔍 Tipo:', typeof datos);
+
                 if (!datos || !datos.agentes) {
-                    mostrarError({ message: "Error de datos." });
-                    return;
+                    console.error('❌ DATOS INVÁLIDOS');
+            console.error('❌ datos:', datos);
+            mostrarError({ message: "Error de datos." });
+            return;
                 }
+                console.log('✅ DATOS VÁLIDOS - Agentes:', datos.agentes.length);
+                
                 datosGlobales = datos.agentes;
                 datosAgregadosEquipo = datos.evolucionMensualEquipo;
                 datosFiltrados = datosGlobales;
                 
-                // ✅ Extraer transacciones para la vista
-                window.transaccionesGlobales = [];
-                datos.agentes.forEach(agente => {
-                    const actividad = agente.actividadDetallada || [];
-                    actividad.forEach(dia => {
-                        if (dia.gci > 0 && dia.notas && dia.notas.includes('TRANSACCIÓN')) {
-                            let tipo = 'Venta';
-                            let lado = 'Ambos';
-                            let descripcion = dia.notas;
-                            
-                            const match = dia.notas.match(/TRANSACCIÓN:\s*(\w+)\s*\|\s*(\w+)\s*\|\s*([^|]+)/);
-                            if (match) {
-                                tipo = match[1];
-                                lado = match[2];
-                                descripcion = match[3].trim();
-                            }
-                            
-                            window.transaccionesGlobales.push({
-                                fecha: dia.fecha,
-                                agente: agente.nombre,
-                                tipo: tipo,
-                                lado: lado,
-                                descripcion: descripcion,
-                                gci: dia.gci,
-                                comision: dia.comisionPagada || 0,
-                                volumenNegocio: dia.volumenNegocio || 0
-                            });
-                        }
-                    });
-                });
-                console.log('💰 Transacciones extraídas:', window.transaccionesGlobales.length);
+                // ✅ GUARDAR HISTÓRICO 2024
+                if (datos.evolucionMensual2024) {
+                    window.datosHistoricos2024 = datos.evolucionMensual2024;
+                    console.log('✅ Histórico mensual 2024 cargado:', window.datosHistoricos2024);
+                }
+                
+                // ✅ CARGAR TRANSACCIONES DIRECTAMENTE DEL BACKEND
+                if (datos.transacciones && Array.isArray(datos.transacciones)) {
+                    window.transaccionesGlobales = datos.transacciones;
+                    console.log('✅ Transacciones del BACKEND:', datos.transacciones.length);
+                    console.log('   Primera transacción:', datos.transacciones[0]);
+                    
+                    // Verificar nombres únicos de agentes
+                    const agentesConTx = [...new Set(datos.transacciones.map(t => t.agente))];
+                    console.log('   Agentes con transacciones:', agentesConTx);
+                } else {
+                    console.error('❌ Backend NO devolvió transacciones');
+                    window.transaccionesGlobales = [];
+                }
                 
                 // 4. ✅ CARGAR BENEFICIO NETO
                 google.script.run
@@ -3009,7 +3004,6 @@ google.script.run.withSuccessHandler(function(histAgentes) {
                             window.beneficioNetoGlobal = resultadoBeneficio.beneficioNeto || 0;
                             console.log('💰 Beneficio Neto:', resultadoBeneficio.beneficioNeto, '€ (' + resultadoBeneficio.porcentajeBeneficio.toFixed(1) + '%)');
                         } else {
-                            // Si falla, poner valores por defecto
                             window.datosBeneficioGlobal = null;
                             window.beneficioNetoGlobal = 0;
                             console.warn('⚠️ No se pudo cargar beneficio neto');
@@ -3021,9 +3015,8 @@ google.script.run.withSuccessHandler(function(histAgentes) {
                                 if (resultadoTx && resultadoTx.success) {
                                     window.datosTransaccionesGlobal = resultadoTx;
                                     window.totalTransaccionesGlobal = resultadoTx.stats.total || 0;
-                                    console.log('📊 Transacciones cargadas:', resultadoTx.stats.total);
+                                    console.log('📊 Estadísticas transacciones:', resultadoTx.stats.total);
                                 } else {
-                                    // Si falla, poner valores por defecto
                                     window.datosTransaccionesGlobal = null;
                                     window.totalTransaccionesGlobal = 0;
                                     console.warn('⚠️ No se pudo cargar estadísticas de transacciones');
@@ -3036,7 +3029,6 @@ google.script.run.withSuccessHandler(function(histAgentes) {
                                 console.error('❌ Error al cargar transacciones:', error);
                                 window.datosTransaccionesGlobal = null;
                                 window.totalTransaccionesGlobal = 0;
-                                // Continuar renderizando aunque falle
                                 renderizarDashboardGerente();
                             })
                             .obtenerEstadisticasTransacciones(filtros);
@@ -3045,7 +3037,6 @@ google.script.run.withSuccessHandler(function(histAgentes) {
                         console.error('❌ Error al cargar beneficio:', error);
                         window.datosBeneficioGlobal = null;
                         window.beneficioNetoGlobal = 0;
-                        // Continuar con transacciones aunque falle beneficio
                         google.script.run
                             .withSuccessHandler(function(resultadoTx) {
                                 if (resultadoTx && resultadoTx.success) {
@@ -3060,7 +3051,12 @@ google.script.run.withSuccessHandler(function(histAgentes) {
                             .obtenerEstadisticasTransacciones(filtros);
                     })
                     .obtenerBeneficioNeto(filtros);
-                
+                })
+    .withFailureHandler(function(error) {
+        console.error('❌ ERROR BACKEND:', error);
+        console.error('❌ Mensaje:', error.message);
+        console.error('❌ Stack:', error.stack);
+        mostrarError({ message: "Error backend: " + error.message })
             }).obtenerDatosDashboard(filtros);
 
         }).obtenerTodosHistoricosAgentes(anioPasado);
@@ -3257,7 +3253,7 @@ google.script.run.withSuccessHandler(function(histAgentes) {
     `;
 }
 
-        // --- 1. REJILLA DE SIGNOS VITALES CON COMPARATIVA YTD ---
+
 // --- 1. REJILLA DE SIGNOS VITALES CON COMPARATIVA YTD DETALLADA ---
 function renderSignosVitalesGrid(kpiData, idAgente) {
     const isTeam = !idAgente; 
@@ -3299,16 +3295,22 @@ function renderSignosVitalesGrid(kpiData, idAgente) {
         'citasCompradores': 'citasComp',
         'exclusivasComprador': 'exclComp',
         'casasEnsenadas': 'visitas',
-        'totalTransacciones': 'ventas', // Corregido para que coincida con tu histórico
-        'llamadas': 'llamadas' // Si tienes histórico de llamadas
+        'totalTransacciones': 'ventas',
+        'llamadas': 'llamadas'
     };
 
     Object.keys(kpiNames).forEach(key => {
         // Corrección para valores undefined o nulos
         const valor = (kpiData[key] !== undefined && kpiData[key] !== null) ? kpiData[key] : 0;
         
-        // Filtrar métricas irrelevantes si están a 0 (excepto las importantes)
-        if (valor === 0 && !['gci', 'actividadTotal', 'cumplimientoGlobal', 'beneficioNeto', 'totalTransacciones'].includes(key)) return;
+        // ✅ CORRECCIÓN 2: Expandir métricas visibles
+        const metricsImportantes = [
+            'gci', 'actividadTotal', 'cumplimientoGlobal', 'beneficioNeto', 
+            'totalTransacciones', 'llamadas', 'leadsCompradores', 'volumenNegocio', 
+            'citasCaptacion', 'exclusivasVenta', 'casasEnsenadas', 'citasCompradores', 
+            'exclusivasComprador', 'captacionesAbierto'
+        ];
+        if (valor === 0 && !metricsImportantes.includes(key)) return;
         
         const meta = getKpiMetadata(key, valor);
         
@@ -3334,7 +3336,7 @@ function renderSignosVitalesGrid(kpiData, idAgente) {
                 const pctCrecimiento = ((diff / metaYTD) * 100).toFixed(1);
                 
                 const esPositivo = diff >= 0;
-                const color = esPositivo ? '#00ff88' : '#ff4444'; // Verde o Rojo
+                const color = esPositivo ? '#00ff88' : '#ff4444';
                 const icono = esPositivo ? '▲' : '▼';
                 
                 // Formato del valor anterior (moneda o número)
@@ -3352,7 +3354,6 @@ function renderSignosVitalesGrid(kpiData, idAgente) {
                  compHTML = `<div style="font-size:0.65em; color:#888; margin-top:6px;">Sin histórico</div>`;
             }
         } else if (key.includes('conversion') || key.includes('ratio') || key.includes('Cumplimiento')) {
-             // Para porcentajes no hacemos pro-rateo por tiempo, solo comparativa directa si existiera dato
              compHTML = `<div style="font-size:0.65em; color:#888; margin-top:6px;">KPI Ratio</div>`;
         }
 
@@ -3426,6 +3427,30 @@ function renderSignoCard(icon, label, valor, unidad, claseCritica, funcionClic, 
                 claseCritica: v < 5 ? 'critical' : '', 
                 thresholds: { bueno: 15, regular: 8 } 
             };
+
+case 'captacionesAlquiler':
+    return { icon: '🏢', label: 'Capt. Alquiler', unidad: '', claseCritica: '', thresholds: null };
+
+case 'leadVendedor':
+    return { icon: '📱', label: 'Lead Vendedor', unidad: '', claseCritica: v > 5 ? '' : 'critical', thresholds: { bueno: 5, regular: 2 } };
+
+case 'tresBs':
+    return { icon: '⚡', label: '3Bs Activadas', unidad: '', claseCritica: v > 3 ? '' : 'critical', thresholds: { bueno: 3, regular: 1 } };
+
+case 'bajadasPrecio':
+    return { icon: '💹', label: 'Bajadas Precio', unidad: '', claseCritica: '', thresholds: { bueno: 2, regular: 1 } };
+
+case 'leadComprador':
+    return { icon: '🏠', label: 'Lead Comprador', unidad: '', claseCritica: v > 5 ? '' : 'critical', thresholds: { bueno: 5, regular: 2 } };
+
+case 'propuestasCompra':
+    return { icon: '📄', label: 'Propuestas Compra', unidad: '', claseCritica: v > 3 ? '' : 'critical', thresholds: { bueno: 3, regular: 1 } };
+
+case 'leadSeguimiento':
+    return { icon: '🎯', label: 'Lead Seguimiento', unidad: '', claseCritica: v > 10 ? '' : 'critical', thresholds: { bueno: 10, regular: 5 } };
+
+case 'arras':
+    return { icon: '✍️', label: 'Arras Firmadas', unidad: '', claseCritica: v > 1 ? '' : 'critical', thresholds: { bueno: 1, regular: 0 } };
         
         default: return { icon: '❓', label: key, unidad: '', claseCritica: '', thresholds: null };
     }
@@ -3700,7 +3725,8 @@ function renderizarRegistroTransacciones() {
     container.innerHTML = '<div class="loading"><div class="loader"></div><div>Cargando transacciones...</div></div>';
     
     const filtros = calcularFiltrosPeriodo(periodoActual, 'gerente');
-    
+    console.log('🔍 FILTROS CALCULADOS:', filtros);
+console.log('🔍 Tipo filtros:', typeof filtros);
     google.script.run
         .withSuccessHandler(function(resultado) {
             if (!resultado.success) {
@@ -4299,8 +4325,45 @@ function mostrarAnalisisDetallado(idAgente) {
     
     const modalBody = document.getElementById('modal-analisis-body');
     
-    // 1. Datos Actuales
+    // 1. Datos Actuales BASE
     const kpi = { ...agente.ratios, ...agente.realizado, cumplimientoGlobal: agente.cumplimientoGlobal };
+    
+    // ✅ 2. CALCULAR TRANSACCIONES DEL AGENTE
+    const transaccionesAgente = (window.transaccionesGlobales || [])
+        .filter(t => t.agente === agente.agente).length;
+    kpi.totalTransacciones = transaccionesAgente;
+    console.log('📊 Transacciones de', agente.agente, '=', transaccionesAgente);
+    
+    // ✅ 3. CALCULAR BENEFICIO NETO DEL AGENTE
+    // Beneficio = GCI - Comisiones - Sueldo Fijo
+    const gciAgente = agente.realizado.gci || 0;
+    
+    // Comisiones: Sumar todas las comisiones de sus transacciones
+    const comisionesAgente = (window.transaccionesGlobales || [])
+        .filter(t => t.agente === agente.agente)
+        .reduce((sum, t) => sum + (parseFloat(t.comision) || 0), 0);
+    
+    // Sueldo Fijo: Obtenerlo de la hoja Agentes
+    // NOTA: Necesitamos tenerlo en el objeto agente, o cargarlo por separado
+    // Por ahora lo dejamos en 0 hasta que me confirmes cómo pasarlo
+    const sueldoFijo = agente.sueldoFijo || 0; // ⚠️ CONFIRMAR SI VIENE EN EL OBJETO
+    
+    kpi.beneficioNeto = gciAgente - comisionesAgente - sueldoFijo;
+    console.log('💰 Beneficio de', agente.agente, '= GCI:', gciAgente, '- Comisiones:', comisionesAgente, '- Sueldo:', sueldoFijo, '=', kpi.beneficioNeto);
+    
+    // ✅ 4. CALCULAR VOLUMEN DE NEGOCIO DEL AGENTE
+    const volumenAgente = (window.transaccionesGlobales || [])
+        .filter(t => t.agente === agente.agente)
+        .reduce((sum, t) => sum + (parseFloat(t.volumenNegocio) || 0), 0);
+    kpi.volumenNegocio = volumenAgente;
+    
+    // ✅ 5. ASEGURAR QUE TODOS LOS KPIs ESTÁN PRESENTES
+    kpi.llamadas = agente.realizado.llamadas || 0;
+    kpi.leadsCompradores = agente.realizado.leadsCompradores || 0;
+    kpi.exclusivasVenta = agente.realizado.exclusivasVenta || 0;
+    kpi.exclusivasComprador = agente.realizado.exclusivasComprador || 0;
+    kpi.citasCaptacion = agente.realizado.citasCaptacion || 0;
+    kpi.casasEnsenadas = agente.realizado.casasEnsenadas || 0;
     
     // 2. Histórico (Puede ser null)
     const hist = historialAgentesCache[idAgente] || null;
@@ -4308,11 +4371,11 @@ function mostrarAnalisisDetallado(idAgente) {
     // 3. Factor Tiempo (Proyección)
     const hoy = new Date();
     const dias = Math.ceil((hoy - new Date(hoy.getFullYear(),0,1)) / 86400000);
-    const factor = Math.max(dias / 365, 0.01); // Evitar div por 0
+    const factor = Math.max(dias / 365, 0.01);
 
-    // 4. CÁLCULO DE PROYECCIÓN (SIEMPRE)
+    // 4. CÁLCULO DE PROYECCIÓN
     const gciActual = parseFloat(agente.realizado.gci) || 0;
-    const gciProyectado = gciActual / factor; // "A este ritmo, acabarás con..."
+    const gciProyectado = gciActual / factor;
     
     // Comparativa (Solo si hay histórico)
     let comparativaHTML = "";
@@ -4322,7 +4385,7 @@ function mostrarAnalisisDetallado(idAgente) {
         const color = diff >= 0 ? '#00ff88' : '#ff4444';
         const icono = diff >= 0 ? '🚀' : '⚠️';
         comparativaHTML = `<div style="font-size:0.8em; color:${color}; font-weight:bold; margin-top:5px;">
-            ${icono} ${Math.abs(pct).toFixed(1)}% vs 2024 (${hist.gci.toLocaleString('es-ES', {maximumFractionDigits:0})}€)
+            ${icono} ${Math.abs(pct).toFixed(1)}% vs año anterior (${hist.gci.toLocaleString('es-ES', {maximumFractionDigits:0})}€)
         </div>`;
     } else {
         comparativaHTML = `<div style="font-size:0.8em; color:#888; margin-top:5px;">(Sin histórico para comparar)</div>`;
@@ -4365,7 +4428,6 @@ function mostrarAnalisisDetallado(idAgente) {
 
     // 7. Gráfico
     setTimeout(() => {
-        // Si no hay histórico, creamos uno "dummy" con ceros para que el gráfico se pinte igual (solo con barras de 2025)
         const histSafe = hist || { gci:0, citasCapt:0, exclVenta:0, ventas:0, captAbierto:0, citasComp:0, exclComp:0, visitas:0 };
         crearGraficoComparativoAgente('chart-agente-comparativa', agente, histSafe, factor);
     }, 200);
@@ -4601,53 +4663,80 @@ function crearGraficoComparativoAgente(canvasId, agente, hist, factor) {
         }
 
 
-        function mostrarAnalisisEquipo(kpiKey) {
+        // =========================================================
+// 📊 FIX DEFINITIVO: GRÁFICO DE EQUIPO (SUMA EN TIEMPO REAL)
+// =========================================================
+
+function mostrarAnalisisEquipo(kpiKey) {
     const kpiLabel = kpiNames[kpiKey] || kpiKey;
     const modalBody = document.getElementById('modal-analisis-body');
 
-    // 1. Datos Actuales
+    // ✅ 1. USAR DATOS QUE YA VIENEN SUMADOS DEL BACKEND
     const labels = datosAgregadosEquipo.labels || ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    const realizado = datosAgregadosEquipo[kpiKey]?.realizado || [];
-    const objetivo = datosAgregadosEquipo[kpiKey]?.objetivo || [];
-
-    // 2. Datos Históricos (Promedio mensual basado en el total anual)
-    let historico = new Array(12).fill(0);
     
-    // Mapeo de claves
-    const mapKeys = {
-        'gci': 'gci', 'citasCaptacion': 'citas', 'exclusivasVenta': 'exclusivas',
-        'captacionesAbierto': 'abierto', 'citasCompradores': 'citasComp', 
-        'exclusivasComprador': 'exclusivasComp', 'casasEnsenadas': 'visitas', 
-        'totalTransacciones': 'ventas'
-    };
-    const histKey = mapKeys[kpiKey];
+    // ✅ DATOS REALES (ya sumados por el backend)
+    let realizadoTotal = datosAgregadosEquipo[kpiKey]?.realizado || new Array(12).fill(0);
+    let objetivoTotal = datosAgregadosEquipo[kpiKey]?.objetivo || new Array(12).fill(0);
+    
+    console.log('✅ DATOS DEL BACKEND para', kpiKey);
+    console.log('   Realizado:', realizadoTotal);
+    console.log('   Objetivo:', objetivoTotal);
+    
+    // ✅ 2. HISTÓRICO AÑO ANTERIOR
+    let historicoRef = new Array(12).fill(0);
+    
+    if (window.datosHistoricos2024 && window.datosHistoricos2024[kpiKey]) {
+        historicoRef = window.datosHistoricos2024[kpiKey].realizado || new Array(12).fill(0);
+        console.log('📊 Histórico 2024:', historicoRef);
+    } 
+    else if (datosHistoricosCache && datosHistoricosCache.totales) {
+         const mapKeys = {
+            'gci': 'gci', 'citasCaptacion': 'citas', 'exclusivasVenta': 'exclusivas',
+            'captacionesAbierto': 'abierto', 'citasCompradores': 'citasComp', 
+            'exclusivasComprador': 'exclusivasComp', 'casasEnsenadas': 'visitas', 
+            'totalTransacciones': 'ventas', 'llamadas': 'llamadas',
+            'leadsCompradores': 'leadsComp', 'volumenNegocio': 'volumen'
+         };
+         const histKey = mapKeys[kpiKey];
 
-    if (datosHistoricosCache && datosHistoricosCache.totales && histKey) {
-        const totalHist = datosHistoricosCache.totales[histKey] || 0;
-        if (totalHist > 0) {
-            const promedioMensual = totalHist / 12;
-            historico = new Array(12).fill(promedioMensual);
-        }
+         if (datosHistoricosCache.totales[histKey]) {
+             const val = datosHistoricosCache.totales[histKey] / 12;
+             historicoRef = new Array(12).fill(val);
+             console.log('📊 Promedio 2024:', val);
+         }
     }
 
-    // 3. Renderizar Modal (SIN interruptores, solo título y gráfico)
+    // 3. CALCULAR TOTAL ACUMULADO
+    const sumaTotal = realizadoTotal.reduce((a,b)=>a+b,0);
+    
+    // 4. RENDERIZAR MODAL
     modalBody.innerHTML = `
-        <h2 style="text-align: center; margin-bottom: 10px; color: var(--color-secondary);">📊 Equipo: ${kpiLabel}</h2>
-        <div style="text-align: center; font-size: 0.8em; color: #888; margin-bottom: 20px;">
-            (Haz clic en la leyenda para ocultar/mostrar series)
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+             <div>
+                <h2 style="margin: 0; color: var(--color-secondary);">📊 Equipo: ${kpiLabel}</h2>
+                <div style="font-size: 0.8em; color: #888;">Suma total de agentes activos</div>
+             </div>
+             <div style="text-align: right;">
+                <div style="font-size: 2.5em; font-weight: 900; color: var(--color-accent-good);">
+                    ${Math.round(sumaTotal).toLocaleString('es-ES')}
+                    <span style="font-size: 0.5em; color: #aaa;">${kpiKey === 'gci' ? '€' : ''}</span>
+                </div>
+                <div style="font-size: 0.8em; color: #888;">Acumulado Año Actual</div>
+             </div>
         </div>
-        <div class="chart-container" style="height: 65vh; border:none; box-shadow:none;">
+        
+        <div class="chart-container" style="height: 500px; border: 1px solid var(--color-border); padding: 10px;">
             <canvas id="modal-chart-detalle"></canvas>
         </div>
         ${getKpiLegend(kpiKey)}
     `;
 
-    document.getElementById('modal-analisis').classList.add('active');
-    document.body.classList.add('modal-open');
+    abrirModalEncima('modal-analisis');
 
+    // 5. PINTAR GRÁFICO
     setTimeout(() => {
-        crearGraficoDetalleComparativo('modal-chart-detalle', labels, realizado, objetivo, historico, kpiLabel);
-    }, 100);
+        crearGraficoDetalleComparativo('modal-chart-detalle', labels, realizadoTotal, objetivoTotal, historicoRef, kpiLabel);
+    }, 200);
 }
 
         function crearGraficoDetalle(canvasId, labels, dataRealizado, dataObjetivo, labelRealizado, labelObjetivo) {
@@ -8743,50 +8832,56 @@ function crearGraficoDetalleComparativo(canvasId, labels, dataRealizado, dataObj
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
     
-    // Destruir gráfico previo si existe para evitar superposiciones
+    // Destruir gráfico previo si existe para evitar superposiciones y errores de "canvas in use"
     if (chartInstances[canvasId]) {
         chartInstances[canvasId].destroy();
     }
 
+    // Configuración de colores
+    const colorReal = '#00ff88'; // Verde neón
+    const colorObj = '#ffd700';  // Amarillo
+    const colorHist = 'rgba(255, 255, 255, 0.1)'; // Blanco transparente
+
     chartInstances[canvasId] = new Chart(ctx, {
-        type: 'bar', // Tipo base bar para permitir mezcla
+        type: 'bar', // El tipo base es barra para permitir la mezcla
         data: {
             labels: labels,
             datasets: [
                 {
+                    type: 'line',
+                    label: 'Realizado 2025 (App + Histórico)',
+                    data: dataRealizado,
+                    borderColor: colorReal,
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)', // Relleno suave bajo la línea
+                    borderWidth: 3,
+                    pointBackgroundColor: colorReal,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.3, // Curva suave
+                    order: 0 // Capa superior (frente)
+                },
+                {
+                    type: 'line',
+                    label: 'Objetivo',
+                    data: dataObjetivo,
+                    borderColor: colorObj,
+                    borderWidth: 2,
+                    borderDash: [5, 5], // Línea punteada
+                    pointRadius: 0,
+                    fill: false,
+                    tension: 0.3,
+                    order: 1 // Capa media
+                },
+                {
                     type: 'bar',
-                    label: 'Año Anterior',
+                    label: 'Referencia Año Anterior',
                     data: dataHistorico,
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Gris muy sutil
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                    backgroundColor: colorHist,
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
                     borderWidth: 1,
                     barPercentage: 0.6,
-                    order: 3 // Al fondo
-                },
-                {
-                    type: 'line',
-                    label: 'Objetivo 2025',
-                    data: dataObjetivo,
-                    borderColor: '#ffd700', // Amarillo
-                    borderWidth: 2,
-                    borderDash: [5, 5], // Línea discontinua
-                    pointRadius: 0, // Sin puntos para limpiar
-                    fill: false,
-                    tension: 0.4,
-                    order: 1
-                },
-                {
-                    type: 'line',
-                    label: 'Realizado 2025',
-                    data: dataRealizado,
-                    borderColor: '#00ff88', // Verde KW
-                    backgroundColor: 'rgba(0, 255, 136, 0.15)', // Relleno verde suave
-                    borderWidth: 3,
-                    pointBackgroundColor: '#00ff88',
-                    pointRadius: 4,
-                    fill: true,
-                    tension: 0.4,
-                    order: 0 // Al frente
+                    order: 2 // Capa fondo
                 }
             ]
         },
@@ -8799,26 +8894,23 @@ function crearGraficoDetalleComparativo(canvasId, labels, dataRealizado, dataObj
             },
             plugins: {
                 legend: {
-                    position: 'bottom',
-                    labels: { color: '#ccc', font: { size: 11 } }
-                },
-                title: {
-                    display: false // Ya tenemos título en HTML
+                    position: 'top',
+                    labels: { color: '#ccc', font: { size: 12 } }
                 },
                 tooltip: {
                     backgroundColor: 'rgba(0,0,0,0.9)',
                     titleColor: '#fff',
-                    bodyFont: { size: 13 },
+                    bodyColor: '#fff',
+                    borderColor: '#333',
+                    borderWidth: 1,
                     callbacks: {
                         label: function(context) {
                             let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
+                            if (label) label += ': ';
                             if (context.parsed.y !== null) {
-                                // Formato moneda si el título incluye 'GCI' o 'Ticket'
-                                if(titulo.includes('GCI') || titulo.includes('Ticket')) {
-                                    label += context.parsed.y.toLocaleString('es-ES') + ' €';
+                                // Formatear si es dinero
+                                if (titulo.toLowerCase().includes('gci') || titulo.toLowerCase().includes('ticket')) {
+                                    label += context.parsed.y.toLocaleString('es-ES', {maximumFractionDigits: 0}) + ' €';
                                 } else {
                                     label += Math.round(context.parsed.y);
                                 }
@@ -8829,18 +8921,20 @@ function crearGraficoDetalleComparativo(canvasId, labels, dataRealizado, dataObj
                 }
             },
             scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#aaa' }
+                },
                 y: {
                     beginAtZero: true,
                     grid: { color: 'rgba(255,255,255,0.05)' },
-                    ticks: { color: '#aaa' }
-                },
-                x: {
-                    grid: { display: false },
                     ticks: { color: '#aaa' }
                 }
             }
         }
     });
+    
+    console.log('✅ Gráfico detallado generado correctamente en', canvasId);
 }
 // =========================================================
 // 🏁 IMPORTADOR V62: PARSER ESPAÑOL + SIN FILTROS
