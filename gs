@@ -496,204 +496,325 @@ function obtenerDatosDashboard(filtros) {
     const hojaActividad = ss.getSheetByName(CONFIG.HOJA_ACTIVIDAD);
     const hojaObjetivos = ss.getSheetByName(CONFIG.HOJA_OBJETIVOS);
     const hojaAgentes = ss.getSheetByName(CONFIG.HOJA_AGENTES);
-    const hojaHistorico = ss.getSheetByName('Historico_Agentes');
-
+    
     if (!hojaActividad || !hojaObjetivos || !hojaAgentes) {
-      throw new Error('Faltan hojas necesarias.');
+      throw new Error('Faltan hojas necesarias. Ejecuta "Inicializar Sistema".');
     }
     
-    // 1. Configuración de Fechas
-    let yearConsulta = new Date().getFullYear();
-    let fechaInicio = new Date(yearConsulta, 0, 1);
+    let fechaInicio = new Date(new Date().getFullYear(), 0, 1);
     let fechaFin = new Date();
     
-    if (filtros) {
-        if (filtros.fechaInicio) {
-            fechaInicio = new Date(filtros.fechaInicio);
-            yearConsulta = fechaInicio.getFullYear();
-        }
-        if (filtros.fechaFin) fechaFin = new Date(filtros.fechaFin);
-    }
+    if (filtros && filtros.fechaInicio) fechaInicio = new Date(filtros.fechaInicio);
+    if (filtros && filtros.fechaFin) fechaFin = new Date(filtros.fechaFin);
+    
     fechaInicio.setHours(0, 0, 0, 0);
     fechaFin.setHours(23, 59, 59, 999);
 
-    // 2. PRE-CARGA DEL HISTÓRICO (LA CLAVE DEL ÉXITO) ⚡
-    // Creamos un diccionario: { "AG006": { gci: 200000, citas: 50... }, "AG007": ... }
-    const mapaHistorico = {};
-    
-    if (hojaHistorico) {
-        const datosHist = hojaHistorico.getDataRange().getValues();
-        // Empezamos en 1 para saltar encabezados
-        for (let i = 1; i < datosHist.length; i++) {
-            const row = datosHist[i];
-            const idRaw = String(row[0]);
-            if (!idRaw) continue;
-
-            // NORMALIZACIÓN: Quitamos espacios y símbolos. "AG 006 " -> "AG006"
-            const idKey = idRaw.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            const anioRow = parseInt(row[2]); // Columna C: Año
-            const mesRow = parseInt(row[3]);  // Columna D: Mes
-
-            // Filtro por año (Laxo: permite string o number)
-            if (anioRow == yearConsulta) {
-                if (!mapaHistorico[idKey]) {
-                    mapaHistorico[idKey] = {
-                        totalGCI: 0, totalCitas: 0, totalExcl: 0, totalVentas: 0,
-                        totalAbierto: 0, totalCitasComp: 0, totalVisitas: 0,
-                        // Arrays mensuales para el gráfico de equipo
-                        mensual: {
-                            gci: Array(12).fill(0),
-                            citas: Array(12).fill(0),
-                            excl: Array(12).fill(0)
-                        }
-                    };
-                }
-
-                // --- MAPEO DE COLUMNAS SEGÚN TUS DATOS ---
-                // ID=0, Nombre=1, Año=2, Mes=3
-                // Citas=4, Capt_Excl=5, Capt_Abierto=6, Visitas_Comp=7, Casas_Ens=8
-                // Vtas_Excl=14, Vtas_Abierto=16, Vtas_Comp=18, Vtas_Alq=20
-                // GCI_Total=22
-                
-                const gci = parsearNumeroEU(row[22]);
-                const citas = parsearNumeroEU(row[4]);
-                const excl = parsearNumeroEU(row[5]);
-                const abierto = parsearNumeroEU(row[6]);
-                const citasComp = parsearNumeroEU(row[7]);
-                const visitas = parsearNumeroEU(row[8]);
-                
-                // Suma de ventas
-                const ventas = parsearNumeroEU(row[14]) + parsearNumeroEU(row[16]) + parsearNumeroEU(row[18]) + parsearNumeroEU(row[20]);
-
-                // ¿Este mes histórico entra en el filtro de fechas seleccionado?
-                // Creamos fecha ficticia (día 15 del mes)
-                const fechaMesHist = new Date(yearConsulta, mesRow - 1, 15);
-                
-                if (fechaMesHist >= fechaInicio && fechaMesHist <= fechaFin) {
-                    // SUMAR A LOS TOTALES (Para Tarjetas y Signos Vitales)
-                    mapaHistorico[idKey].totalGCI += gci;
-                    mapaHistorico[idKey].totalCitas += citas;
-                    mapaHistorico[idKey].totalExcl += excl;
-                    mapaHistorico[idKey].totalVentas += ventas;
-                    mapaHistorico[idKey].totalAbierto += abierto;
-                    mapaHistorico[idKey].totalCitasComp += citasComp;
-                    mapaHistorico[idKey].totalVisitas += visitas;
-                }
-
-                // SUMAR A LA EVOLUCIÓN (Para gráfico de líneas)
-                if (mesRow >= 1 && mesRow <= 12) {
-                    const mIdx = mesRow - 1;
-                    mapaHistorico[idKey].mensual.gci[mIdx] += gci;
-                    mapaHistorico[idKey].mensual.citas[mIdx] += citas;
-                    mapaHistorico[idKey].mensual.excl[mIdx] += excl;
-                }
-            }
-        }
-    }
-
-    // 3. OBTENER RESTO DE DATOS
     const datosAgentes = hojaAgentes.getDataRange().getValues();
     const todasActividades = hojaActividad.getDataRange().getValues();
     const todosObjetivos = hojaObjetivos.getDataRange().getValues();
     
-    const resultados = [];
-    const mesesPeriodo = calcularMesesEnPeriodo(fechaInicio, fechaFin);
+    const hojaHistorico = ss.getSheetByName('Historico_Agentes');
+    const datosHistorico = hojaHistorico ? hojaHistorico.getDataRange().getValues() : [];
+    // AÑADIR ESTE LOG:
+Logger.log('📋 Total filas en Actividad_Diaria: ' + todasActividades.length);
+Logger.log('📋 Última fila: ID=' + todasActividades[todasActividades.length-1][0] + ', Fecha=' + todasActividades[todasActividades.length-1][1] + ', Agente=' + todasActividades[todasActividades.length-1][2]);
+
+// Buscar transacciones específicas
+for (let i = 1; i < todasActividades.length; i++) {
+  const id = String(todasActividades[i][0] || '');
+  if (id.includes('TRX1227') || id.includes('TRX1229')) {
+    Logger.log('✅ ENCONTRADA: Fila ' + i + ' - ID=' + id + ', Fecha=' + todasActividades[i][1] + ', Agente=' + todasActividades[i][2] + ', GCI=' + todasActividades[i][12]);
+  }
+}
     
-    // Objeto global del equipo
-    const evolucionMensualEquipo = { labels: mesesPeriodo.map(m => obtenerNombreMesAbreviado(m.mes)) };
-    Object.keys(kpiNames).forEach(key => {
-        evolucionMensualEquipo[key] = { realizado: Array(mesesPeriodo.length).fill(0), objetivo: Array(mesesPeriodo.length).fill(0) };
-    });
+    Logger.log('📊 Leyendo Historico_Agentes: ' + (datosHistorico.length - 1) + ' filas');
     
-    // 4. BUCLE MAESTRO DE AGENTES
-    for (let i = 1; i < datosAgentes.length; i++) {
-      if (datosAgentes[i][0]) {
+    // --- 1. OBTENER TRANSACCIONES ---
+    const listaTransacciones = [];
+    for (let i = 1; i < todasActividades.length; i++) {
+      const row = todasActividades[i];
+      const notas = String(row[14] || '').toUpperCase();
+      
+      if (notas.includes('TRANSACCIÓN') || notas.includes('TRANSACCION')) {
+        const fechaRaw = row[1];
+        if (!fechaRaw || !(fechaRaw instanceof Date)) continue;
+        const fecha = new Date(fechaRaw);
         
-        const idOriginal = String(datosAgentes[i][0]).trim();
-        // ID BLINDADO PARA BUSCAR EN EL MAPA
-        const idBusqueda = idOriginal.toUpperCase().replace(/[^A-Z0-9]/g, '');
-        
-        const nombreAgente = datosAgentes[i][1];
-        const esAcumulativo = datosAgentes[i][6] === 'SI';
-        const estado = datosAgentes[i][5];
-
-        if (estado === 'Activo') {
-
-            // A. Datos APP (Usamos ID original para la hoja de actividad)
-            let actividad = obtenerActividadAgente(idOriginal, fechaInicio, fechaFin, todasActividades);
-            
-            // B. FUSIÓN CON HISTÓRICO (Usamos ID blindado) 🔥
-            const datosHist = mapaHistorico[idBusqueda];
-            
-            if (datosHist) {
-                // AQUÍ ES DONDE OCURRE LA SUMA MÁGICA
-                actividad.gci += datosHist.totalGCI;
-                actividad.citasCaptacion += datosHist.totalCitas;
-                actividad.exclusivasVenta += datosHist.totalExcl;
-                actividad.captacionesAbierto += datosHist.totalAbierto;
-                actividad.citasCompradores += datosHist.totalCitasComp;
-                actividad.casasEnsenadas += datosHist.totalVisitas;
-                if (typeof actividad.ventas === 'undefined') actividad.ventas = 0;
-                actividad.ventas += datosHist.totalVentas;
-                
-                // Sumar al gráfico general del equipo
-                for (let m = 0; m < 12; m++) {
-                    if (evolucionMensualEquipo.gci) evolucionMensualEquipo.gci.realizado[m] += datosHist.mensual.gci[m];
-                    if (evolucionMensualEquipo.citasCaptacion) evolucionMensualEquipo.citasCaptacion.realizado[m] += datosHist.mensual.citas[m];
-                    if (evolucionMensualEquipo.exclusivasVenta) evolucionMensualEquipo.exclusivasVenta.realizado[m] += datosHist.mensual.excl[m];
-                }
-            }
-
-            // C. Sumar datos de la App al Gráfico del Equipo
-            const evolucionApp = calcularEvolucionMensual(idOriginal, mesesPeriodo, esAcumulativo, todasActividades, todosObjetivos);
-            
-            mesesPeriodo.forEach((mes, idx) => {
-                Object.keys(kpiNames).forEach(key => {
-                    if (evolucionMensualEquipo[key] && evolucionApp[key]) {
-                        evolucionMensualEquipo[key].realizado[idx] += evolucionApp[key].realizado[idx];
-                        evolucionMensualEquipo[key].objetivo[idx] += evolucionApp[key].objetivo[idx];
-                    }
-                });
-            });
-
-            // D. Calcular Ratios Finales (Con la suma ya hecha)
-            const objetivos = obtenerObjetivosAgente(idOriginal, fechaInicio, fechaFin, todosObjetivos);
-            const cumplimientos = calcularCumplimientos(actividad, objetivos);
-            const cumplimientoGlobal = calcularCumplimientoGlobal(cumplimientos);
-            const ratios = calcularRatios(actividad, objetivos);
-            
-            const cumplimientoGlobalSeguro = isNaN(cumplimientoGlobal) || !isFinite(cumplimientoGlobal) ? 0 : cumplimientoGlobal;
-            
-            let estadoClase = 'bajo';
-            if (cumplimientoGlobalSeguro >= 90) estadoClase = 'excelente';
-            else if (cumplimientoGlobalSeguro >= 70) estadoClase = 'bueno';
-
-            resultados.push({
-                id: idOriginal,
-                agente: nombreAgente,
-                realizado: actividad, // ¡ESTE OBJETO LLEVA LA SUMA FINAL!
-                objetivos: objetivos,
-                cumplimientos: cumplimientos,
-                cumplimientoGlobal: cumplimientoGlobalSeguro.toFixed(1),
-                estadoClase: estadoClase,
-                ratios: ratios,
-                evolucionMensual: evolucionApp
-            });
+        if (fecha >= fechaInicio && fecha <= fechaFin) {
+          let tipo = 'Venta';
+          let lado = 'Ambos';
+          let descripcion = notas;
+          
+          const match = notas.match(/TRANSACCIÓN\s+(\w+).*?LADO:\s*(\w+)/i);
+          if (match) {
+            tipo = match[1];
+            lado = match[2];
+          }
+          
+          listaTransacciones.push({
+            fecha: Utilities.formatDate(fecha, Session.getScriptTimeZone(), 'dd/MM/yyyy'),
+            agente: row[3] || 'N/A',
+            tipo: tipo,
+            lado: lado,
+            descripcion: descripcion,
+            gci: parseFloat(row[12]) || 0,
+            volumenNegocio: parseFloat(row[13]) || 0,
+            comision: parseFloat(row[16]) || 0
+          });
         }
       }
     }
 
-    // Lista de transacciones (Mantener vacía o llenar según lógica anterior)
-    const listaTransacciones = [];
+    // --- 2. LÓGICA DE AGENTES ---
+    const resultados = [];
+    const mesesPeriodo = calcularMesesEnPeriodo(fechaInicio, fechaFin);
+    const evolucionMensualEquipo = { labels: mesesPeriodo.map(m => obtenerNombreMesAbreviado(m.mes)) };
+    
+    Object.keys(kpiNames).forEach(key => {
+        evolucionMensualEquipo[key] = { realizado: Array(mesesPeriodo.length).fill(0), objetivo: Array(mesesPeriodo.length).fill(0) };
+    });
+    
+    const agentesActivos = [];
+    
+    for (let i = 1; i < datosAgentes.length; i++) {
+      if (datosAgentes[i][0] && datosAgentes[i][1] && datosAgentes[i][5] === 'Activo') {
+        const id = datosAgentes[i][0];
+        const sueldoFijo = parseFloat(datosAgentes[i][8]) || 0;
+        
+        agentesActivos.push({
+          id: id,
+          nombre: datosAgentes[i][1],
+          esAcumulativo: datosAgentes[i][6] === 'SI',
+          sueldoFijo: sueldoFijo
+        });
+      }
+    }
+
+    const mapaActividad = {};
+    for (let i = 1; i < todasActividades.length; i++) {
+      const id = todasActividades[i][2];
+      if (!id) continue;
+      if (!mapaActividad[id]) mapaActividad[id] = [];
+      const fecha = new Date(todasActividades[i][1]);
+      if (fecha >= fechaInicio && fecha <= fechaFin) {
+        mapaActividad[id].push(todasActividades[i]);
+      }
+    }
+
+    const mapaObjetivos = {};
+    for (let i = 1; i < todosObjetivos.length; i++) {
+      const id = todosObjetivos[i][0];
+      if (!id) continue;
+      if (!mapaObjetivos[id]) mapaObjetivos[id] = [];
+      mapaObjetivos[id].push(todosObjetivos[i]);
+    }
+
+    const mapaHistorico = {};
+    for (let i = 1; i < datosHistorico.length; i++) {
+      const row = datosHistorico[i];
+      const idHist = String(row[0]).trim().toUpperCase();
+      if (!idHist) continue;
+      
+      if (!mapaHistorico[idHist]) mapaHistorico[idHist] = [];
+      mapaHistorico[idHist].push(row);
+    }
+
+    agentesActivos.forEach(agente => {
+      const actividadFiltrada = mapaActividad[agente.id] || [];
+      const objetivosFiltrados = mapaObjetivos[agente.id] || [];
+      
+      let actividad = obtenerActividadAgente(agente.id, fechaInicio, fechaFin, actividadFiltrada);
+      
+      const actividadHistorica = sumarDatosHistoricos(agente.id, fechaInicio, fechaFin, mapaHistorico[agente.id.toUpperCase()]);
+      
+      if (actividadHistorica) {
+          Logger.log('✅ Fusionando histórico para ' + agente.nombre + ': GCI+' + actividadHistorica.gci.toFixed(2));
+          actividad.gci += actividadHistorica.gci;
+          actividad.citasCaptacion += actividadHistorica.citasCaptacion;
+          actividad.exclusivasVenta += actividadHistorica.exclusivasVenta;
+          actividad.captacionesAbierto += actividadHistorica.captacionesAbierto;
+          actividad.citasCompradores += actividadHistorica.citasCompradores;
+          actividad.casasEnsenadas += actividadHistorica.casasEnsenadas;
+          actividad.exclusivasComprador += actividadHistorica.exclusivasComprador;
+          actividad.leadsCompradores += actividadHistorica.leadsCompradores;
+      }
+
+      const objetivos = obtenerObjetivosAgente(agente.id, fechaInicio, fechaFin, objetivosFiltrados);
+
+      if (agente.esAcumulativo) {
+        const pendientes = calcularObjetivosAcumuladosPendientes(agente.id, fechaInicio, actividadFiltrada, objetivosFiltrados);
+        Object.keys(objetivos).forEach(key => objetivos[key] += pendientes[key]);
+      }
+
+      const cumplimientos = calcularCumplimientos(actividad, objetivos);
+      const cumplimientoGlobal = calcularCumplimientoGlobal(cumplimientos);
+      const ratios = calcularRatios(actividad, objetivos);
+      
+      const cumplimientoGlobalSeguro = isNaN(cumplimientoGlobal) || !isFinite(cumplimientoGlobal) ? 0 : cumplimientoGlobal;
+      
+      let estadoClase = 'bajo';
+      if (cumplimientoGlobalSeguro >= 90) estadoClase = 'excelente';
+      else if (cumplimientoGlobalSeguro >= 70) estadoClase = 'bueno';
+      
+      const evolucionMensual = calcularEvolucionMensual(agente.id, mesesPeriodo, agente.esAcumulativo, actividadFiltrada, objetivosFiltrados);
+
+      mesesPeriodo.forEach((mes, idx) => {
+        Object.keys(kpiNames).forEach(key => {
+          if (evolucionMensual[key]) {
+            evolucionMensualEquipo[key].realizado[idx] += evolucionMensual[key].realizado[idx];
+            evolucionMensualEquipo[key].objetivo[idx] += evolucionMensual[key].objetivo[idx];
+          }
+        });
+      });
+
+      resultados.push({
+        id: agente.id,
+        agente: agente.nombre,
+        sueldoFijo: agente.sueldoFijo,
+        realizado: actividad,
+        objetivos: objetivos,
+        cumplimientos: cumplimientos,
+        cumplimientoGlobal: cumplimientoGlobalSeguro.toFixed(1),
+        estadoClase: estadoClase,
+        ratios: ratios,
+        evolucionMensual: evolucionMensual
+      });
+    });
+
+    // ✅ CRÍTICO: SUMAR HISTÓRICO MENSUAL 2025 DIRECTAMENTE (sin depender de mesesPeriodo)
+    if (datosHistorico.length > 1) {
+      const headersHist = datosHistorico[0];
+      const idxAnio = headersHist.indexOf('Año');
+      const idxMesCol = headersHist.indexOf('Mes');
+      const idxGCI = headersHist.indexOf('GCI_Total');
+      const idxCitas = headersHist.indexOf('Citas');
+      const idxExclVenta = headersHist.indexOf('Capt_Excl');
+      const idxAbierto = headersHist.indexOf('Capt_Abierto');
+      const idxCitasComp = headersHist.indexOf('Visitas_Comp');
+      const idxVisitas = headersHist.indexOf('Casas_Ens');
+      const idxVtasComp = headersHist.indexOf('Vtas_Comp');
+      
+      const anioActual = new Date().getFullYear();  // 2025
+      
+      Logger.log('🔥 SUMANDO HISTÓRICO MENSUAL ' + anioActual + ' A evolucionMensualEquipo');
+      
+      // ✅ EXPANDIR evolucionMensualEquipo a 13 posiciones si solo tiene 1 mes (diciembre)
+      if (evolucionMensualEquipo.gci.realizado.length < 13) {
+        const longitudActual = evolucionMensualEquipo.gci.realizado.length;
+        Logger.log('⚠️ evolucionMensualEquipo solo tiene ' + longitudActual + ' meses, expandiendo a 13');
+        
+        Object.keys(kpiNames).forEach(function(key) {
+          if (evolucionMensualEquipo[key]) {
+            // Añadir ceros al principio hasta completar 13 posiciones (índice 0-12)
+            while (evolucionMensualEquipo[key].realizado.length < 13) {
+              evolucionMensualEquipo[key].realizado.unshift(0);
+              evolucionMensualEquipo[key].objetivo.unshift(0);
+            }
+          }
+        });
+        
+        // Actualizar labels
+        evolucionMensualEquipo.labels = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic','Dic'];
+      }
+      
+      for (let i = 1; i < datosHistorico.length; i++) {
+        const fila = datosHistorico[i];
+        const anio = fila[idxAnio];
+        const mes = fila[idxMesCol];
+        
+        // ✅ FILTRAR POR AÑO ACTUAL (2025)
+        if (anio != anioActual) continue;
+        
+        // ✅ MAPEO DIRECTO: mes 1 → índice 0, mes 2 → índice 1, ..., mes 12 → índice 11
+        const indiceMes = mes - 1;
+        if (indiceMes < 0 || indiceMes > 12) continue;
+        
+        Logger.log('  → Sumando mes ' + mes + ' (índice ' + indiceMes + '): GCI=' + fila[idxGCI]);
+        
+        // ✅ SUMAR A evolucionMensualEquipo
+        if (idxGCI >= 0) evolucionMensualEquipo.gci.realizado[indiceMes] += Number(fila[idxGCI]) || 0;
+        if (idxCitas >= 0) evolucionMensualEquipo.citasCaptacion.realizado[indiceMes] += Number(fila[idxCitas]) || 0;
+        if (idxExclVenta >= 0) evolucionMensualEquipo.exclusivasVenta.realizado[indiceMes] += Number(fila[idxExclVenta]) || 0;
+        if (idxVtasComp >= 0) evolucionMensualEquipo.exclusivasComprador.realizado[indiceMes] += Number(fila[idxVtasComp]) || 0;
+        if (idxAbierto >= 0) evolucionMensualEquipo.captacionesAbierto.realizado[indiceMes] += Number(fila[idxAbierto]) || 0;
+        if (idxCitasComp >= 0) evolucionMensualEquipo.citasCompradores.realizado[indiceMes] += Number(fila[idxCitasComp]) || 0;
+        if (idxVisitas >= 0) evolucionMensualEquipo.casasEnsenadas.realizado[indiceMes] += Number(fila[idxVisitas]) || 0;
+      }
+      
+      Logger.log('✅ Histórico mensual ' + anioActual + ' sumado a equipo');
+      Logger.log('📊 GCI Equipo después de sumar histórico: ' + evolucionMensualEquipo.gci.realizado);
+    }
+
+
+    const numAgentes = resultados.length;
+    if (numAgentes > 0) {
+      mesesPeriodo.forEach((mes, idx) => {
+        Object.keys(kpiNames).forEach(key => {
+          if (!['gci', 'citasCaptacion', 'exclusivasVenta', 'exclusivasComprador', 'captacionesAbierto', 'citasCompradores', 'casasEnsenadas', 'leadsCompradores', 'actividadTotal'].includes(key)) {
+            evolucionMensualEquipo[key].realizado[idx] /= numAgentes;
+            evolucionMensualEquipo[key].objetivo[idx] /= numAgentes;
+          }
+        });
+      });
+    }
+
+    // ✅ CALCULAR HISTÓRICO AÑO ANTERIOR (2024)
+    const anioAnterior = fechaInicio.getFullYear() - 1;
+    const evolucionMensual2024 = {
+      labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+    };
+    
+    const kpisHistoricos = ['gci', 'citasCaptacion', 'exclusivasVenta', 'exclusivasComprador',
+      'captacionesAbierto', 'citasCompradores', 'casasEnsenadas', 'leadsCompradores'];
+    
+    kpisHistoricos.forEach(function(kpi) {
+      evolucionMensual2024[kpi] = { realizado: [0,0,0,0,0,0,0,0,0,0,0,0] };
+    });
+    
+    if (datosHistorico.length > 1) {
+      const headersHist = datosHistorico[0];
+      const idxAnio = headersHist.indexOf('Año');
+      const idxMes = headersHist.indexOf('Mes');
+      const idxGCI = headersHist.indexOf('GCI_Total');
+      const idxCitas = headersHist.indexOf('Citas');
+      const idxExclVenta = headersHist.indexOf('Capt_Excl');
+      const idxAbierto = headersHist.indexOf('Capt_Abierto');
+      const idxCitasComp = headersHist.indexOf('Visitas_Comp');
+      const idxVisitas = headersHist.indexOf('Casas_Ens');
+      const idxVtasComp = headersHist.indexOf('Vtas_Comp');
+      
+      for (let i = 1; i < datosHistorico.length; i++) {
+        const fila = datosHistorico[i];
+        const anio = fila[idxAnio];
+        const mes = fila[idxMes];
+        
+        if (anio != anioAnterior) continue;
+        
+        const mesIdx = mes - 1;
+        if (mesIdx < 0 || mesIdx > 11) continue;
+        
+        if (idxGCI >= 0) evolucionMensual2024.gci.realizado[mesIdx] += Number(fila[idxGCI]) || 0;
+        if (idxCitas >= 0) evolucionMensual2024.citasCaptacion.realizado[mesIdx] += Number(fila[idxCitas]) || 0;
+        if (idxExclVenta >= 0) evolucionMensual2024.exclusivasVenta.realizado[mesIdx] += Number(fila[idxExclVenta]) || 0;
+        if (idxVtasComp >= 0) evolucionMensual2024.exclusivasComprador.realizado[mesIdx] += Number(fila[idxVtasComp]) || 0;
+        if (idxAbierto >= 0) evolucionMensual2024.captacionesAbierto.realizado[mesIdx] += Number(fila[idxAbierto]) || 0;
+        if (idxCitasComp >= 0) evolucionMensual2024.citasCompradores.realizado[mesIdx] += Number(fila[idxCitasComp]) || 0;
+        if (idxVisitas >= 0) evolucionMensual2024.casasEnsenadas.realizado[mesIdx] += Number(fila[idxVisitas]) || 0;
+      }
+      
+      Logger.log('✅ Evolución mensual ' + anioAnterior + ' calculada');
+    }
 
     return {
       agentes: resultados,
       evolucionMensualEquipo: evolucionMensualEquipo,
-      transacciones: listaTransacciones
+      evolucionMensual2024: evolucionMensual2024,
+      transacciones: listaTransacciones 
     };
 
   } catch (error) {
-    Logger.log('ERROR CRITICO DASHBOARD: ' + error.toString());
+    Logger.log('ERROR: ' + error.toString());
     throw error;
   }
 }
@@ -738,124 +859,107 @@ function parsearNumeroEU(valor) {
 // =========================================================
 // 🗺️ NUEVA FUNCIÓN AUXILIAR: MAPA DE MEMORIA HISTÓRICA
 // =========================================================
-function cargarMapaHistoricoOptimizado(anio) {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const hoja = ss.getSheetByName('Historico_Agentes');
+function cargarMapaHistoricoOptimizado(datosHistRaw, anio) {
     const mapa = {};
-    
-    if (!hoja) {
-        Logger.log("⚠️ No existe la hoja Historico_Agentes");
-        return mapa; 
-    }
+    if (!datosHistRaw || datosHistRaw.length < 2) return mapa;
 
-    const datos = hoja.getDataRange().getValues();
-    Logger.log(`📊 Cargando Histórico: ${datos.length} filas encontradas para año ${anio}`);
+    const headers = datosHistRaw[0];
+    const idxID = headers.indexOf('ID_Agente');
+    const idxAnio = headers.indexOf('Año');
+    const idxMes = headers.indexOf('Mes');
+    const idxGCI = headers.indexOf('GCI_Total');
+    const idxCitas = headers.indexOf('Citas');
+    const idxExcl = headers.indexOf('Capt_Excl');
+    const idxAbierto = headers.indexOf('Capt_Abierto');
+    const idxCitasComp = headers.indexOf('Visitas_Comp');
+    const idxVisitas = headers.indexOf('Casas_Ens');
     
-    // Empezamos en 1 para saltar cabecera
-    for (let i = 1; i < datos.length; i++) {
-        const row = datos[i];
-        if (!row[0]) continue; 
+    const idxVtas1 = headers.indexOf('Vtas_Excl');
+    const idxVtas2 = headers.indexOf('Vtas_Abierto');
+    const idxVtas3 = headers.indexOf('Vtas_Comp');
+    const idxVtas4 = headers.indexOf('Vtas_Alq');
 
-        // NORMALIZACIÓN DE ID
-        const idKey = String(row[0]).toUpperCase().replace(/[^A-Z0-9]/g, '');
-        const anioFila = row[2]; 
+    for (let i = 1; i < datosHistRaw.length; i++) {
+        const row = datosHistRaw[i];
+        if (!row[idxID]) continue; 
+
+        const idKey = String(row[idxID]).toUpperCase().replace(/[^A-Z0-9]/g, '');
         
-        // Coincidencia de año (laxa)
-        if (anioFila == anio) {
+        if (row[idxAnio] == anio) {
             if (!mapa[idKey]) {
                 mapa[idKey] = {
-                    gci: Array(12).fill(0), citas: Array(12).fill(0), excl: Array(12).fill(0),
-                    abierto: Array(12).fill(0), citasComp: Array(12).fill(0), visitas: Array(12).fill(0),
-                    ventas: Array(12).fill(0), totalGCI: 0, totalCitas: 0, totalExclusivas: 0, totalVentas: 0,
-                    totalCaptAbierto: 0, totalCitasComp: 0, totalVisitas: 0
+                    totalGCI: 0, totalCitas: 0, totalExcl: 0, totalVentas: 0,
+                    totalAbierto: 0, totalCitasComp: 0, totalVisitas: 0,
+                    totalExclComp: 0, totalLeads: 0,
+                    mensual: {
+                        gci: Array(12).fill(0), citas: Array(12).fill(0), excl: Array(12).fill(0),
+                        abierto: Array(12).fill(0), citasComp: Array(12).fill(0), visitas: Array(12).fill(0),
+                        ventas: Array(12).fill(0), exclComp: Array(12).fill(0)
+                    }
                 };
             }
 
-            const mes = parseInt(row[3]); 
+            const mes = parseInt(row[idxMes]); 
             if (mes >= 1 && mes <= 12) {
                 const idx = mes - 1;
                 
-                // USAMOS EL PARSER EUROPEO AQUÍ
-                const gciVal = parsearNumeroES(row[22]);     // Col 22: GCI_Total
-                const citasVal = parsearNumeroES(row[4]);    // Col 4: Citas
-                const exclVal = parsearNumeroES(row[5]);     // Col 5: Capt_Excl
-                const abiertoVal = parsearNumeroES(row[6]);  // Col 6: Capt_Abierto
-                const citasCompVal = parsearNumeroES(row[7]);// Col 7: Visitas_Comp
-                const visitasVal = parsearNumeroES(row[8]);  // Col 8: Casas_Ens
+                // Parseo
+                const gciVal = parsearNumeroEU(row[idxGCI]);
+                const citasVal = parsearNumeroEU(row[idxCitas]);
+                const exclVal = parsearNumeroEU(row[idxExcl]);
+                const abiertoVal = parsearNumeroEU(row[idxAbierto]);
+                const citasCompVal = parsearNumeroEU(row[idxCitasComp]);
+                const visitasVal = parsearNumeroEU(row[idxVisitas]);
                 
-                // Ventas: Suma de columnas 14, 16, 18, 20
-                const vtasVal = parsearNumeroES(row[14]) + parsearNumeroES(row[16]) + parsearNumeroES(row[18]) + parsearNumeroES(row[20]);
+                let ventasVal = 0;
+                if(idxVtas1 > -1) ventasVal += parsearNumeroEU(row[idxVtas1]);
+                if(idxVtas2 > -1) ventasVal += parsearNumeroEU(row[idxVtas2]);
+                if(idxVtas3 > -1) ventasVal += parsearNumeroEU(row[idxVtas3]);
+                if(idxVtas4 > -1) ventasVal += parsearNumeroEU(row[idxVtas4]);
 
                 // Asignar al mes
-                mapa[idKey].gci[idx] += gciVal;
-                mapa[idKey].citas[idx] += citasVal;
-                mapa[idKey].excl[idx] += exclVal;
-                mapa[idKey].abierto[idx] += abiertoVal;
-                mapa[idKey].citasComp[idx] += citasCompVal;
-                mapa[idKey].visitas[idx] += visitasVal;
-                mapa[idKey].ventas[idx] += vtasVal;
-                
-                // Acumular Totales (para las tarjetas)
+                mapa[idKey].mensual.gci[idx] += gciVal;
+                mapa[idKey].mensual.citas[idx] += citasVal;
+                mapa[idKey].mensual.excl[idx] += exclVal;
+                mapa[idKey].mensual.abierto[idx] += abiertoVal;
+                mapa[idKey].mensual.citasComp[idx] += citasCompVal;
+                mapa[idKey].mensual.visitas[idx] += visitasVal;
+                mapa[idKey].mensual.ventas[idx] += ventasVal;
+
+                // Acumular Totales
                 mapa[idKey].totalGCI += gciVal;
                 mapa[idKey].totalCitas += citasVal;
-                mapa[idKey].totalExclusivas += exclVal;
-                mapa[idKey].totalVentas += vtasVal;
-                mapa[idKey].totalCaptAbierto += abiertoVal;
+                mapa[idKey].totalExcl += exclVal;
+                mapa[idKey].totalVentas += ventasVal;
+                mapa[idKey].totalAbierto += abiertoVal;
                 mapa[idKey].totalCitasComp += citasCompVal;
                 mapa[idKey].totalVisitas += visitasVal;
             }
         }
     }
-    
-    // Log para verificar si ha cargado algo
-    const keys = Object.keys(mapa);
-    if(keys.length > 0) {
-        Logger.log(`✅ Datos cargados para ${keys.length} agentes. Ejemplo (${keys[0]}): GCI Total = ${mapa[keys[0]].totalGCI}`);
-    } else {
-        Logger.log("⚠️ No se encontraron datos coincidentes para el año " + anio);
-    }
-    
     return mapa;
 }
 
 // ====== TODAS LAS DEMÁS FUNCIONES SIGUEN IGUALES (NO TOQUE NADA MÁS) ======
 function obtenerActividadAgente(idAgente, fechaInicio, fechaFin, todasActividades) {
-  // Inicializamos el objeto con todas las métricas a 0
   const actividad = {
-    citasCaptacion: 0, 
-    exclusivasVenta: 0, 
-    exclusivasComprador: 0,
-    captacionesAbierto: 0, 
-    citasCompradores: 0, 
-    casasEnsenadas: 0,
-    leadsCompradores: 0, 
-    llamadas: 0, 
-    gci: 0, 
-    volumenNegocio: 0,
-    ventas: 0 // Importante para calcular Ticket Promedio
+    citasCaptacion: 0, exclusivasVenta: 0, exclusivasComprador: 0,
+    captacionesAbierto: 0, citasCompradores: 0, casasEnsenadas: 0,
+    leadsCompradores: 0, llamadas: 0, gci: 0, volumenNegocio: 0, ventas: 0
   };
 
-  // Normalizamos el ID que buscamos (Mayúsculas y sin espacios)
   const targetID = String(idAgente).trim().toUpperCase();
 
   for (let i = 0; i < todasActividades.length; i++) {
     const row = todasActividades[i];
-    
-    // 1. Validación básica de fecha
     const fechaRaw = row[1];
     if (!fechaRaw) continue;
 
-    // 2. Validación de ID (Blindaje contra errores de filtrado)
-    // Leemos la columna 2 (ID_Agente). Si no coincide, saltamos.
-    // Esto permite usar la función tanto con listas filtradas como con la hoja entera.
     const rowID = String(row[2]).trim().toUpperCase();
     if (rowID !== targetID) continue;
 
-    // 3. Validación de Rango de Fechas
     const fecha = new Date(fechaRaw);
-    if (fecha instanceof Date && !isNaN(fecha) && fecha >= fechaInicio && fecha <= fechaFin) {
-      
-      // 4. Suma de Métricas (con protección contra nulos)
+    if (fecha >= fechaInicio && fecha <= fechaFin) {
       actividad.citasCaptacion += parseFloat(row[4]) || 0;
       actividad.exclusivasVenta += parseFloat(row[5]) || 0;
       actividad.exclusivasComprador += parseFloat(row[6]) || 0;
@@ -865,51 +969,51 @@ function obtenerActividadAgente(idAgente, fechaInicio, fechaFin, todasActividade
       actividad.leadsCompradores += parseFloat(row[10]) || 0;
       actividad.llamadas += parseFloat(row[11]) || 0;
       
-      // Datos económicos
       const gci = parseFloat(row[12]) || 0;
       actividad.gci += gci;
       actividad.volumenNegocio += parseFloat(row[13]) || 0;
 
-      // 5. Cálculo de Ventas (Transacciones)
-      // Si hay GCI positivo, cuenta como una venta cerrada
-      if (gci > 0) {
-        actividad.ventas += 1;
-      }
+      if (gci > 0) actividad.ventas += 1;
     }
   }
-  
   return actividad;
 }
 
+// OBTENCIÓN SEGURA DE OBJETIVOS (Para evitar división por cero en agentes nuevos)
 function obtenerObjetivosAgente(idAgente, fechaInicio, fechaFin, todosObjetivos) {
   const objetivos = {
-        citasCaptacion: 0, exclusivasVenta: 0, exclusivasComprador: 0,
-        captacionesAbierto: 0, citasCompradores: 0, casasEnsenadas: 0,
-        leadsCompradores: 0, llamadas: 0, gci: 0, volumenNegocio: 0
-    };
-  
-  // CORRECCIÓN: Empezamos en 0
+    citasCaptacion: 0, exclusivasVenta: 0, exclusivasComprador: 0,
+    captacionesAbierto: 0, citasCompradores: 0, casasEnsenadas: 0,
+    leadsCompradores: 0, llamadas: 0, gci: 0, volumenNegocio: 0
+  };
+
+  const targetID = String(idAgente).trim().toUpperCase();
+
   for (let i = 0; i < todosObjetivos.length; i++) {
-    const year = todosObjetivos[i][2];
-    const mes = todosObjetivos[i][3];
-    if (!year || !mes) continue;
+    const row = todosObjetivos[i];
+    if (!row[0]) continue;
     
-    const fechaMes = new Date(year, mes - 1, 1);
-    
-    if (fechaMes instanceof Date && !isNaN(fechaMes) && 
-        fechaMes >= new Date(fechaInicio.getFullYear(), fechaInicio.getMonth(), 1) && 
-        fechaMes <= new Date(fechaFin.getFullYear(), fechaFin.getMonth(), 1)) {
-          
-      objetivos.citasCaptacion += parseFloat(todosObjetivos[i][4]) || 0;
-      objetivos.exclusivasVenta += parseFloat(todosObjetivos[i][5]) || 0;
-      objetivos.exclusivasComprador += parseFloat(todosObjetivos[i][6]) || 0;
-      objetivos.captacionesAbierto += parseFloat(todosObjetivos[i][7]) || 0;
-      objetivos.citasCompradores += parseFloat(todosObjetivos[i][8]) || 0;
-      objetivos.casasEnsenadas += parseFloat(todosObjetivos[i][9]) || 0;
-      objetivos.leadsCompradores += parseFloat(todosObjetivos[i][10]) || 0;
-            objetivos.llamadas += parseFloat(todosObjetivos[i][11]) || 0;
-            objetivos.gci += parseFloat(todosObjetivos[i][12]) || 0;
-            objetivos.volumenNegocio += parseFloat(todosObjetivos[i][13]) || 0;
+    const rowID = String(row[0]).trim().toUpperCase();
+    if (rowID === targetID) {
+        const year = row[2];
+        const mes = row[3];
+        if (year && mes) {
+            const fechaMes = new Date(year, mes - 1, 1);
+            if (fechaMes >= new Date(fechaInicio.getFullYear(), fechaInicio.getMonth(), 1) && 
+                fechaMes <= new Date(fechaFin.getFullYear(), fechaFin.getMonth(), 1)) {
+                
+                objetivos.citasCaptacion += parseFloat(row[4]) || 0;
+                objetivos.exclusivasVenta += parseFloat(row[5]) || 0;
+                objetivos.exclusivasComprador += parseFloat(row[6]) || 0;
+                objetivos.captacionesAbierto += parseFloat(row[7]) || 0;
+                objetivos.citasCompradores += parseFloat(row[8]) || 0;
+                objetivos.casasEnsenadas += parseFloat(row[9]) || 0;
+                objetivos.leadsCompradores += parseFloat(row[10]) || 0;
+                objetivos.llamadas += parseFloat(row[11]) || 0;
+                objetivos.gci += parseFloat(row[12]) || 0;
+                objetivos.volumenNegocio += parseFloat(row[13]) || 0;
+            }
+        }
     }
   }
   return objetivos;
@@ -1043,7 +1147,8 @@ function calcularObjetivosAcumuladosPendientes(idAgente, fechaInicio, todasActiv
 }
 
 function obtenerObjetivoMes(idAgente, year, mes, todosObjetivos) {
-  for (let i = 1; i < todosObjetivos.length; i++) {
+  // ✅ CAMBIO: i=0 en lugar de i=1
+  for (let i = 0; i < todosObjetivos.length; i++) {
     if (todosObjetivos[i][0] === idAgente && todosObjetivos[i][2] === year && todosObjetivos[i][3] === mes) {
       return {
         citasCaptacion: parseFloat(todosObjetivos[i][4]) || 0,
@@ -1053,38 +1158,46 @@ function obtenerObjetivoMes(idAgente, year, mes, todosObjetivos) {
         citasCompradores: parseFloat(todosObjetivos[i][8]) || 0,
         casasEnsenadas: parseFloat(todosObjetivos[i][9]) || 0,
         leadsCompradores: parseFloat(todosObjetivos[i][10]) || 0,
-                llamadas: parseFloat(todosObjetivos[i][11]) || 0,
-                gci: parseFloat(todosObjetivos[i][12]) || 0,
-                volumenNegocio: parseFloat(todosObjetivos[i][13]) || 0
+        llamadas: parseFloat(todosObjetivos[i][11]) || 0,
+        gci: parseFloat(todosObjetivos[i][12]) || 0,
+        volumenNegocio: parseFloat(todosObjetivos[i][13]) || 0
       };
     }
   }
   return { citasCaptacion: 0, exclusivasVenta: 0, exclusivasComprador: 0, captacionesAbierto: 0, citasCompradores: 0, casasEnsenadas: 0, leadsCompradores: 0, llamadas: 0, gci: 0, volumenNegocio: 0 };
 }
 
+// --- FIX: LEER MES A MES IGNORANDO ESPACIOS EN EL ID ---
 function obtenerActividadMes(idAgente, year, mes, todasActividades) {
   const actividad = {
-        citasCaptacion: 0, exclusivasVenta: 0, exclusivasComprador: 0,
-        captacionesAbierto: 0, citasCompradores: 0, casasEnsenadas: 0,
-        leadsCompradores: 0, llamadas: 0, gci: 0, volumenNegocio: 0
-    };
- 
-  for (let i = 1; i < todasActividades.length; i++) {
+    citasCaptacion: 0, exclusivasVenta: 0, exclusivasComprador: 0,
+    captacionesAbierto: 0, citasCompradores: 0, casasEnsenadas: 0,
+    leadsCompradores: 0, llamadas: 0, gci: 0, volumenNegocio: 0
+  };
+
+  const targetID = String(idAgente).trim().toUpperCase();
+
+  // ✅ CAMBIO: i=0 en lugar de i=1
+  for (let i = 0; i < todasActividades.length; i++) {
     const fechaRaw = todasActividades[i][1];
     if (!fechaRaw) continue;
-   
-    const fecha = new Date(fechaRaw);
-    if (todasActividades[i][2] === idAgente && fecha instanceof Date && !isNaN(fecha) && fecha.getFullYear() === year && (fecha.getMonth() + 1) === mes) {
-      actividad.citasCaptacion += parseFloat(todasActividades[i][4]) || 0;
-      actividad.exclusivasVenta += parseFloat(todasActividades[i][5]) || 0;
-      actividad.exclusivasComprador += parseFloat(todasActividades[i][6]) || 0;
-      actividad.captacionesAbierto += parseFloat(todasActividades[i][7]) || 0;
-      actividad.citasCompradores += parseFloat(todasActividades[i][8]) || 0;
-      actividad.casasEnsenadas += parseFloat(todasActividades[i][9]) || 0;
-      actividad.leadsCompradores += parseFloat(todasActividades[i][10]) || 0;
-            actividad.llamadas += parseFloat(todasActividades[i][11]) || 0;
-            actividad.gci += parseFloat(todasActividades[i][12]) || 0;
-            actividad.volumenNegocio += parseFloat(todasActividades[i][13]) || 0;
+    
+    const rowID = String(todasActividades[i][2]).trim().toUpperCase();
+    
+    if (rowID === targetID) {
+      const fecha = new Date(fechaRaw);
+      if (fecha instanceof Date && !isNaN(fecha) && fecha.getFullYear() === year && (fecha.getMonth() + 1) === mes) {
+        actividad.citasCaptacion += parseFloat(todasActividades[i][4]) || 0;
+        actividad.exclusivasVenta += parseFloat(todasActividades[i][5]) || 0;
+        actividad.exclusivasComprador += parseFloat(todasActividades[i][6]) || 0;
+        actividad.captacionesAbierto += parseFloat(todasActividades[i][7]) || 0;
+        actividad.citasCompradores += parseFloat(todasActividades[i][8]) || 0;
+        actividad.casasEnsenadas += parseFloat(todasActividades[i][9]) || 0;
+        actividad.leadsCompradores += parseFloat(todasActividades[i][10]) || 0;
+        actividad.llamadas += parseFloat(todasActividades[i][11]) || 0;
+        actividad.gci += parseFloat(todasActividades[i][12]) || 0;
+        actividad.volumenNegocio += parseFloat(todasActividades[i][13]) || 0;
+      }
     }
   }
   return actividad;
@@ -1397,23 +1510,57 @@ function obtenerDesgloseHistorico(idAgente, anio) {
 }
 
 // --- FUNCIÓN AUXILIAR: SUMAR TOTALES (REDUNDANCIA SEGURA) ---
-function sumarDatosHistoricos(idAgente, fechaInicio, fechaFin) {
-    // Reutilizamos obtenerDesgloseHistorico para no duplicar código
-    const anio = fechaInicio.getFullYear();
-    const desglose = obtenerDesgloseHistorico(idAgente, anio);
+function sumarDatosHistoricos(idAgente, fechaInicio, fechaFin, filasAgente) {
+    if (!filasAgente || filasAgente.length === 0) return null;
     
-    if (!desglose) return null;
-
-    return {
-        gci: desglose.totalGCI,
-        citasCaptacion: desglose.totalCitas,
-        exclusivasVenta: desglose.totalExclusivas,
-        captacionesAbierto: desglose.totalCaptAbierto,
-        citasCompradores: desglose.totalCitasComp,
-        casasEnsenadas: desglose.totalVisitas,
-        ventas: desglose.totalVentas,
-        volumenNegocio: 0
+    // ✅ CAMBIO CRÍTICO: Filtrar SOLO por año actual (2025), NO por rango de fechas del filtro
+    const anioActual = new Date().getFullYear();  // 2025
+    const mesInicio = 1;   // Enero
+    const mesFin = 12;     // Diciembre
+    
+    Logger.log('📅 Sumando histórico ' + idAgente + ' - Año: ' + anioActual);
+    
+    const totales = {
+        gci: 0,
+        citasCaptacion: 0,
+        exclusivasVenta: 0,
+        captacionesAbierto: 0,
+        citasCompradores: 0,
+        casasEnsenadas: 0,
+        exclusivasComprador: 0,
+        leadsCompradores: 0
     };
+    
+    let filasProcesadas = 0;
+    
+    for (let i = 0; i < filasAgente.length; i++) {
+        const row = filasAgente[i];
+        const anio = row[2];  // Columna C: Año
+        const mes = row[3];   // Columna D: Mes
+        
+        // ✅ FILTRAR SOLO POR AÑO ACTUAL (2025)
+        if (anio != anioActual) continue;
+        if (mes < mesInicio || mes > mesFin) continue;
+        
+        filasProcesadas++;
+        Logger.log('  Fila ' + filasProcesadas + ': Año=' + anio + ', Mes=' + mes + ', GCI=' + row[22]);
+        
+        // ✅ Mapeo correcto según encabezado real (A-Y)
+        totales.citasCaptacion += parseFloat(row[4]) || 0;       // Col E: Citas
+        totales.exclusivasVenta += parseFloat(row[5]) || 0;      // Col F: Capt_Excl
+        totales.captacionesAbierto += parseFloat(row[6]) || 0;   // Col G: Capt_Abierto
+        totales.citasCompradores += parseFloat(row[7]) || 0;     // Col H: Visitas_Comp
+        totales.casasEnsenadas += parseFloat(row[8]) || 0;       // Col I: Casas_Ens
+        totales.exclusivasComprador += parseFloat(row[18]) || 0; // Col S: Vtas_Comp
+        totales.gci += parseFloat(row[22]) || 0;                 // Col W: GCI_Total
+    }
+    
+    if (filasProcesadas > 0) {
+        Logger.log('✅ Total procesado ' + idAgente + ': ' + filasProcesadas + ' filas, GCI=' + totales.gci.toFixed(2));
+        return totales;
+    }
+    
+    return null;
 }
 /**
  * ════════════════════════════════════════════════════════════════
@@ -4515,16 +4662,34 @@ function guardarImportacionMasivaV27(listaAgentes) {
       mapaIDs[nombreKey] = id; 
     }
     
-    // DATOS HISTÓRICOS (20 columnas)
+    // DATOS HISTÓRICOS (Corregido mapeo de propiedades)
     ag.mensual.forEach((m, idx) => {
       filasHist.push([
-        id, ag.nombre, ag.anio, idx + 1,
-        m.citas || 0, m.exclVenta || 0, m.captAbierto || 0, m.citasComp || 0, m.visitas || 0,
-        m.captAlq || 0, m.tresBs || 0, m.bajadas || 0, m.propuestas || 0, m.arras || 0,
-        m.vtaExcl || 0, m.gciExcl || 0, m.vtaAbierto || 0, m.gciAbierto || 0,
-        m.vtaComp || 0, m.gciComp || 0, m.vtaAlq || 0, m.gciAlq || 0,
-        m.gciTotal || 0, m.coEuro || 0,
-        timestamp
+        id,                     // [0] ID
+        ag.nombre,              // [1] Nombre
+        ag.anio,                // [2] Año
+        idx + 1,                // [3] Mes
+        m.citas || 0,           // [4] Citas
+        m.excl || 0,            // [5] Capt_Excl (ANTES FALLABA AQUÍ POR USAR exclVenta)
+        m.abierto || 0,         // [6] Capt_Abierto (ANTES captAbierto)
+        m.citasComp || 0,       // [7] Visitas_Comp
+        m.visitas || 0,         // [8] Casas_Ens
+        m.captAlq || 0,         // [9] Capt_Alq
+        m.tresBs || 0,          // [10] 3Bs
+        m.bajadas || 0,         // [11] Bajadas
+        m.propuestas || 0,      // [12] Propuestas
+        m.arras || 0,           // [13] Arras
+        m.vtaExcl || 0,         // [14] Vtas_Excl
+        m.gciExcl || 0,         // [15] GCI_Excl
+        m.vtaAbierto || 0,      // [16] Vtas_Abierto
+        m.gciAbierto || 0,      // [17] GCI_Abierto
+        m.vtaComp || 0,         // [18] Vtas_Comp
+        m.gciComp || 0,         // [19] GCI_Comp
+        m.vtaAlq || 0,          // [20] Vtas_Alq
+        m.gciAlq || 0,          // [21] GCI_Alq
+        m.gciTotal || 0,        // [22] GCI_Total
+        m.coEuro || 0,          // [23] Co_Euro
+        timestamp               // [24] Fecha
       ]);
     });
   });
