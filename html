@@ -2806,26 +2806,48 @@ let mostrandoTodosLosAgentes = false;
         
         // ===== MAPA DE NOMBRES DE KPI (16 KPIs) =====
 const kpiNames = {
-    // 12 Realizados (añadidos: llamadas, volumenNegocio, beneficioNeto, totalTransacciones)
-    gci: 'GCI',
-    citasCaptacion: 'Citas Captación',
-    exclusivasVenta: 'Exclusivas Venta',
-    exclusivasComprador: 'Exclusivas Comprador',
-    captacionesAbierto: 'Captaciones en Abierto',
-    citasCompradores: 'Citas Compradores',
-    casasEnsenadas: 'Casas Enseñadas',
-    leadsCompradores: 'Leads Compradores',
-    llamadas: 'Llamadas',
-    volumenNegocio: 'Volumen de Negocio',
-    beneficioNeto: 'Beneficio Neto',           // ← NUEVO
-    totalTransacciones: 'Transacciones',       // ← NUEVO
-    // 6 Ratios
-    cumplimientoGlobal: 'Cumplimiento Global',
-    conversionCaptacion: 'Conversión (Cita a Capt.)',
-    ratioCierre: 'Ratio de Cierre (GCI/Excl)',
-    productividad: 'Productividad (Casas/Cita)',
-    ticketPromedio: 'Ticket Promedio',
-    actividadTotal: 'Actividad Total'
+  // FINANCIERO
+  gci: 'GCI',
+  volumenNegocio: 'Volumen Negocio',
+  beneficioNeto: 'Beneficio Neto',
+  totalTransacciones: 'Transacciones',
+  
+  // RATIOS
+  cumplimientoGlobal: 'Cumplimiento',
+  conversionCaptacion: 'Conversión Capt.',
+  conversionComprador: 'Conversión Comp.',
+  ratioCierreExclusivas: 'Ratio Cierre (GCI/EXCL)',
+  productividad: 'Productividad',
+  ticketPromedio: 'Ticket Promedio',
+  actividadTotal: 'Actividad Total',
+  
+  // CAPTACIÓN - ORIGINALES
+  citasCaptacion: 'Citas Captación',
+  exclusivasVenta: 'Exclusivas Venta',
+  captacionesAbierto: 'Captaciones Abierto',
+  
+  // CAPTACIÓN - NUEVOS 🆕
+  captacionesAlquiler: 'Captaciones Alquiler',
+  leadVendedor: 'Lead Vendedor',
+  tresBs: '3Bs Activadas',
+  bajadasPrecio: 'Bajadas Precio',
+  
+  // COMPRADOR - ORIGINALES
+  citasCompradores: 'Citas Comprador',
+  exclusivasComprador: 'Exclusivas Comprador',
+  casasEnsenadas: 'Casas Enseñadas',
+  leadsCompradores: 'Leads Compradores',
+  
+  // COMPRADOR - NUEVOS 🆕
+  leadComprador: 'Lead Comprador',
+  propuestasCompra: 'Propuestas Compra',
+  leadSeguimiento: 'Lead Seguimiento',
+  
+  // GENERAL - ORIGINALES
+  llamadas: 'Llamadas',
+  
+  // GENERAL - NUEVOS 🆕
+  arras: 'Arras Firmadas'
 };
         // 1. SISTEMA DE CAPAS (Para que no se cierren las ventanas de abajo)
 function abrirModalEncima(idModal) {
