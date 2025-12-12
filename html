@@ -1635,11 +1635,50 @@ body[data-theme="kw-claro"] canvas {
 </div>
 <div class="form-grupo">
     <label class="form-label">📞 Llamadas</label>
-    <input type="number" id="form-llamadas" class="form-input" min="0" value="0">
+    <input type="number" id="gerente-form-llamadas" class="form-input" min="0" value="0">
+</div>
+
+<!-- 🆕 NUEVOS CAMPOS CAPTACIÓN -->
+<div class="form-grupo">
+    <label class="form-label">🏢 Captaciones Alquiler</label>
+    <input type="number" id="gerente-form-captaciones-alquiler" class="form-input" min="0" value="0">
 </div>
 <div class="form-grupo">
+    <label class="form-label">📱 Lead Vendedor</label>
+    <input type="number" id="gerente-form-lead-vendedor" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">⚡ 3Bs Activadas</label>
+    <input type="number" id="gerente-form-3bs" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">💹 Bajadas Precio</label>
+    <input type="number" id="gerente-form-bajadas-precio" class="form-input" min="0" value="0">
+</div>
+
+<!-- 🆕 NUEVOS CAMPOS COMPRADOR -->
+<div class="form-grupo">
+    <label class="form-label">🏠 Lead Comprador</label>
+    <input type="number" id="gerente-form-lead-comprador" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">📄 Propuestas Compra</label>
+    <input type="number" id="gerente-form-propuestas-compra" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">🎯 Lead Seguimiento</label>
+    <input type="number" id="gerente-form-lead-seguimiento" class="form-input" min="0" value="0">
+</div>
+
+<!-- 🆕 CAMPO TRANSACCIONES -->
+<div class="form-grupo">
+    <label class="form-label">✍️ Arras Firmadas</label>
+    <input type="number" id="gerente-form-arras" class="form-input" min="0" value="0">
+</div>
+
+<div class="form-grupo">
     <label class="form-label">💰 GCI (€)</label>
-    <input type="number" id="form-gci" class="form-input" min="0" step="0.01" value="0">
+    <input type="number" id="gerente-form-gci" class="form-input" min="0" step="0.01" value="0">
 </div>
                         <button type="submit" id="btn-submit-actividad" class="form-submit">💾 GUARDAR ACTIVIDAD</button>
                         <div id="form-success-message" style="grid-column: 1 / -1; text-align: center; padding: 15px; background: rgba(0,255,136,0.2); border: 1px solid var(--color-accent-good); color: var(--color-accent-good); border-radius: 10px; display: none;">✅ Actividad guardada correctamente</div>
@@ -1900,13 +1939,51 @@ body[data-theme="kw-claro"] canvas {
                         <input type="number" id="gerente-form-leads-compradores" class="form-input" min="0" value="0">
                     </div>
                     <div class="form-grupo">
-                        <label class="form-label">📞 Llamadas</label>
-                        <input type="number" id="gerente-form-llamadas" class="form-input" min="0" value="0">
-                    </div>
-                    <div class="form-grupo">
-                        <label class="form-label">💰 GCI (€)</label>
-                        <input type="number" id="gerente-form-gci" class="form-input" min="0" step="0.01" value="0">
-                    </div>
+    <label class="form-label">📞 Llamadas</label>
+    <input type="number" id="gerente-form-llamadas" class="form-input" min="0" value="0">
+</div>
+
+<div class="form-grupo">
+    <label class="form-label">🏢 Captaciones Alquiler</label>
+    <input type="number" id="gerente-form-captaciones-alquiler" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">📱 Lead Vendedor</label>
+    <input type="number" id="gerente-form-lead-vendedor" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">⚡ 3Bs Activadas</label>
+    <input type="number" id="gerente-form-3bs" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">💹 Bajadas Precio</label>
+    <input type="number" id="gerente-form-bajadas-precio" class="form-input" min="0" value="0">
+</div>
+
+<!-- 🆕 NUEVOS CAMPOS COMPRADOR -->
+<div class="form-grupo">
+    <label class="form-label">🏠 Lead Comprador</label>
+    <input type="number" id="gerente-form-lead-comprador" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">📄 Propuestas Compra</label>
+    <input type="number" id="gerente-form-propuestas-compra" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">🎯 Lead Seguimiento</label>
+    <input type="number" id="gerente-form-lead-seguimiento" class="form-input" min="0" value="0">
+</div>
+
+<!-- 🆕 CAMPO TRANSACCIONES -->
+<div class="form-grupo">
+    <label class="form-label">✍️ Arras Firmadas</label>
+    <input type="number" id="gerente-form-arras" class="form-input" min="0" value="0">
+</div>
+
+<div class="form-grupo">
+    <label class="form-label">💰 GCI (€)</label>
+    <input type="number" id="gerente-form-gci" class="form-input" min="0" step="0.01" value="0">
+</div>
                     <button type="submit" id="btn-submit-actividad-gerente" class="form-submit">💾 Guardar Actividad</button>
                 </form>
             </div> <!-- Cierra formularios-container-gerente -->
@@ -2774,6 +2851,7 @@ body[data-theme="kw-claro"] canvas {
 </div>
 
     <script>
+      
       // ============================================
 // MEJORA 4: VISTA MÚLTIPLE DE AGENTES
 // ============================================
@@ -3254,7 +3332,7 @@ function cargarDatosGerente(periodo) {
             }
         });
         
-        if (['gci', 'citasCaptacion', 'exclusivasVenta', 'exclusivasComprador', 'captacionesAbierto', 'citasCompradores', 'casasEnsenadas', 'leadsCompradores', 'actividadTotal', 'llamadas', 'volumenNegocio'].includes(key)) {
+        if (['gci', 'citasCaptacion', 'exclusivasVenta', 'exclusivasComprador', 'captacionesAbierto', 'citasCompradores', 'casasEnsenadas', 'leadsCompradores', 'actividadTotal', 'llamadas', 'volumenNegocio', 'captacionesAlquiler', 'leadVendedor', 'tresBs', 'bajadasPrecio', 'leadComprador', 'propuestasCompra', 'leadSeguimiento', 'arras'].includes(key)) {
             teamKpiData[key] = sum;
         } else if (key === 'cumplimientoGlobal') {
             teamKpiData[key] = count > 0 ? (sum / count) : 0;
@@ -3327,11 +3405,13 @@ function renderSignosVitalesGrid(kpiData, idAgente) {
         
         // ✅ CORRECCIÓN 2: Expandir métricas visibles
         const metricsImportantes = [
-            'gci', 'actividadTotal', 'cumplimientoGlobal', 'beneficioNeto', 
-            'totalTransacciones', 'llamadas', 'leadsCompradores', 'volumenNegocio', 
-            'citasCaptacion', 'exclusivasVenta', 'casasEnsenadas', 'citasCompradores', 
-            'exclusivasComprador', 'captacionesAbierto'
-        ];
+    'gci', 'actividadTotal', 'cumplimientoGlobal', 'beneficioNeto', 
+    'totalTransacciones', 'llamadas', 'leadsCompradores', 'volumenNegocio', 
+    'citasCaptacion', 'exclusivasVenta', 'casasEnsenadas', 'citasCompradores', 
+    'exclusivasComprador', 'captacionesAbierto',
+    'captacionesAlquiler', 'leadVendedor', 'tresBs', 'bajadasPrecio',
+    'leadComprador', 'propuestasCompra', 'leadSeguimiento', 'arras'
+];
         if (valor === 0 && !metricsImportantes.includes(key)) return;
         
         const meta = getKpiMetadata(key, valor);
@@ -5045,8 +5125,16 @@ function mostrarAnalisisEquipo(kpiKey) {
         citasCompradores: parseInt(document.getElementById('form-citas-compradores').value) || 0,
         casasEnsenadas: parseInt(document.getElementById('form-casas-ensenadas').value) || 0,
         leadsCompradores: parseInt(document.getElementById('form-leads-compradores').value) || 0,
-        llamadas: parseInt(document.getElementById('form-llamadas').value) || 0,
-        gci: parseFloat(document.getElementById('form-gci').value) || 0,
+llamadas: parseInt(document.getElementById('form-llamadas').value) || 0,
+captacionesAlquiler: parseInt(document.getElementById('form-captaciones-alquiler').value) || 0,
+leadVendedor: parseInt(document.getElementById('form-lead-vendedor').value) || 0,
+tresBs: parseInt(document.getElementById('form-3bs').value) || 0,
+bajadasPrecio: parseInt(document.getElementById('form-bajadas-precio').value) || 0,
+leadComprador: parseInt(document.getElementById('form-lead-comprador').value) || 0,
+propuestasCompra: parseInt(document.getElementById('form-propuestas-compra').value) || 0,
+leadSeguimiento: parseInt(document.getElementById('form-lead-seguimiento').value) || 0,
+arras: parseInt(document.getElementById('form-arras').value) || 0,
+gci: parseFloat(document.getElementById('form-gci').value) || 0,
         volumenNegocio: 0,
         notas: "Registro de Agente"
     };
@@ -5393,7 +5481,15 @@ agentesParaTransaccion.push({
         casasEnsenadas: parseInt(document.getElementById('gerente-form-casas-ensenadas').value) || 0,
         leadsCompradores: parseInt(document.getElementById('gerente-form-leads-compradores').value) || 0,
         llamadas: parseInt(document.getElementById('gerente-form-llamadas').value) || 0,
-        gci: parseFloat(document.getElementById('gerente-form-gci').value) || 0,
+captacionesAlquiler: parseInt(document.getElementById('gerente-form-captaciones-alquiler').value) || 0,
+leadVendedor: parseInt(document.getElementById('gerente-form-lead-vendedor').value) || 0,
+tresBs: parseInt(document.getElementById('gerente-form-3bs').value) || 0,
+bajadasPrecio: parseInt(document.getElementById('gerente-form-bajadas-precio').value) || 0,
+leadComprador: parseInt(document.getElementById('gerente-form-lead-comprador').value) || 0,
+propuestasCompra: parseInt(document.getElementById('gerente-form-propuestas-compra').value) || 0,
+leadSeguimiento: parseInt(document.getElementById('gerente-form-lead-seguimiento').value) || 0,
+arras: parseInt(document.getElementById('gerente-form-arras').value) || 0,
+gci: parseFloat(document.getElementById('gerente-form-gci').value) || 0,
         volumenNegocio: 0,
         notas: "Registro de Gerente"
     };
@@ -9381,13 +9477,52 @@ function restaurarVistaIndividualGerente() {
                 <input type="number" id="gerente-form-leads-compradores" class="form-input" min="0" value="0">
             </div>
             <div class="form-grupo">
-                <label class="form-label">📞 Llamadas</label>
-                <input type="number" id="gerente-form-llamadas" class="form-input" min="0" value="0">
-            </div>
-            <div class="form-grupo">
-                <label class="form-label">💰 GCI (€)</label>
-                <input type="number" id="gerente-form-gci" class="form-input" min="0" step="0.01" value="0">
-            </div>
+    <label class="form-label">📞 Llamadas</label>
+    <input type="number" id="gerente-form-llamadas" class="form-input" min="0" value="0">
+</div>
+
+<!-- 🆕 NUEVOS CAMPOS CAPTACIÓN -->
+<div class="form-grupo">
+    <label class="form-label">🏢 Captaciones Alquiler</label>
+    <input type="number" id="gerente-form-captaciones-alquiler" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">📱 Lead Vendedor</label>
+    <input type="number" id="gerente-form-lead-vendedor" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">⚡ 3Bs Activadas</label>
+    <input type="number" id="gerente-form-3bs" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">💹 Bajadas Precio</label>
+    <input type="number" id="gerente-form-bajadas-precio" class="form-input" min="0" value="0">
+</div>
+
+<!-- 🆕 NUEVOS CAMPOS COMPRADOR -->
+<div class="form-grupo">
+    <label class="form-label">🏠 Lead Comprador</label>
+    <input type="number" id="gerente-form-lead-comprador" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">📄 Propuestas Compra</label>
+    <input type="number" id="gerente-form-propuestas-compra" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">🎯 Lead Seguimiento</label>
+    <input type="number" id="gerente-form-lead-seguimiento" class="form-input" min="0" value="0">
+</div>
+
+<!-- 🆕 CAMPO TRANSACCIONES -->
+<div class="form-grupo">
+    <label class="form-label">✍️ Arras Firmadas</label>
+    <input type="number" id="gerente-form-arras" class="form-input" min="0" value="0">
+</div>
+
+<div class="form-grupo">
+    <label class="form-label">💰 GCI (€)</label>
+    <input type="number" id="gerente-form-gci" class="form-input" min="0" step="0.01" value="0">
+</div>
             <button type="submit" id="btn-submit-actividad-gerente" class="form-submit">💾 Guardar Actividad</button>
         </form>
     `;
@@ -9465,13 +9600,52 @@ function renderizarFormulariosMultiplesGerente() {
                                 <input type="number" class="form-input multi-leadsCompradores" min="0" value="0">
                             </div>
                             <div class="form-grupo">
-                                <label class="form-label">📞 Llamadas</label>
-                                <input type="number" class="form-input multi-llamadas" min="0" value="0">
-                            </div>
-                            <div class="form-grupo">
-                                <label class="form-label">💰 GCI (€)</label>
-                                <input type="number" class="form-input multi-gci" min="0" step="0.01" value="0">
-                            </div>
+    <label class="form-label">📞 Llamadas</label>
+    <input type="number" id="gerente-form-llamadas" class="form-input" min="0" value="0">
+</div>
+
+<!-- 🆕 NUEVOS CAMPOS CAPTACIÓN -->
+<div class="form-grupo">
+    <label class="form-label">🏢 Captaciones Alquiler</label>
+    <input type="number" id="gerente-form-captaciones-alquiler" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">📱 Lead Vendedor</label>
+    <input type="number" id="gerente-form-lead-vendedor" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">⚡ 3Bs Activadas</label>
+    <input type="number" id="gerente-form-3bs" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">💹 Bajadas Precio</label>
+    <input type="number" id="gerente-form-bajadas-precio" class="form-input" min="0" value="0">
+</div>
+
+<!-- 🆕 NUEVOS CAMPOS COMPRADOR -->
+<div class="form-grupo">
+    <label class="form-label">🏠 Lead Comprador</label>
+    <input type="number" id="gerente-form-lead-comprador" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">📄 Propuestas Compra</label>
+    <input type="number" id="gerente-form-propuestas-compra" class="form-input" min="0" value="0">
+</div>
+<div class="form-grupo">
+    <label class="form-label">🎯 Lead Seguimiento</label>
+    <input type="number" id="gerente-form-lead-seguimiento" class="form-input" min="0" value="0">
+</div>
+
+<!-- 🆕 CAMPO TRANSACCIONES -->
+<div class="form-grupo">
+    <label class="form-label">✍️ Arras Firmadas</label>
+    <input type="number" id="gerente-form-arras" class="form-input" min="0" value="0">
+</div>
+
+<div class="form-grupo">
+    <label class="form-label">💰 GCI (€)</label>
+    <input type="number" id="gerente-form-gci" class="form-input" min="0" step="0.01" value="0">
+</div>
                         </div>
                     </div>
                 `;
@@ -9541,8 +9715,16 @@ function guardarActividadMultipleGerente() {
             citasCompradores: section.querySelector('.multi-citasCompradores').value,
             casasEnsenadas: section.querySelector('.multi-casasEnsenadas').value,
             leadsCompradores: section.querySelector('.multi-leadsCompradores').value,
-            llamadas: section.querySelector('.multi-llamadas').value,
-            gci: section.querySelector('.multi-gci').value,
+llamadas: section.querySelector('.multi-llamadas').value,
+captacionesAlquiler: section.querySelector('.multi-captacionesAlquiler').value,
+leadVendedor: section.querySelector('.multi-leadVendedor').value,
+tresBs: section.querySelector('.multi-tresBs').value,
+bajadasPrecio: section.querySelector('.multi-bajadasPrecio').value,
+leadComprador: section.querySelector('.multi-leadComprador').value,
+propuestasCompra: section.querySelector('.multi-propuestasCompra').value,
+leadSeguimiento: section.querySelector('.multi-leadSeguimiento').value,
+arras: section.querySelector('.multi-arras').value,
+gci: section.querySelector('.multi-gci').value,
             notas: ''
         };
         
@@ -9617,6 +9799,15 @@ function cargarDatosEnFormulario(actividad) {
     document.getElementById('form-casas-ensenadas').value = actividad.casasEnsenadas || 0;
     document.getElementById('form-leads-compradores').value = actividad.leadsCompradores || 0;
     document.getElementById('form-llamadas').value = actividad.llamadas || 0;
+    // 🆕 NUEVOS CAMPOS
+    document.getElementById('form-captaciones-alquiler').value = actividad.captacionesAlquiler || 0;
+    document.getElementById('form-lead-vendedor').value = actividad.leadVendedor || 0;
+    document.getElementById('form-3bs').value = actividad.tresBs || 0;
+    document.getElementById('form-bajadas-precio').value = actividad.bajadasPrecio || 0;
+    document.getElementById('form-lead-comprador').value = actividad.leadComprador || 0;
+    document.getElementById('form-propuestas-compra').value = actividad.propuestasCompra || 0;
+    document.getElementById('form-lead-seguimiento').value = actividad.leadSeguimiento || 0;
+    document.getElementById('form-arras').value = actividad.arras || 0;
     document.getElementById('form-gci').value = actividad.gci || 0;
 }
 
@@ -9629,6 +9820,15 @@ function limpiarFormularioActividad() {
     document.getElementById('form-casas-ensenadas').value = 0;
     document.getElementById('form-leads-compradores').value = 0;
     document.getElementById('form-llamadas').value = 0;
+    // 🆕 NUEVOS CAMPOS
+    document.getElementById('form-captaciones-alquiler').value = 0;
+    document.getElementById('form-lead-vendedor').value = 0;
+    document.getElementById('form-3bs').value = 0;
+    document.getElementById('form-bajadas-precio').value = 0;
+    document.getElementById('form-lead-comprador').value = 0;
+    document.getElementById('form-propuestas-compra').value = 0;
+    document.getElementById('form-lead-seguimiento').value = 0;
+    document.getElementById('form-arras').value = 0;
     document.getElementById('form-gci').value = 0;
 }
 
@@ -9696,6 +9896,15 @@ function cargarDatosEnFormularioGerente(actividad) {
     document.getElementById('gerente-form-casas-ensenadas').value = actividad.casasEnsenadas || 0;
     document.getElementById('gerente-form-leads-compradores').value = actividad.leadsCompradores || 0;
     document.getElementById('gerente-form-llamadas').value = actividad.llamadas || 0;
+    // 🆕 NUEVOS CAMPOS
+    document.getElementById('gerente-form-captaciones-alquiler').value = actividad.captacionesAlquiler || 0;
+    document.getElementById('gerente-form-lead-vendedor').value = actividad.leadVendedor || 0;
+    document.getElementById('gerente-form-3bs').value = actividad.tresBs || 0;
+    document.getElementById('gerente-form-bajadas-precio').value = actividad.bajadasPrecio || 0;
+    document.getElementById('gerente-form-lead-comprador').value = actividad.leadComprador || 0;
+    document.getElementById('gerente-form-propuestas-compra').value = actividad.propuestasCompra || 0;
+    document.getElementById('gerente-form-lead-seguimiento').value = actividad.leadSeguimiento || 0;
+    document.getElementById('gerente-form-arras').value = actividad.arras || 0;
     document.getElementById('gerente-form-gci').value = actividad.gci || 0;
 }
 
@@ -9708,6 +9917,15 @@ function limpiarFormularioActividadGerente() {
     document.getElementById('gerente-form-casas-ensenadas').value = 0;
     document.getElementById('gerente-form-leads-compradores').value = 0;
     document.getElementById('gerente-form-llamadas').value = 0;
+    // 🆕 NUEVOS CAMPOS
+    document.getElementById('gerente-form-captaciones-alquiler').value = 0;
+    document.getElementById('gerente-form-lead-vendedor').value = 0;
+    document.getElementById('gerente-form-3bs').value = 0;
+    document.getElementById('gerente-form-bajadas-precio').value = 0;
+    document.getElementById('gerente-form-lead-comprador').value = 0;
+    document.getElementById('gerente-form-propuestas-compra').value = 0;
+    document.getElementById('gerente-form-lead-seguimiento').value = 0;
+    document.getElementById('gerente-form-arras').value = 0;
     document.getElementById('gerente-form-gci').value = 0;
 }
 
