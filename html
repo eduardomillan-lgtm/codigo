@@ -16,36 +16,109 @@
         /* =================================
         ⭐ SISTEMA DE TEMAS (PALETAS) ⭐
         ================================= */
-        :root {
-            /* KW Dark (Default) */
-            --color-bg: #090A0F;
-            --color-bg-alt: #000;
-            --color-surface: rgba(255, 255, 255, 0.05);
-            --color-surface-blur: rgba(255, 255, 255, 0.05);
-            --color-border: rgba(255, 255, 255, 0.1);
-            --color-border-accent: rgba(255, 255, 255, 0.2);
-            --color-primary: #b70000;
-            --color-primary-dark: #8b0000;
-            --color-secondary: #ff6b6b;
-            --color-text-primary: #ffffff;
-            --color-text-secondary: rgba(255, 255, 255, 0.8);
-            --color-text-faded: rgba(255, 255, 255, 0.7);
-            --color-accent-good: #00ff88;
-            --color-accent-good-dark: #00c060;
-            --color-accent-warn: #ffd700;
-            --color-accent-bad: #ff4444;
-            --color-accent-ia: #667eea;
-            --color-accent-ia-dark: #764ba2;
-            
-            --gradient-header: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark), var(--color-primary));
-            --gradient-good: linear-gradient(135deg, var(--color-accent-good), var(--color-accent-good-dark));
-            --gradient-bad: linear-gradient(135deg, var(--color-accent-bad), var(--color-primary));
-            --gradient-ia: linear-gradient(135deg, var(--color-accent-ia), var(--color-accent-ia-dark));
-            --gradient-signos-bg: linear-gradient(135deg, rgba(183, 0, 0, 0.1), rgba(139, 0, 0, 0.2));
-            --shadow-header: rgba(183, 0, 0, 0.6);
-            --shadow-ia: rgba(102,126,234,0.5);
-            --shadow-good: rgba(0, 255, 136, 0.5);
-        }
+        /* =================================
+⭐ SISTEMA DE TEMAS (PALETAS) ⭐
+================================= */
+/* =================================
+⭐ SISTEMA DE TEMAS (PALETAS) ⭐
+================================= */
+:root {
+    /* KW Dark Profesional (Default) */
+    --color-bg: #0f172a;
+    --color-bg-alt: #1e293b;
+    --color-surface: rgba(255, 255, 255, 0.05);
+    --color-surface-blur: rgba(255, 255, 255, 0.08);
+    --color-border: rgba(255, 255, 255, 0.1);
+    --color-border-accent: rgba(255, 255, 255, 0.15);
+    --color-primary: #dc2626;
+    --color-primary-dark: #991b1b;
+    --color-secondary: #ef4444;
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #cbd5e1;
+    --color-text-faded: #94a3b8;
+    --color-accent-good: #22c55e;      /* Verde hierba suave */
+    --color-accent-good-dark: #16a34a;
+    --color-accent-warn: #f59e0b;
+    --color-accent-bad: #ef4444;
+    --color-accent-ia: #60a5fa;        /* Azul claro más suave */
+    --color-accent-ia-dark: #3b82f6;
+    
+    --gradient-header: linear-gradient(135deg, #dc2626, #991b1b);
+    --gradient-good: linear-gradient(135deg, #22c55e, #16a34a);
+    --gradient-bad: linear-gradient(135deg, #ef4444, #dc2626);
+    --gradient-ia: linear-gradient(135deg, #60a5fa, #3b82f6);
+    --gradient-signos-bg: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(153, 27, 27, 0.15));
+    --shadow-header: rgba(220, 38, 38, 0.3);
+    --shadow-ia: rgba(96, 165, 250, 0.3);
+    --shadow-good: rgba(34, 197, 94, 0.3);
+}
+
+body[data-theme="azul"] {
+    --color-primary: #2563eb;
+    --color-primary-dark: #1e40af;
+    --color-secondary: #3b82f6;
+    --color-accent-good: #22c55e;
+    --color-accent-good-dark: #16a34a;
+    --gradient-header: linear-gradient(135deg, #2563eb, #1e40af);
+    --gradient-signos-bg: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(30, 64, 175, 0.15));
+    --shadow-header: rgba(37, 99, 235, 0.3);
+}
+
+body[data-theme="luxury"] {
+    --color-bg: #1a1a1a;
+    --color-bg-alt: #0a0a0a;
+    --color-surface: rgba(212, 175, 55, 0.05);
+    --color-surface-blur: rgba(212, 175, 55, 0.08);
+    --color-border: rgba(212, 175, 55, 0.15);
+    --color-border-accent: rgba(212, 175, 55, 0.25);
+    --color-primary: #d4af37;
+    --color-primary-dark: #b8860b;
+    --color-secondary: #f0e68c;
+    --color-text-primary: #f5f5f5;
+    --color-text-secondary: #d4d4d4;
+    --color-text-faded: #a3a3a3;
+    --color-accent-good: #d4af37;
+    --color-accent-good-dark: #b8860b;
+    --color-accent-warn: #fbbf24;
+    --color-accent-bad: #dc2626;
+    --gradient-header: linear-gradient(135deg, #d4af37, #b8860b);
+    --gradient-good: linear-gradient(135deg, #d4af37, #b8860b);
+    --gradient-bad: linear-gradient(135deg, #dc2626, #991b1b);
+    --gradient-signos-bg: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(184, 134, 11, 0.15));
+    --shadow-header: rgba(212, 175, 55, 0.25);
+    --shadow-good: rgba(212, 175, 55, 0.3);
+}
+
+body[data-theme="claro"],
+body[data-theme="kw-claro"] {
+    --color-bg: #f1f5f9;
+    --color-bg-alt: #f8fafc;
+    --color-surface: rgba(255, 255, 255, 0.6);
+    --color-surface-blur: rgba(248, 250, 252, 0.95);
+    --color-border: rgba(15, 23, 42, 0.08);
+    --color-border-accent: rgba(15, 23, 42, 0.12);
+    --color-primary: #dc2626;
+    --color-primary-dark: #991b1b;
+    --color-secondary: #ef4444;
+    --color-text-primary: #0f172a;     /* Negro más oscuro para mejor legibilidad */
+    --color-text-secondary: #475569;
+    --color-text-faded: #64748b;
+    --color-accent-good: #16a34a;      /* Verde oscuro profesional */
+    --color-accent-good-dark: #15803d;
+    --color-accent-warn: #ea580c;
+    --color-accent-bad: #dc2626;
+    --color-accent-ia: #1d4ed8;        /* Azul oscuro para contraste */
+    --color-accent-ia-dark: #1e40af;
+    
+    --gradient-header: linear-gradient(135deg, #dc2626, #b91c1c);
+    --gradient-good: linear-gradient(135deg, #16a34a, #15803d);
+    --gradient-bad: linear-gradient(135deg, #dc2626, #b91c1c);
+    --gradient-ia: linear-gradient(135deg, #1d4ed8, #1e40af);
+    --gradient-signos-bg: linear-gradient(135deg, rgba(220, 38, 38, 0.03), rgba(185, 28, 28, 0.05));
+    --shadow-header: rgba(220, 38, 38, 0.08);
+    --shadow-ia: rgba(29, 78, 216, 0.08);
+    --shadow-good: rgba(22, 163, 74, 0.08);
+}
         /* Corrección Scroll Centro de Acciones */
 #modal-acciones .modal-content {
     max-height: 90vh; /* Altura máxima del 90% de la pantalla */
@@ -594,18 +667,21 @@ body[data-theme="kw-claro"] .form-input::placeholder {
             align-items: center;
             justify-content: center;
         }
-        .signo-value {    
-            font-size: 1.8em;    
-            font-weight: 900;    
-            background: var(--gradient-good);    
-            -webkit-background-clip: text;    
-            -webkit-text-fill-color: transparent;    
-        }
-        .signo-value.critical {
-            background: var(--gradient-bad);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        body[data-theme="claro"] .signo-value,
+body[data-theme="kw-claro"] .signo-value {
+    color: #16a34a !important;  /* Verde oscuro sólido */
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: unset !important;
+}
+
+body[data-theme="claro"] .signo-value.critical,
+body[data-theme="kw-claro"] .signo-value.critical {
+    color: #dc2626 !important;  /* Rojo oscuro sólido */
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: unset !important;
+}
 
         /* --- FILTROS RÁPIDOS (FIJOS) --- */
         .filtros-rapidos {
@@ -1165,6 +1241,25 @@ body[data-theme="kw-claro"] .tabla td {
             text-align: center;
             color: var(--color-secondary);
         }
+        /* Números grandes en gráficos - SIN gradientes */
+.stat-value {
+    color: var(--color-accent-good);
+    font-weight: 900;
+    text-shadow: none;
+}
+
+body[data-theme="claro"] .stat-value,
+body[data-theme="kw-claro"] .stat-value {
+    color: #16a34a !important;
+}
+
+/* Corrección títulos y subtítulos en modo claro */
+body[data-theme="claro"] .section-title,
+body[data-theme="kw-claro"] .section-title {
+    color: #dc2626 !important;
+    background: none !important;
+    -webkit-text-fill-color: unset !important;
+}
 
         /* --- Botón Scroll Top --- */
         .scroll-to-top {
@@ -1428,6 +1523,62 @@ body[data-theme="kw-claro"] .form-select {
     color: #000000 !important;            /* Texto negro */
     border: 1px solid #999 !important;    /* Borde visible */
 }
+/* === REDUCIR BRILLO MODO CLARO === */
+body[data-theme="claro"] .modal-content,
+body[data-theme="kw-claro"] .modal-content {
+    background: #f8fafc !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+}
+
+body[data-theme="claro"] .agent-card,
+body[data-theme="kw-claro"] .agent-card,
+body[data-theme="claro"] .section,
+body[data-theme="kw-claro"] .section,
+body[data-theme="claro"] .tabla-container,
+body[data-theme="kw-claro"] .tabla-container,
+body[data-theme="claro"] .chart-container,
+body[data-theme="kw-claro"] .chart-container {
+    background: #ffffff !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+body[data-theme="claro"] .signos-card,
+body[data-theme="kw-claro"] .signos-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+/* Suavizar valores numéricos */
+body[data-theme="claro"] .signo-value,
+body[data-theme="kw-claro"] .signo-value {
+    background: linear-gradient(135deg, #0d9488, #0f766e) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+body[data-theme="claro"] .agent-stat-value,
+body[data-theme="kw-claro"] .agent-stat-value {
+    color: #1e293b !important;
+}
+
+/* Reducir contraste en inputs */
+body[data-theme="claro"] .form-input,
+body[data-theme="kw-claro"] .form-input,
+body[data-theme="claro"] .form-select,
+body[data-theme="kw-claro"] .form-select {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #1e293b !important;
+}
+
+body[data-theme="claro"] .form-input:focus,
+body[data-theme="kw-claro"] .form-input:focus,
+body[data-theme="claro"] .form-select:focus,
+body[data-theme="kw-claro"] .form-select:focus {
+    border-color: #0d9488 !important;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+}
 
 body[data-theme="claro"] .form-label,
 body[data-theme="kw-claro"] .form-label {
@@ -1455,6 +1606,32 @@ body[data-theme="claro"] .distribucion-total,
 body[data-theme="kw-claro"] .distribucion-total {
      color: #000 !important; /* Textos secundarios en negro */
 }
+/* === MEJORAS VISUALES MODO CLARO === */
+body[data-theme="claro"] .signos-vitales,
+body[data-theme="kw-claro"] .signos-vitales {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.05), rgba(153, 27, 27, 0.08));
+    border-color: rgba(220, 38, 38, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+body[data-theme="claro"] .agent-card,
+body[data-theme="kw-claro"] .agent-card {
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+body[data-theme="claro"] .section,
+body[data-theme="kw-claro"] .section,
+body[data-theme="claro"] .tabla-container,
+body[data-theme="kw-claro"] .tabla-container {
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+body[data-theme="claro"] .header,
+body[data-theme="kw-claro"] .header {
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.15);
+}
 /* --- CORRECCIÓN VISIBILIDAD MODO CLARO --- */
 
 /* Forzar texto oscuro en tarjetas dentro de modales claros */
@@ -1474,6 +1651,7 @@ body[data-theme="claro"] .agent-stat-value,
 body[data-theme="kw-claro"] .agent-stat-value {
     color: #333333 !important;
 }
+
 /* DESPUÉS de la línea 797, AÑADIR: */
 body[data-theme="claro"] .signo-value,
 body[data-theme="kw-claro"] .signo-value {
@@ -1635,50 +1813,50 @@ body[data-theme="kw-claro"] canvas {
 </div>
 <div class="form-grupo">
     <label class="form-label">📞 Llamadas</label>
-    <input type="number" id="gerente-form-llamadas" class="form-input" min="0" value="0">
+    <input type="number" id="form-llamadas" class="form-input" min="0" value="0">
 </div>
 
 <!-- 🆕 NUEVOS CAMPOS CAPTACIÓN -->
 <div class="form-grupo">
     <label class="form-label">🏢 Captaciones Alquiler</label>
-    <input type="number" id="gerente-form-captaciones-alquiler" class="form-input" min="0" value="0">
+    <input type="number" id="form-captaciones-alquiler" class="form-input" min="0" value="0">
 </div>
 <div class="form-grupo">
     <label class="form-label">📱 Lead Vendedor</label>
-    <input type="number" id="gerente-form-lead-vendedor" class="form-input" min="0" value="0">
+    <input type="number" id="form-lead-vendedor" class="form-input" min="0" value="0">
 </div>
 <div class="form-grupo">
     <label class="form-label">⚡ 3Bs Activadas</label>
-    <input type="number" id="gerente-form-3bs" class="form-input" min="0" value="0">
+    <input type="number" id="form-3bs" class="form-input" min="0" value="0">
 </div>
 <div class="form-grupo">
     <label class="form-label">💹 Bajadas Precio</label>
-    <input type="number" id="gerente-form-bajadas-precio" class="form-input" min="0" value="0">
+    <input type="number" id="form-bajadas-precio" class="form-input" min="0" value="0">
 </div>
 
 <!-- 🆕 NUEVOS CAMPOS COMPRADOR -->
 <div class="form-grupo">
     <label class="form-label">🏠 Lead Comprador</label>
-    <input type="number" id="gerente-form-lead-comprador" class="form-input" min="0" value="0">
+    <input type="number" id="form-lead-comprador" class="form-input" min="0" value="0">
 </div>
 <div class="form-grupo">
     <label class="form-label">📄 Propuestas Compra</label>
-    <input type="number" id="gerente-form-propuestas-compra" class="form-input" min="0" value="0">
+    <input type="number" id="form-propuestas-compra" class="form-input" min="0" value="0">
 </div>
 <div class="form-grupo">
     <label class="form-label">🎯 Lead Seguimiento</label>
-    <input type="number" id="gerente-form-lead-seguimiento" class="form-input" min="0" value="0">
+    <input type="number" id="form-lead-seguimiento" class="form-input" min="0" value="0">
 </div>
 
 <!-- 🆕 CAMPO TRANSACCIONES -->
 <div class="form-grupo">
     <label class="form-label">✍️ Arras Firmadas</label>
-    <input type="number" id="gerente-form-arras" class="form-input" min="0" value="0">
+    <input type="number" id="form-arras" class="form-input" min="0" value="0">
 </div>
 
 <div class="form-grupo">
     <label class="form-label">💰 GCI (€)</label>
-    <input type="number" id="gerente-form-gci" class="form-input" min="0" step="0.01" value="0">
+    <input type="number" id="form-gci" class="form-input" min="0" step="0.01" value="0">
 </div>
                         <button type="submit" id="btn-submit-actividad" class="form-submit">💾 GUARDAR ACTIVIDAD</button>
                         <div id="form-success-message" style="grid-column: 1 / -1; text-align: center; padding: 15px; background: rgba(0,255,136,0.2); border: 1px solid var(--color-accent-good); color: var(--color-accent-good); border-radius: 10px; display: none;">✅ Actividad guardada correctamente</div>
@@ -1723,18 +1901,10 @@ body[data-theme="kw-claro"] canvas {
             Establecer Objetivos
             <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">Definir objetivos anuales.</div>
         </button>
-        <button 
-    class="btn-role" 
-    onclick="mostrarModalGestionAgentes()"
-    style="background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(30,30,30,0.9)); border: 2px solid #d4af37; cursor: pointer; transition: all 0.3s;"
-    onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 20px 50px rgba(212,175,55,0.5)'; this.style.borderColor='#ffd700';"
-    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.borderColor='#d4af37';">
-    
+        <button class="btn-role" onclick="mostrarModalGestionAgentes()">
     <span class="role-icon">👥</span>
-    
-    <div style="font-size: 1.1em; font-weight: 700;">Gestionar Agentes</div>
-    
-    <div style="font-size: 0.7em; opacity: 0.7; margin-top: 10px;">
+    Gestionar Agentes
+    <div style="font-size: 0.8em; opacity: 0.8; margin-top: 8px;">
         Dashboard + Crear + Listado
     </div>
 </button>
@@ -1827,37 +1997,56 @@ body[data-theme="kw-claro"] canvas {
                         <input type="text" id="transaccion-descripcion" class="form-input" placeholder="Ej: Ref 1234, ID INM002...">
                     </div>
 
-                    <div class="tx-adder-grid">
-                        <div class="form-grupo">
-                            <label class="form-label">👤 Agente</label>
-                            <select id="tx-agente-select" class="form-select">
-                                <option value="">-- Seleccionar agente --</option>
-                            </select>
-                        </div>
-                        <div class="form-grupo">
-                            <label class="form-label">Lado</label>
-                            <select id="tx-lado-select" class="form-select">
-                                <option value="Vendedor">Vendedor</option>
-                                <option value="Comprador">Comprador</option>
-                                <option value="Ambos">Ambos</option>
-                            </select>
-                        </div>
-                        <div class="form-grupo">
-                            <label class="form-label">GCI Parcial (€)</label>
-                            <input type="number" id="tx-gci-parcial" class="form-input" min="0" step="0.01" oninput="recalcularComisionTransaccion('pct')">
-                        </div>
-                        <div class="form-grupo">
-    <label class="form-label">% Comis.</label>
-    <input type="number" id="tx-comision-pct" class="form-input" min="0" max="100" value="40" placeholder="%" oninput="recalcularComisionTransaccion('pct')">
+                    <div class="tx-adder-grid" style="grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;">
+    <div class="form-grupo">
+        <label class="form-label">👤 Agente</label>
+        <select id="tx-agente-select" class="form-select">
+            <option value="">-- Seleccionar agente --</option>
+        </select>
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">Lado</label>
+        <select id="tx-lado-select" class="form-select">
+            <option value="Vendedor">Vendedor</option>
+            <option value="Comprador">Comprador</option>
+            <option value="Ambos">Ambos</option>
+        </select>
+    </div>
+    
+    <!-- 🆕 NUEVO CAMPO 1 -->
+    <div class="form-grupo">
+        <label class="form-label">📋 Tipo Capt.</label>
+        <select id="tx-tipo-captacion" class="form-select">
+            <option value="Exclusiva">Exclusiva</option>
+            <option value="Abierto">Abierto</option>
+            <option value="Alquiler">Alquiler</option>
+        </select>
+    </div>
+    
+    <!-- 🆕 NUEVO CAMPO 2 -->
+    <div class="form-grupo">
+        <label class="form-label">🎯 Origen</label>
+        <select id="tx-origen-lead" class="form-select">
+            <option value="">-- Origen --</option>
+        </select>
+    </div>
+    
+    <div class="form-grupo">
+        <label class="form-label">GCI Parcial (€)</label>
+        <input type="number" id="tx-gci-parcial" class="form-input" min="0" step="0.01" oninput="recalcularComisionTransaccion('pct')">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">% Comis.</label>
+        <input type="number" id="tx-comision-pct" class="form-input" min="0" max="100" value="40" placeholder="%" oninput="recalcularComisionTransaccion('pct')">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">Importe Comis. (€)</label>
+        <input type="number" id="tx-comision-importe" class="form-input" min="0" step="0.01" placeholder="0.00" oninput="recalcularComisionTransaccion('importe')">
+    </div>
+    <div class="form-grupo">
+        <button type="button" class="btn btn-primary-action" onclick="agregarAgenteATransaccion()" style="width: 100%; padding: 12px;">Añadir</button>
+    </div>
 </div>
-<div class="form-grupo">
-    <label class="form-label">Importe Comis. (€)</label>
-    <input type="number" id="tx-comision-importe" class="form-input" min="0" step="0.01" placeholder="0.00" oninput="recalcularComisionTransaccion('importe')">
-</div>
-                        <div class="form-grupo">
-                            <button type="button" class="btn btn-primary-action" onclick="agregarAgenteATransaccion()" style="width: 100%; padding: 12px;">Añadir</button>
-                        </div>
-                    </div>
 
                     <div id="transaccion-agentes-lista">
                     </div>
@@ -2017,31 +2206,42 @@ body[data-theme="kw-claro"] canvas {
         </div>
 
         <div id="hist-panel-anual" style="display:block;">
-            <div class="form-grid" style="background:var(--color-surface); padding:20px; border-radius:15px; border:1px solid var(--color-border);">
-                <div class="form-grupo"><label class="form-label">💰 GCI Total (€)</label><input type="number" id="ha-gci" class="form-input"></div>
-                <div class="form-grupo"><label class="form-label">🤝 Ventas (Cierres)</label><input type="number" id="ha-ventas" class="form-input"></div>
-                
-                <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">📞 Citas Captación</label><input type="number" id="ha-citasCapt" class="form-input"></div>
-                <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">🏠 Exclusivas Venta</label><input type="number" id="ha-exclVenta" class="form-input"></div>
-                <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">🏘️ Capt. Abierto</label><input type="number" id="ha-captAbierto" class="form-input"></div>
-                
-                <div class="form-grupo"><label class="form-label" style="color:#667eea">👥 Citas Comprador</label><input type="number" id="ha-citasComp" class="form-input"></div>
-                <div class="form-grupo"><label class="form-label" style="color:#667eea">🔑 Exclusivas Comp.</label><input type="number" id="ha-exclComp" class="form-input"></div>
-                <div class="form-grupo"><label class="form-label" style="color:#667eea">🏡 Visitas (Showings)</label><input type="number" id="ha-visitas" class="form-input"></div>
-            </div>
-        </div>
+    <div class="form-grid" style="background:var(--color-surface); padding:20px; border-radius:15px; border:1px solid var(--color-border);">
+        <div class="form-grupo"><label class="form-label">💰 GCI Total (€)</label><input type="number" id="ha-gci" class="form-input"></div>
+        <div class="form-grupo"><label class="form-label">🤝 Ventas (Cierres)</label><input type="number" id="ha-ventas" class="form-input"></div>
+        
+        <!-- CAPTACIÓN (6 campos) -->
+        <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">📞 Citas Captación</label><input type="number" id="ha-citasCapt" class="form-input"></div>
+        <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">🏠 Exclusivas Venta</label><input type="number" id="ha-exclVenta" class="form-input"></div>
+        <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">🏘️ Capt. Abierto</label><input type="number" id="ha-captAbierto" class="form-input"></div>
+        <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">🏢 Capt. Alquiler</label><input type="number" id="ha-captAlq" class="form-input"></div>
+        <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">⚡ 3Bs Activadas</label><input type="number" id="ha-3bs" class="form-input"></div>
+        <div class="form-grupo"><label class="form-label" style="color:#ff6b6b">💹 Bajadas Precio</label><input type="number" id="ha-bajadas" class="form-input"></div>
+        
+        <!-- COMPRADOR (4 campos) -->
+        <div class="form-grupo"><label class="form-label" style="color:#667eea">👥 Citas Comprador</label><input type="number" id="ha-citasComp" class="form-input"></div>
+        <div class="form-grupo"><label class="form-label" style="color:#667eea">🔑 Exclusivas Comp.</label><input type="number" id="ha-exclComp" class="form-input"></div>
+        <div class="form-grupo"><label class="form-label" style="color:#667eea">🏡 Visitas (Showings)</label><input type="number" id="ha-visitas" class="form-input"></div>
+        <div class="form-grupo"><label class="form-label" style="color:#667eea">📄 Propuestas Compra</label><input type="number" id="ha-propuestas" class="form-input"></div>
+        
+        <!-- GENERAL (1 campo) -->
+        <div class="form-grupo"><label class="form-label">✍️ Arras Firmadas</label><input type="number" id="ha-arras" class="form-input"></div>
+    </div>
+</div>
 
         <div id="hist-panel-mensual" style="display:none;">
             <div class="tabla-container" style="max-height:55vh; overflow-y:auto;">
                 <table class="tabla" style="font-size:0.85em;">
                     <thead>
-                        <tr>
-                            <th style="position:sticky; left:0; z-index:2;">Mes</th>
-                            <th>GCI (€)</th><th>Ventas</th>
-                            <th style="color:#ff6b6b">Citas Capt.</th><th style="color:#ff6b6b">Excl. Venta</th><th style="color:#ff6b6b">Abierto</th>
-                            <th style="color:#667eea">Citas Comp.</th><th style="color:#667eea">Excl. Comp.</th><th style="color:#667eea">Visitas</th>
-                        </tr>
-                    </thead>
+    <tr>
+        <th style="position:sticky; left:0; z-index:2;">Mes</th>
+        <th>GCI (€)</th><th>Ventas</th>
+        <th style="color:#ff6b6b">Citas Capt.</th><th style="color:#ff6b6b">Excl. Venta</th><th style="color:#ff6b6b">Abierto</th>
+        <th style="color:#ff6b6b">Capt. Alq.</th><th style="color:#ff6b6b">3Bs</th><th style="color:#ff6b6b">Bajadas</th>
+        <th style="color:#667eea">Citas Comp.</th><th style="color:#667eea">Excl. Comp.</th><th style="color:#667eea">Visitas</th>
+        <th style="color:#667eea">Propuestas</th><th>Arras</th>
+    </tr>
+</thead>
                     <tbody id="hist-tabla-body"></tbody>
                 </table>
             </div>
@@ -2745,39 +2945,84 @@ body[data-theme="kw-claro"] canvas {
             <div style="background:var(--color-surface); padding:20px; border-radius:15px; margin-bottom:20px; border:1px solid var(--color-border);">
                 <h3 style="color:var(--color-primary); margin-bottom:15px;">📊 Actividad y Producción Total</h3>
                 <div class="form-grid">
-                    <div class="form-grupo">
-                        <label class="form-label">📞 Citas Captación</label>
-                        <input type="number" id="hist-citas" class="form-input" placeholder="0">
-                    </div>
-                    <div class="form-grupo">
-                        <label class="form-label">🏠 Exclusivas Venta</label>
-                        <input type="number" id="hist-exclusivas" class="form-input" placeholder="0">
-                    </div>
-                    <div class="form-grupo">
-                        <label class="form-label">🏘️ Capt. Abierto</label>
-                        <input type="number" id="hist-abierto" class="form-input" placeholder="0">
-                    </div>
-                    <div class="form-grupo">
-                        <label class="form-label">👥 Citas Comprador</label>
-                        <input type="number" id="hist-citas-comp" class="form-input" placeholder="0">
-                    </div>
-                    <div class="form-grupo">
-                        <label class="form-label">🏡 Casas Enseñadas</label>
-                        <input type="number" id="hist-visitas" class="form-input" placeholder="0">
-                    </div>
-                    <div class="form-grupo">
-                        <label class="form-label">🔑 Exclusivas Compr.</label>
-                        <input type="number" id="hist-exclusivas-comp" class="form-input" placeholder="0">
-                    </div>
-                    <div class="form-grupo">
-                        <label class="form-label">🤝 Ventas (Cierres)</label>
-                        <input type="number" id="hist-ventas" class="form-input" placeholder="0">
-                    </div>
-                    <div class="form-grupo">
-                        <label class="form-label">💰 GCI Total (€)</label>
-                        <input type="number" id="hist-gci" class="form-input" placeholder="0">
-                    </div>
-                </div>
+    <!-- ORIGINALES -->
+    <div class="form-grupo">
+        <label class="form-label">📞 Citas Captación</label>
+        <input type="number" id="hist-citas" class="form-input" placeholder="0">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">🏠 Exclusivas Venta</label>
+        <input type="number" id="hist-exclusivas" class="form-input" placeholder="0">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">🏘️ Capt. Abierto</label>
+        <input type="number" id="hist-abierto" class="form-input" placeholder="0">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">👥 Citas Comprador</label>
+        <input type="number" id="hist-citas-comp" class="form-input" placeholder="0">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">🏡 Casas Enseñadas</label>
+        <input type="number" id="hist-visitas" class="form-input" placeholder="0">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">🔑 Exclusivas Compr.</label>
+        <input type="number" id="hist-exclusivas-comp" class="form-input" placeholder="0">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">📞 Llamadas</label>
+        <input type="number" id="hist-llamadas" class="form-input" placeholder="0">
+    </div>
+    
+    <!-- 🆕 NUEVOS CAMPOS CAPTACIÓN -->
+    <div class="form-grupo">
+        <label class="form-label">🏢 Capt. Alquiler</label>
+        <input type="number" id="hist-capt-alquiler" class="form-input" placeholder="0">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">📱 Lead Vendedor</label>
+        <input type="number" id="hist-lead-vendedor" class="form-input" placeholder="0">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">⚡ 3Bs Activadas</label>
+        <input type="number" id="hist-3bs" class="form-input" placeholder="0">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">💹 Bajadas Precio</label>
+        <input type="number" id="hist-bajadas-precio" class="form-input" placeholder="0">
+    </div>
+    
+    <!-- 🆕 NUEVOS CAMPOS COMPRADOR -->
+    <div class="form-grupo">
+        <label class="form-label">🏠 Lead Comprador</label>
+        <input type="number" id="hist-lead-comprador" class="form-input" placeholder="0">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">📄 Propuestas Compra</label>
+        <input type="number" id="hist-propuestas-compra" class="form-input" placeholder="0">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">🎯 Lead Seguimiento</label>
+        <input type="number" id="hist-lead-seguimiento" class="form-input" placeholder="0">
+    </div>
+    
+    <!-- 🆕 CAMPO GENERAL -->
+    <div class="form-grupo">
+        <label class="form-label">✍️ Arras Firmadas</label>
+        <input type="number" id="hist-arras" class="form-input" placeholder="0">
+    </div>
+    
+    <!-- FINALES -->
+    <div class="form-grupo">
+        <label class="form-label">🤝 Ventas (Cierres)</label>
+        <input type="number" id="hist-ventas" class="form-input" placeholder="0">
+    </div>
+    <div class="form-grupo">
+        <label class="form-label">💰 GCI Total (€)</label>
+        <input type="number" id="hist-gci" class="form-input" placeholder="0">
+    </div>
+</div>
             </div>
 
             <div class="section-title">📍 Origen del Negocio</div>
@@ -2851,39 +3096,7 @@ body[data-theme="kw-claro"] canvas {
 </div>
 
     <script>
-      
-      // ============================================
-// MEJORA 4: VISTA MÚLTIPLE DE AGENTES
-// ============================================
-let mostrandoTodosLosAgentes = false;
-        // ==================== DASHBOARD KW PRO - JAVASCRIPT COMPLETO (REPARADO v5.3) ====================
-        // VERSION: 5.3 (Fix Vista Agente & Transacciones Crash)
-        
-        // ===== VARIABLES GLOBALES =====
-        let datosGlobales = []; // Todos los datos de todos los agentes
-        let datosFiltrados = []; // Datos filtrados por el gerente
-        let datosAgregadosEquipo = {}; // Datos mensuales agregados del equipo
-        let chartInstances = {}; // Almacén de gráficos activos
-        let agenteActual = null; // Info del agente en la vista Agente
-        let datosAgenteCompletos = null; // Datos completos del agente activo
-        
-        // Filtros
-        let periodoActual = 'ano'; // Filtro de tiempo del gerente
-        let periodoAgenteActual = 'ano'; // Filtro de tiempo del agente
-        let agenteFechaInicio = null;
-        let agenteFechaFin = null;
-        let gerenteFechaInicio = null;
-        let gerenteFechaFin = null;
-
-        // ⭐ NUEVO: Para el modal de transacciones
-        let agentesParaTransaccion = [];    
-
-        let topN = 5;
-        let vistaActualGerente = 'tarjetas';
-        let seleccionMultiAgente = false; // Para modo selección
-        
-        // ===== MAPA DE NOMBRES DE KPI (16 KPIs) =====
-const kpiNames = {
+      const kpiNames = {
   // FINANCIERO
   gci: 'GCI',
   volumenNegocio: 'Volumen Negocio',
@@ -2927,6 +3140,39 @@ const kpiNames = {
   // GENERAL - NUEVOS 🆕
   arras: 'Arras Firmadas'
 };
+      
+      // ============================================
+// MEJORA 4: VISTA MÚLTIPLE DE AGENTES
+// ============================================
+let mostrandoTodosLosAgentes = false;
+        // ==================== DASHBOARD KW PRO - JAVASCRIPT COMPLETO (REPARADO v5.3) ====================
+        // VERSION: 5.3 (Fix Vista Agente & Transacciones Crash)
+        
+        // ===== VARIABLES GLOBALES =====
+        let datosGlobales = []; // Todos los datos de todos los agentes
+        let datosFiltrados = []; // Datos filtrados por el gerente
+        let datosAgregadosEquipo = {}; // Datos mensuales agregados del equipo
+        let chartInstances = {}; // Almacén de gráficos activos
+        let agenteActual = null; // Info del agente en la vista Agente
+        let datosAgenteCompletos = null; // Datos completos del agente activo
+        
+        // Filtros
+        let periodoActual = 'ano'; // Filtro de tiempo del gerente
+        let periodoAgenteActual = 'ano'; // Filtro de tiempo del agente
+        let agenteFechaInicio = null;
+        let agenteFechaFin = null;
+        let gerenteFechaInicio = null;
+        let gerenteFechaFin = null;
+
+        // ⭐ NUEVO: Para el modal de transacciones
+        let agentesParaTransaccion = [];    
+
+        let topN = 5;
+        let vistaActualGerente = 'tarjetas';
+        let seleccionMultiAgente = false; // Para modo selección
+        
+
+
         // 1. SISTEMA DE CAPAS (Para que no se cierren las ventanas de abajo)
 function abrirModalEncima(idModal) {
     const modal = document.getElementById(idModal);
@@ -2939,15 +3185,57 @@ function abrirModalEncima(idModal) {
     }
 }
 
-function cerrarModalSuperior(idModal) {
-    const modal = document.getElementById(idModal);
-    if (modal) modal.classList.remove('active');
+function cerrarModalSuperior(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) {
+        console.error('Modal no encontrado:', modalId);
+        return;
+    }
+    
+    modal.classList.remove('active');
+    
+    // ✅ VERIFICAR si hay otros modales abiertos
+    const modalesAbiertos = document.querySelectorAll('.modal.active');
+    
+    // Solo quitar el bloqueo si NO hay más modales abiertos
+    if (modalesAbiertos.length === 0) {
+        document.body.classList.remove('modal-open');
+    }
+    
+    console.log('✅ Modal cerrado:', modalId, '| Modales abiertos restantes:', modalesAbiertos.length);
+}
+// Función de emergencia para desbloquear el scroll
+function desbloquearScrollEmergencia() {
+    document.body.classList.remove('modal-open');
+    document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+    console.log('🚨 Scroll desbloqueado manualmente');
 }
 
+// Listener de tecla ESC para cerrar modales y desbloquear
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modalesAbiertos = document.querySelectorAll('.modal.active');
+        if (modalesAbiertos.length > 0) {
+            modalesAbiertos.forEach(m => m.classList.remove('active'));
+            document.body.classList.remove('modal-open');
+            console.log('✅ Modales cerrados con ESC');
+        }
+    }
+});
+
 // Función "Salir" o reset total
-function cerrarModal() {
-    document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
-    document.body.classList.remove('modal-open');
+function cerrarModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    modal.classList.remove('active');
+    
+    // Verificar si hay otros modales abiertos
+    const modalesAbiertos = document.querySelectorAll('.modal.active');
+    
+    if (modalesAbiertos.length === 0) {
+        document.body.classList.remove('modal-open');
+    }
 }
         
         // =================================================================
@@ -3014,13 +3302,13 @@ function cerrarModal() {
     // 1. Intentar poner pantalla completa automáticamente al hacer clic
     toggleFullScreen();
 
-    // 2. Resto de la lógica normal
+    // 2. Cambiar vista
     mostrarVista('view-agent');
     
-    google.script.run
-        .withSuccessHandler(poblarSelectorAgentes)
-        .withFailureHandler(mostrarError)
-        .obtenerListaAgentes();
+    // 3. Cargar agentes en el selector
+    setTimeout(() => {
+        poblarSelectAgentes('agent-select');
+    }, 100);
 }
         
         function logout() {
@@ -3253,6 +3541,7 @@ function cargarDatosGerente(periodo) {
 <button class="tab-btn" id="tab-embudos" onclick="cambiarVistaGerente('embudos')">🎯 Embudos</button>
 <button class="tab-btn" id="tab-correlaciones" onclick="cambiarVistaGerente('correlaciones')">🔬 Correlaciones</button>
 <button class="tab-btn" id="tab-graficos" onclick="cambiarVistaGerente('graficos')">📈 Gráficos</button>
+<button class="tab-btn" id="tab-origenes" onclick="cambiarVistaGerente('origenes', this)">🎯 Análisis Orígenes</button>
                 </div>
                 <div id="selection-controls" style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center; position: relative; z-index: 5;">
                     <button id="btn-toggle-select" class="btn" onclick="toggleSeleccionMultiAgente(this)">Seleccionar Varios</button>
@@ -3369,17 +3658,30 @@ function renderSignosVitalesGrid(kpiData, idAgente) {
     // 2. Obtener Histórico Correcto
     let hist = null;
     if (isTeam) {
-        if (typeof datosHistoricosCache !== 'undefined' && datosHistoricosCache.totales) {
-            // Mapeo para el equipo global
-            const t = datosHistoricosCache.totales;
-            hist = { 
-                gci: t.gci, citasCaptacion: t.citas, exclusivasVenta: t.exclusivas, 
-                captacionesAbierto: t.abierto, citasCompradores: t.citasComp,
-                exclusivasComprador: t.exclusivasComp, casasEnsenadas: t.visitas,
-                totalTransacciones: t.ventas
-            };
-        }
-    } else {
+    if (typeof datosHistoricosCache !== 'undefined' && datosHistoricosCache.totales) {
+        const t = datosHistoricosCache.totales;
+        hist = { 
+            gci: t.gci, 
+            citasCaptacion: t.citas, 
+            exclusivasVenta: t.exclusivas, 
+            captacionesAbierto: t.abierto, 
+            citasCompradores: t.citasComp,
+            exclusivasComprador: t.exclusivasComp, 
+            casasEnsenadas: t.visitas,
+            totalTransacciones: t.ventas,
+            llamadas: t.llamadas,
+            // 🆕 NUEVOS CAMPOS
+            captacionesAlquiler: t.captAlquiler,
+            leadVendedor: t.leadVendedor,
+            tresBs: t.tresBs,
+            bajadasPrecio: t.bajadasPrecio,
+            leadComprador: t.leadComprador,
+            propuestasCompra: t.propuestasCompra,
+            leadSeguimiento: t.leadSeguimiento,
+            arras: t.arras
+        };
+    }
+} else {
         if (typeof historialAgentesCache !== 'undefined' && historialAgentesCache[idAgente]) {
             // Histórico individual cargado desde el servidor
             hist = historialAgentesCache[idAgente];
@@ -3388,16 +3690,24 @@ function renderSignosVitalesGrid(kpiData, idAgente) {
 
     // 3. Mapeo de claves: (Nombre en KPI Actual) -> (Nombre en Histórico)
     const mapHistKeys = {
-        'gci': 'gci',
-        'citasCaptacion': 'citasCapt',
-        'exclusivasVenta': 'exclVenta',
-        'captacionesAbierto': 'captAbierto',
-        'citasCompradores': 'citasComp',
-        'exclusivasComprador': 'exclComp',
-        'casasEnsenadas': 'visitas',
-        'totalTransacciones': 'ventas',
-        'llamadas': 'llamadas'
-    };
+    'gci': 'gci',
+    'citasCaptacion': 'citas',
+    'exclusivasVenta': 'exclusivas',
+    'captacionesAbierto': 'abierto',
+    'citasCompradores': 'citasComp',
+    'exclusivasComprador': 'exclusivasComp',
+    'casasEnsenadas': 'visitas',
+    'totalTransacciones': 'ventas',
+    'llamadas': 'llamadas',
+    'captacionesAlquiler': 'captAlquiler',
+    'leadVendedor': 'leadVendedor',
+    'tresBs': 'tresBs',
+    'bajadasPrecio': 'bajadasPrecio',
+    'leadComprador': 'leadComprador',
+    'propuestasCompra': 'propuestasCompra',
+    'leadSeguimiento': 'leadSeguimiento',
+    'arras': 'arras'
+};
 
     Object.keys(kpiNames).forEach(key => {
         // Corrección para valores undefined o nulos
@@ -3595,6 +3905,8 @@ case 'arras':
         renderizarCorrelaciones(datosGlobales);
     } else if (vista === 'graficos') {
         renderizarGraficosGenerales();
+    } else if (vista === 'origenes') {
+        renderizarAnalisisOrigenes();
     }
 }
         
@@ -3682,17 +3994,121 @@ case 'arras':
         }
 
         function compararGrupoAgentes() {    
-            const selectedIds = Array.from(document.querySelectorAll('.agent-card-checkbox:checked')).map(cb => cb.dataset.agentId);
-            if (selectedIds.length < 2) {
-                // [REPARACIÓN C] Cambiado alert a mostrarError
-                mostrarError({ message: "Por favor, selecciona al menos dos agentes para comparar." });
-                return;
-            }
-            console.log("Comparando grupo de agentes:", selectedIds);
-            
-            const agentesAComparar = datosGlobales.filter(d => selectedIds.includes(d.id));
-            mostrarAnalisisComparativo(agentesAComparar);
+    const selectedIds = Array.from(document.querySelectorAll('.agent-card-checkbox:checked')).map(cb => cb.dataset.agentId);
+    if (selectedIds.length < 2) {
+        mostrarNotificacion("Selecciona al menos 2 agentes para comparar", "error");
+        return;
+    }
+    console.log("Comparando grupo de agentes:", selectedIds);
+    
+    const agentesAComparar = datosGlobales.filter(d => selectedIds.includes(d.id));
+    mostrarAnalisisComparativo(agentesAComparar);
+}
+
+function mostrarAnalisisComparativo(agentes) {
+    abrirModalEncima('modal-comparativa-agentes');
+    const container = document.getElementById('comparativa-content');
+    
+    container.innerHTML = '<div class="loading"><div class="loader"></div><p>Generando comparativa...</p></div>';
+    
+    const html = `
+        <div class="section-title">⚖️ Comparativa de ${agentes.length} Agentes</div>
+        
+        <div class="comparativa-grid" style="grid-template-columns: repeat(${Math.min(agentes.length, 3)}, 1fr);">
+            ${agentes.map(a => `
+                <div class="comparativa-card">
+                    <h3 style="text-align:center; color:var(--color-primary); margin-bottom:15px;">${a.agente}</h3>
+                    <div style="display:grid; gap:8px;">
+                        ${renderComparativaMetrica('💰 GCI', a.realizado.gci, '€')}
+                        ${renderComparativaMetrica('🤝 Transacciones', a.ratios.totalTransacciones, '')}
+                        ${renderComparativaMetrica('📞 Citas Capt.', a.realizado.citasCaptacion, '')}
+                        ${renderComparativaMetrica('🏠 Exclusivas', a.realizado.exclusivasVenta, '')}
+                        ${renderComparativaMetrica('📊 Cumplimiento', a.cumplimientoGlobal, '%')}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+        
+        <div class="charts-grid" style="margin-top:30px;">
+            <div class="chart-container" style="grid-column: 1 / -1;">
+                <div class="chart-title">📊 Comparativa GCI</div>
+                <canvas id="chart-comparativa-gci"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">📞 Actividad de Captación</div>
+                <canvas id="chart-comparativa-captacion"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">🏡 Actividad de Comprador</div>
+                <canvas id="chart-comparativa-comprador"></canvas>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+    
+    setTimeout(() => {
+        crearGraficosComparativos(agentes);
+    }, 100);
+}
+
+function renderComparativaMetrica(label, valor, unidad) {
+    return `
+        <div style="display:flex; justify-content:space-between; padding:8px; background:var(--color-surface); border-radius:8px;">
+            <span style="color:var(--color-text-faded); font-size:0.9em;">${label}</span>
+            <span style="font-weight:700; color:var(--color-text-primary);">${typeof valor === 'number' ? valor.toLocaleString('es-ES', {maximumFractionDigits:1}) : valor}${unidad}</span>
+        </div>
+    `;
+}
+
+function crearGraficosComparativos(agentes) {
+    // Gráfico GCI
+    new Chart(document.getElementById('chart-comparativa-gci'), {
+        type: 'bar',
+        data: {
+            labels: agentes.map(a => a.agente),
+            datasets: [{
+                label: 'GCI',
+                data: agentes.map(a => a.realizado.gci),
+                backgroundColor: 'rgba(34, 197, 94, 0.8)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } }
         }
+    });
+    
+    // Gráfico Captación
+    new Chart(document.getElementById('chart-comparativa-captacion'), {
+        type: 'radar',
+        data: {
+            labels: ['Citas', 'Exclusivas', 'Abierto'],
+            datasets: agentes.map((a, idx) => ({
+                label: a.agente,
+                data: [a.realizado.citasCaptacion, a.realizado.exclusivasVenta, a.realizado.captacionesAbierto],
+                borderColor: `hsl(${idx * 360 / agentes.length}, 70%, 50%)`,
+                backgroundColor: `hsla(${idx * 360 / agentes.length}, 70%, 50%, 0.2)`
+            }))
+        },
+        options: { responsive: true }
+    });
+    
+    // Gráfico Comprador
+    new Chart(document.getElementById('chart-comparativa-comprador'), {
+        type: 'radar',
+        data: {
+            labels: ['Citas Comp.', 'Visitas', 'Excl. Comp.'],
+            datasets: agentes.map((a, idx) => ({
+                label: a.agente,
+                data: [a.realizado.citasCompradores, a.realizado.casasEnsenadas, a.realizado.exclusivasComprador],
+                borderColor: `hsl(${idx * 360 / agentes.length}, 70%, 50%)`,
+                backgroundColor: `hsla(${idx * 360 / agentes.length}, 70%, 50%, 0.2)`
+            }))
+        },
+        options: { responsive: true }
+    });
+}
         
         // ===== PESTAÑAS GERENTE (CONSTRUIDAS) =====
         
@@ -4093,11 +4509,19 @@ function renderizarGraficosGenerales() {
         visitas: dataSegura.reduce((s, d) => s + (d.realizado.casasEnsenadas||0), 0)
     };
 
-    // 3. Datos Históricos (Total Año Anterior)
-    let histTotal = { gci:0, ventas:0, citasCapt:0, exclVenta:0, captAbierto:0, citasComp:0, exclComp:0, visitas:0 };
-    
-    // Comprobamos que historialAgentesCache existe antes de usarlo
-    if (typeof historialAgentesCache !== 'undefined' && historialAgentesCache) {
+    // 3. Datos Históricos (Total Año Anterior desde Facturación Pasada)
+let histTotal = { gci:0, ventas:0, citasCapt:0, exclVenta:0, captAbierto:0, citasComp:0, exclComp:0, visitas:0 };
+
+// PRIORIDAD 1: Usar Facturación Pasada (datos reales del año completo)
+if (datosHistoricosCache && datosHistoricosCache.totales) {
+    histTotal.gci = datosHistoricosCache.totales.gci || 0;
+    histTotal.ventas = datosHistoricosCache.totales.ventas || 0;
+    histTotal.citasCapt = datosHistoricosCache.totales.citas || 0;
+    histTotal.exclVenta = datosHistoricosCache.totales.exclusivas || 0;
+    console.log('✅ Usando Facturación Pasada para historial 2024:', histTotal);
+}
+// FALLBACK: Usar historial mensual agregado
+else if (typeof historialAgentesCache !== 'undefined' && historialAgentesCache) {
          Object.values(historialAgentesCache).forEach(h => {
             histTotal.gci += h.gci||0; histTotal.ventas += h.ventas||0;
             histTotal.citasCapt += h.citasCapt||0; histTotal.exclVenta += h.exclVenta||0;
@@ -4152,49 +4576,99 @@ function renderizarGraficosGenerales() {
         </div>
 
         <div class="charts-grid">
-            <div class="chart-container" style="grid-column: 1 / -1; height: 450px;">
-                <div class="chart-title">📊 Volumen YTD: 2025 vs 2024</div>
-                <canvas id="chart-yoy-completo"></canvas>
-            </div>
-            <div class="chart-container" style="grid-column: 1 / -1; height: 500px;">
-                <div class="chart-title">🧠 Matriz de Talento</div>
-                <canvas id="chart-skill-will"></canvas>
-            </div>
-        </div>
+    <div class="chart-container" style="grid-column: 1 / -1; height: 450px;">
+        <div class="chart-title">📊 Volumen YTD: 2025 vs 2024</div>
+        <canvas id="chart-yoy-completo"></canvas>
+    </div>
+</div>
 
-        <div class="section-title">🔍 Análisis Operativo</div>
-        <div class="charts-grid">
-             <div class="chart-container"><div class="chart-title">💰 Distribución GCI</div><canvas id="chart-gci"></canvas></div>
-             <div class="chart-container"><div class="chart-title">📊 Cumplimiento</div><canvas id="chart-cumplimiento"></canvas></div>
-             <div class="chart-container"><div class="chart-title">🎯 Conversión</div><canvas id="chart-conversion"></canvas></div>
-             <div class="chart-container"><div class="chart-title">🏠 Mix Propiedades</div><canvas id="chart-exclusivas"></canvas></div>
-        </div>
+<div class="section-title">🏆 Análisis de Talento y Productividad</div>
+<div class="charts-grid">
+    <div class="chart-container" style="height: 450px;">
+        <div class="chart-title">🧠 Matriz de Talento (Skill vs Will)</div>
+        <canvas id="chart-skill-will"></canvas>
+    </div>
+    <div class="chart-container" style="height: 450px;">
+        <div class="chart-title">⚡ Top 10 GCI</div>
+        <canvas id="chart-productividad"></canvas>
+    </div>
+</div>
+
+<div class="section-title">📈 Evolución Temporal</div>
+<div class="charts-grid">
+    <div class="chart-container" style="grid-column: 1 / -1; height: 400px;">
+        <div class="chart-title">📞 Evolución Mensual: Citas Captación</div>
+        <canvas id="chart-evolucion-citas"></canvas>
+    </div>
+    <div class="chart-container" style="grid-column: 1 / -1; height: 400px;">
+        <div class="chart-title">🏡 Evolución Mensual: Casas Enseñadas</div>
+        <canvas id="chart-evolucion-visitas"></canvas>
+    </div>
+</div>
+
+<div class="section-title">🔍 Análisis Operativo</div>
+<div class="charts-grid">
+     <div class="chart-container"><div class="chart-title">💰 Distribución GCI por Agente</div><canvas id="chart-gci"></canvas></div>
+     <div class="chart-container"><div class="chart-title">📊 Cumplimiento por Agente</div><canvas id="chart-cumplimiento"></canvas></div>
+     <div class="chart-container"><div class="chart-title">🎯 Tasas de Conversión</div><canvas id="chart-conversion"></canvas></div>
+     <div class="chart-container"><div class="chart-title">🏠 Mix Exclusivas vs Abierto</div><canvas id="chart-exclusivas"></canvas></div>
+</div>
+
+<div class="section-title">🎭 Análisis de Actividad</div>
+<div class="charts-grid">
+    <div class="chart-container" style="height: 400px;">
+        <div class="chart-title">🔥 Velocidad de Captación (Citas/Exclusivas)</div>
+        <canvas id="chart-velocidad-captacion"></canvas>
+    </div>
+    <div class="chart-container" style="height: 400px;">
+        <div class="chart-title">⚖️ Balance Vendedor vs Comprador</div>
+        <canvas id="chart-balance-roles"></canvas>
+    </div>
+    <div class="chart-container" style="height: 400px;">
+        <div class="chart-title">📈 Eficiencia Visitas → GCI</div>
+        <canvas id="chart-eficiencia-visitas"></canvas>
+    </div>
+    <div class="chart-container" style="height: 400px;">
+        <div class="chart-title">🎯 Top 5 Mejores Ratios</div>
+        <canvas id="chart-top-ratios"></canvas>
+    </div>
+</div>
     `;
     container.innerHTML = html;
     
     setTimeout(() => {
-        crearGraficoYoYCompleto(act, meta);
-        crearGraficoSkillWill();
-        crearGraficoGCI();
-        crearGraficoCumplimiento();
-        crearGraficoConversion();
-        crearGraficoExclusivas();
-    }, 300);
+    crearGraficoYoYCompleto(act, meta);
+    crearGraficoSkillWill();
+    crearGraficoProductividad();
+    crearGraficoEvolucionCitas();
+    crearGraficoEvolucionVisitas();
+    crearGraficoGCI();
+    crearGraficoCumplimiento();
+    crearGraficoConversion();
+    crearGraficoExclusivas();
+    crearGraficoVelocidadCaptacion();
+    crearGraficoBalanceRoles();
+    crearGraficoEficienciaVisitas();
+    crearGraficoTopRatios();
+}, 300);
 }
 
 // Helper para tarjeta pequeña
 function renderMiniGrowthCard(titulo, act, meta, unit) {
     const diff = act - meta;
     const pct = meta > 0 ? ((diff / meta) * 100) : 100;
-    const color = diff >= 0 ? '#00ff88' : '#ff4444';
+    const color = diff >= 0 ? 'var(--color-accent-good)' : 'var(--color-accent-bad)';
     const icon = diff >= 0 ? '⬆' : '⬇';
     
     return `
-    <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px; text-align:center;">
-        <div style="font-size:0.7em; color:#888; text-transform:uppercase;">${titulo}</div>
-        <div style="font-size:1.2em; font-weight:800; color:#fff; margin:5px 0;">${Math.round(act).toLocaleString()}${unit}</div>
-        <div style="font-size:0.8em; color:${color}; font-weight:bold;">
-            ${icon} ${Math.abs(pct).toFixed(0)}% <span style="color:#666; font-weight:normal;">(vs ${Math.round(meta).toLocaleString()})</span>
+    <div style="background:var(--color-surface); border:1px solid var(--color-border); border-radius:10px; padding:12px; text-align:center;">
+        <div style="font-size:0.75em; color:var(--color-text-faded); text-transform:uppercase; font-weight:600;">${titulo}</div>
+        <div style="font-size:1.4em; font-weight:900; color:var(--color-text-primary); margin:8px 0;">${Math.round(act).toLocaleString()}${unit}</div>
+        <div style="font-size:0.85em; color:${color}; font-weight:700;">
+            ${icon} ${Math.abs(pct).toFixed(0)}%
+        </div>
+        <div style="font-size:0.7em; color:var(--color-text-faded); margin-top:4px;">
+            vs ${Math.round(meta).toLocaleString()}${unit}
         </div>
     </div>`;
 }
@@ -4524,6 +4998,7 @@ function mostrarAnalisisDetallado(idAgente) {
              <div class="chart-title">📊 Comparativa Completa (Ponderada)</div>
              <canvas id="chart-agente-comparativa"></canvas>
         </div>
+        
     `;
     
     abrirModalEncima('modal-analisis');
@@ -4784,29 +5259,44 @@ function mostrarAnalisisEquipo(kpiKey) {
     console.log('   Realizado:', realizadoTotal);
     console.log('   Objetivo:', objetivoTotal);
     
-    // ✅ 2. HISTÓRICO AÑO ANTERIOR
-    let historicoRef = new Array(12).fill(0);
-    
-    if (window.datosHistoricos2024 && window.datosHistoricos2024[kpiKey]) {
-        historicoRef = window.datosHistoricos2024[kpiKey].realizado || new Array(12).fill(0);
-        console.log('📊 Histórico 2024:', historicoRef);
-    } 
-    else if (datosHistoricosCache && datosHistoricosCache.totales) {
-         const mapKeys = {
-            'gci': 'gci', 'citasCaptacion': 'citas', 'exclusivasVenta': 'exclusivas',
-            'captacionesAbierto': 'abierto', 'citasCompradores': 'citasComp', 
-            'exclusivasComprador': 'exclusivasComp', 'casasEnsenadas': 'visitas', 
-            'totalTransacciones': 'ventas', 'llamadas': 'llamadas',
-            'leadsCompradores': 'leadsComp', 'volumenNegocio': 'volumen'
-         };
-         const histKey = mapKeys[kpiKey];
+    // ✅ 2. HISTÓRICO AÑO ANTERIOR (Prioridad: Facturación Pasada)
+let historicoRef = new Array(12).fill(0);
 
-         if (datosHistoricosCache.totales[histKey]) {
-             const val = datosHistoricosCache.totales[histKey] / 12;
-             historicoRef = new Array(12).fill(val);
-             console.log('📊 Promedio 2024:', val);
-         }
+if (datosHistoricosCache && datosHistoricosCache.totales) {
+    // ✅ USAR FACTURACIÓN PASADA (tiene prioridad)
+    const mapKeys = {
+        'gci': 'gci', 
+        'citasCaptacion': 'citas', 
+        'exclusivasVenta': 'exclusivas',
+        'captacionesAbierto': 'abierto', 
+        'citasCompradores': 'citasComp', 
+        'exclusivasComprador': 'exclusivasComp', 
+        'casasEnsenadas': 'visitas', 
+        'totalTransacciones': 'ventas', 
+        'llamadas': 'llamadas',
+        'captacionesAlquiler': 'captAlquiler',
+        'leadVendedor': 'leadVendedor',
+        'tresBs': 'tresBs',
+        'bajadasPrecio': 'bajadasPrecio',
+        'leadComprador': 'leadComprador',
+        'propuestasCompra': 'propuestasCompra',
+        'leadSeguimiento': 'leadSeguimiento',
+        'arras': 'arras'
+    };
+    
+    const histKey = mapKeys[kpiKey];
+
+    if (histKey && datosHistoricosCache.totales[histKey]) {
+        const val = datosHistoricosCache.totales[histKey] / 12;
+        historicoRef = new Array(12).fill(val);
+        console.log('📊 Usando Facturación Pasada (promedio mensual):', val);
     }
+} 
+else if (window.datosHistoricos2024 && window.datosHistoricos2024[kpiKey]) {
+    // ✅ FALLBACK: Usar Historico_Agentes si no hay Facturación Pasada
+    historicoRef = window.datosHistoricos2024[kpiKey].realizado || new Array(12).fill(0);
+    console.log('📊 Usando Historico_Agentes 2024:', historicoRef);
+}
 
     // 3. CALCULAR TOTAL ACUMULADO
     const sumaTotal = realizadoTotal.reduce((a,b)=>a+b,0);
@@ -4909,26 +5399,35 @@ function mostrarAnalisisEquipo(kpiKey) {
         // ===== VISTA AGENTE (REPARADA) =====
         // ===================================
         
-        function poblarSelectorAgentes(agentes) {
-            console.log('👥 Agentes recibidos:', agentes);
-            // [REPARACIÓN] Guardar los datos globales aquí si aún no existen
-            if (datosGlobales.length === 0) {
-                 datosGlobales = agentes.map(a => ({ id: a.id, agente: a.nombre, ...a }));
+        function poblarSelectorAgentes(selectId) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    
+    // Limpiar opciones existentes excepto la primera (placeholder)
+    const firstOption = select.querySelector('option:first-child');
+    select.innerHTML = '';
+    if (firstOption) select.appendChild(firstOption);
+    
+    // Cargar agentes
+    google.script.run
+        .withSuccessHandler(function(agentes) {
+            if (!agentes || agentes.length === 0) {
+                console.warn('No se encontraron agentes');
+                return;
             }
             
-            const selects = document.querySelectorAll('.agent-select, #agent-select, #actividad-agente-select, #objetivos-agente-select, #tx-agente-select');
-            if (selects.length === 0) return;
-            
-            selects.forEach(select => {
-                select.innerHTML = '<option value="">-- Selecciona tu nombre --</option>';
-                agentes.forEach(agente => {
-                    const option = document.createElement('option');
-                    option.value = agente.id; // Usar ID como valor
-                    option.textContent = agente.nombre;
-                    select.appendChild(option);
-                });
+            agentes.forEach(agente => {
+                const option = document.createElement('option');
+                option.value = agente[0]; // ID
+                option.textContent = agente[1]; // Nombre
+                select.appendChild(option);
             });
-        }
+        })
+        .withFailureHandler(function(error) {
+            console.error('Error cargando agentes:', error);
+        })
+        .obtenerListaAgentes();
+}
         
         function seleccionarAgente() {
             const select = document.getElementById('agent-select');
@@ -5043,30 +5542,79 @@ function mostrarAnalisisEquipo(kpiKey) {
                     ${renderSignosVitalesGrid(agenteKpiData, agenteActual.id)}
                 </div>
                 
-                <div class="section-title">📉 Evolución Mensual</div>
-                <div class="charts-grid">
-                    <div class="chart-container" style="height: 400px; grid-column: 1 / -1;">
-                        <div class="chart-title">GCI vs Objetivo</div>
-                        <canvas id="agent-gci-chart"></canvas>
-                    </div>
-                </div>
-
-                <div class="section-title">📅 Pendientes y Proyección</div>
-                <div class="comparativa-grid">
-                    ${renderPendientesCard('semana', datosAgenteCompletos)}
-                    ${renderPendientesCard('mes', datosAgenteCompletos)}
-                    ${renderPendientesCard('ano', datosAgenteCompletos)}
-                </div>
+               <div class="section-title">📉 Evolución Mensual</div>
+<div class="charts-grid">
+    <div class="chart-container" style="height: 400px; grid-column: 1 / -1;">
+        <div class="chart-title">💰 GCI vs Objetivo</div>
+        <canvas id="agent-gci-chart"></canvas>
+    </div>
+    <div class="chart-container" style="height: 350px;">
+        <div class="chart-title">📞 Citas Captación</div>
+        <canvas id="agent-citas-chart"></canvas>
+    </div>
+    <div class="chart-container" style="height: 350px;">
+        <div class="chart-title">🏠 Exclusivas Venta</div>
+        <canvas id="agent-exclusivas-chart"></canvas>
+    </div>
+    <div class="chart-container" style="height: 350px;">
+        <div class="chart-title">🏡 Casas Enseñadas</div>
+        <canvas id="agent-visitas-chart"></canvas>
+    </div>
+    <div class="chart-container" style="height: 350px;">
+        <div class="chart-title">📊 Actividad Total</div>
+        <canvas id="agent-actividad-chart"></canvas>
+    </div>
+</div>
             `;
             container.innerHTML = html;    
             
             // Renderizar el gráfico
             setTimeout(() => {
-                const evolucion = datosAgenteCompletos.evolucionMensual;
-                if (evolucion && evolucion.gci) {
-                    crearGraficoDetalle('agent-gci-chart', evolucion.labels, evolucion.gci.realizado, evolucion.gci.objetivo, 'GCI Realizado', 'Objetivo GCI');
-                }
-            }, 100);
+    const evolucion = datosAgenteCompletos.evolucionMensual;
+    if (evolucion) {
+        // Gráfico GCI
+        if (evolucion.gci) {
+            crearGraficoDetalle('agent-gci-chart', evolucion.labels, 
+                evolucion.gci.realizado, evolucion.gci.objetivo, 
+                'GCI Realizado', 'Objetivo GCI');
+        }
+        
+        // Gráfico Citas
+        if (evolucion.citasCaptacion) {
+            crearGraficoDetalle('agent-citas-chart', evolucion.labels, 
+                evolucion.citasCaptacion.realizado, evolucion.citasCaptacion.objetivo, 
+                'Citas Realizadas', 'Objetivo');
+        }
+        
+        // Gráfico Exclusivas
+        if (evolucion.exclusivasVenta) {
+            crearGraficoDetalle('agent-exclusivas-chart', evolucion.labels, 
+                evolucion.exclusivasVenta.realizado, evolucion.exclusivasVenta.objetivo, 
+                'Exclusivas', 'Objetivo');
+        }
+        
+        // Gráfico Visitas
+        if (evolucion.casasEnsenadas) {
+            crearGraficoDetalle('agent-visitas-chart', evolucion.labels, 
+                evolucion.casasEnsenadas.realizado, evolucion.casasEnsenadas.objetivo, 
+                'Visitas', 'Objetivo');
+        }
+        
+        // Gráfico Actividad Total
+        const actividadRealizado = evolucion.citasCaptacion?.realizado.map((c, i) => 
+            (c || 0) + (evolucion.exclusivasVenta?.realizado[i] || 0) + (evolucion.casasEnsenadas?.realizado[i] || 0)
+        );
+        const actividadObjetivo = evolucion.citasCaptacion?.objetivo.map((c, i) => 
+            (c || 0) + (evolucion.exclusivasVenta?.objetivo[i] || 0) + (evolucion.casasEnsenadas?.objetivo[i] || 0)
+        );
+        
+        if (actividadRealizado && actividadObjetivo) {
+            crearGraficoDetalle('agent-actividad-chart', evolucion.labels, 
+                actividadRealizado, actividadObjetivo, 
+                'Actividad Total', 'Objetivo Total');
+        }
+    }
+}, 100);
         }
         
         function renderPendientesCard(periodoKey, datos) {
@@ -5175,37 +5723,62 @@ gci: parseFloat(document.getElementById('form-gci').value) || 0,
         }
 
         function poblarSelectAgentes(selectId) {
-            const select = document.getElementById(selectId);
-            if (!select) return;
+    const select = document.getElementById(selectId);
+    if (!select) {
+        console.error(`Select ${selectId} no encontrado`);
+        return;
+    }
+    
+    const esMultiple = select.multiple;
+    
+    // CASO 1: Si ya tenemos datosGlobales cargados (vista gerente activa)
+    if (datosGlobales && datosGlobales.length > 0) {
+        select.innerHTML = esMultiple ? '' : '<option value="">-- Elige un agente --</option>';
+        
+        datosGlobales.forEach(agente => {
+            const nombre = agente.nombre || agente.agente || 'Agente Desconocido';
+            const option = document.createElement('option');
+            option.value = agente.id;
+            option.textContent = nombre;
+            select.appendChild(option);
+        });
+        
+        console.log(`✅ ${datosGlobales.length} agentes cargados en ${selectId} desde datosGlobales`);
+        return;
+    }
+    
+    // CASO 2: No tenemos datosGlobales, llamar al backend
+    select.disabled = true;
+    select.innerHTML = '<option>Cargando agentes...</option>';
+    
+    google.script.run
+        .withSuccessHandler(function(agentes) {
+            select.disabled = false;
             
-            // Usar datosGlobales si está en vista Gerente, o poblar desde la lista de agentes si está en Login/Agente
-            const listaAgentes = datosGlobales.length > 0 ? datosGlobales : (agenteActual ? [agenteActual] : []);
-            
-            const esMultiple = select.multiple;
-            select.innerHTML = esMultiple ? '' : '<option value="">-- Elige un agente --</option>';
-            
-            // Si no se han cargado los datos del gerente, intenta cargarlos (fallará si no ha iniciado sesión)
-            if (datosGlobales.length === 0 && document.getElementById('view-manager').classList.contains('active')) {
-                google.script.run
-                    .withSuccessHandler(function(agentes) {
-                        if (agentes) {
-                            datosGlobales = agentes.map(a => ({ id: a.id, agente: a.nombre, ...a })); // Formato para ser consistente
-                            poblarSelectAgentes(selectId); // Recarga el select después de obtener los datos
-                        }
-                    })
-                    .withFailureHandler(function(error) {
-                        console.warn("No se pudo obtener la lista de agentes para los modales:", error);
-                    })
-                    .obtenerListaAgentes(); 
+            if (!agentes || agentes.length === 0) {
+                select.innerHTML = '<option value="">❌ No hay agentes</option>';
+                console.warn('No se encontraron agentes');
                 return;
             }
-
-            listaAgentes.forEach(agente => {
-                // Asegurar que el objeto agente tenga 'agente' o 'nombre'
-                const nombre = agente.agente || agente.nombre || 'Agente Desconocido'; 
-                select.innerHTML += `<option value="${agente.id}">${nombre}</option>`;    
+            
+            select.innerHTML = esMultiple ? '' : '<option value="">-- Elige un agente --</option>';
+            
+            agentes.forEach(agente => {
+                const option = document.createElement('option');
+                option.value = agente[0]; // ID
+                option.textContent = agente[1]; // Nombre
+                select.appendChild(option);
             });
-        }
+            
+            console.log(`✅ ${agentes.length} agentes cargados en ${selectId} desde backend`);
+        })
+        .withFailureHandler(function(error) {
+            select.disabled = false;
+            select.innerHTML = '<option value="">❌ Error al cargar</option>';
+            console.error('Error cargando agentes:', error);
+        })
+        .obtenerListaAgentes();
+}
         
         function mostrarModalTransaccion() {
             
@@ -5221,6 +5794,16 @@ gci: parseFloat(document.getElementById('form-gci').value) || 0,
             agentesParaTransaccion = [];
             renderListaAgentesTx();
             actualizarGCIRestante();
+             // 🆕 CARGAR ORÍGENES EN EL SELECT
+    google.script.run
+        .withSuccessHandler(function(origenes) {
+            const select = document.getElementById('tx-origen-lead');
+            select.innerHTML = '<option value="">-- Seleccionar origen --</option>';
+            origenes.forEach(origen => {
+                select.innerHTML += `<option value="${origen}">${origen}</option>`;
+            });
+        })
+        .obtenerOrigenesNegocio();
         }
         
         function mostrarModalActividad() {
@@ -5365,23 +5948,31 @@ function mostrarModalRentabilidad() {
     const lado = document.getElementById('tx-lado-select').value;
     const gciParcial = parseFloat(document.getElementById('tx-gci-parcial').value) || 0;
     
+    // 🆕 CAPTURAR NUEVOS CAMPOS
+    const tipoCaptacion = document.getElementById('tx-tipo-captacion').value;
+    const origenLead = document.getElementById('tx-origen-lead').value;
+    
     // Capturar comisión
-const comisionPct = parseFloat(document.getElementById('tx-comision-pct').value) || 40;
-const comisionImporte = parseFloat(document.getElementById('tx-comision-importe').value) || 0;
+    const comisionPct = parseFloat(document.getElementById('tx-comision-pct').value) || 40;
+    const comisionImporte = parseFloat(document.getElementById('tx-comision-importe').value) || 0;
 
-if (!id) { mostrarError({ message: 'Por favor, selecciona un agente.' }); return; }
-if (gciParcial <= 0) { mostrarError({ message: 'GCI debe ser mayor que 0.' }); return; }
+    if (!id) { mostrarError({ message: 'Por favor, selecciona un agente.' }); return; }
+    if (gciParcial <= 0) { mostrarError({ message: 'GCI debe ser mayor que 0.' }); return; }
+    if (!origenLead) { mostrarError({ message: 'Por favor, selecciona el origen del lead.' }); return; }
 
-// Añadir al array con los nuevos datos
-agentesParaTransaccion.push({ 
-    id, 
-    nombre, 
-    lado, 
-    gci: gciParcial,
-    comisionPct: comisionPct,
-    comisionImporte: comisionImporte,
-    campoModificado: window.ultimoCampoComisionTx || 'pct'
-});
+    // Añadir al array con los nuevos datos
+    agentesParaTransaccion.push({ 
+        id, 
+        nombre, 
+        lado, 
+        gci: gciParcial,
+        comisionPct: comisionPct,
+        comisionImporte: comisionImporte,
+        campoModificado: window.ultimoCampoComisionTx || 'pct',
+        // 🆕 NUEVOS CAMPOS
+        tipoCaptacion: tipoCaptacion,
+        origenLead: origenLead
+    });
 
     renderListaAgentesTx();
     actualizarGCIRestante();
@@ -5389,7 +5980,7 @@ agentesParaTransaccion.push({
     // Resetear campos
     select.value = '';
     document.getElementById('tx-gci-parcial').value = '';
-    // document.getElementById('tx-comision-pct').value = '40'; // Opcional: resetear al default
+    document.getElementById('tx-origen-lead').value = '';
 }
         function renderListaAgentesTx() {
             const container = document.getElementById('transaccion-agentes-lista');
@@ -6805,103 +7396,97 @@ function mostrarModalFacturacionPasada() {
         .obtenerOrigenesNegocio();
 }
 
-// ============================================
-// FUNCIÓN AUXILIAR: Cargar datos históricos
-// ============================================
-// ============================================
-// FUNCIÓN AUXILIAR: Cargar datos históricos
-// ============================================
 function cargarDatosHistoricosFacturacion() {
-    google.script.run.withSuccessHandler(json => {
-        if(json) {
-            const data = JSON.parse(json);
-            datosHistoricosCache = data;
-            const t = data.totales || {};
+    if (!datosHistoricosCache || !datosHistoricosCache.totales) {
+        console.log('⚠️ No hay datos históricos en cache');
+        return;
+    }
+    
+    const t = datosHistoricosCache.totales;
+    console.log('📊 Cargando Facturación Pasada:', t);
+    
+    // ORIGINALES
+    document.getElementById('hist-citas').value = t.citas || 0;
+    document.getElementById('hist-exclusivas').value = t.exclusivas || 0;
+    document.getElementById('hist-abierto').value = t.abierto || 0;
+    document.getElementById('hist-citas-comp').value = t.citasComp || 0;
+    document.getElementById('hist-visitas').value = t.visitas || 0;
+    document.getElementById('hist-exclusivas-comp').value = t.exclusivasComp || 0;
+    document.getElementById('hist-llamadas').value = t.llamadas || 0;
+    
+    // 🆕 NUEVOS CAMPOS
+    document.getElementById('hist-capt-alquiler').value = t.captAlquiler || 0;
+    document.getElementById('hist-lead-vendedor').value = t.leadVendedor || 0;
+    document.getElementById('hist-3bs').value = t.tresBs || 0;
+    document.getElementById('hist-bajadas-precio').value = t.bajadasPrecio || 0;
+    document.getElementById('hist-lead-comprador').value = t.leadComprador || 0;
+    document.getElementById('hist-propuestas-compra').value = t.propuestasCompra || 0;
+    document.getElementById('hist-lead-seguimiento').value = t.leadSeguimiento || 0;
+    document.getElementById('hist-arras').value = t.arras || 0;
+    
+    // FINALES
+    document.getElementById('hist-ventas').value = t.ventas || 0;
+    document.getElementById('hist-gci').value = t.gci || 0;
+    
+    // FUENTES
+    if (datosHistoricosCache.fuentes && Array.isArray(datosHistoricosCache.fuentes)) {
+        datosHistoricosCache.fuentes.forEach((fuente, idx) => {
+            const captInput = document.getElementById(`fp-origen-${idx}-capt`);
+            const gciInput = document.getElementById(`fp-origen-${idx}-gci`);
             
-            // Rellenar campos de totales si existen
-            if(document.getElementById('hist-citas')) document.getElementById('hist-citas').value = t.citas || 0;
-            if(document.getElementById('hist-exclusivas')) document.getElementById('hist-exclusivas').value = t.exclusivas || 0;
-            if(document.getElementById('hist-ventas')) document.getElementById('hist-ventas').value = t.ventas || 0;
-            if(document.getElementById('hist-gci')) document.getElementById('hist-gci').value = t.gci || 0;
-            
-            // ============================================
-            // MEJORA 2: Cargar las 19 partidas desde el array
-            // ============================================
-            if (Array.isArray(data.fuentes)) {
-                // Nuevo formato: array de 19 elementos
-                data.fuentes.forEach((fuente, idx) => {
-                    const captInput = document.getElementById(`fp-origen-${idx}-capt`);
-                    const gciInput = document.getElementById(`fp-origen-${idx}-gci`);
-                    
-                    if (captInput) captInput.value = fuente.capt || 0;
-                    if (gciInput) gciInput.value = fuente.gci || 0;
-                });
-            } else {
-                // Formato antiguo: objeto con 5 claves (ei, ref, bd, pros, port)
-                // Mapear a las nuevas posiciones
-                const mapeoFuentesAntiguas = {
-                    'ei': 1,    // Esfera de Influencia
-                    'ref': 6,   // Referidos de Clientes Antiguos
-                    'bd': 1,    // Base de Datos → Esfera de Influencia
-                    'pros': 3,  // Prospección → Farming
-                    'port': 16  // Portales → Idealistas
-                };
-                
-                ['ei','ref','bd','pros','port'].forEach(f => {
-                    const posicion = mapeoFuentesAntiguas[f];
-                    const captAntiguo = data.fuentes?.[f]?.capt || 0;
-                    const gciAntiguo = data.fuentes?.[f]?.gci || 0;
-                    
-                    const elCapt = document.getElementById(`fp-origen-${posicion}-capt`);
-                    const elGci = document.getElementById(`fp-origen-${posicion}-gci`);
-                    
-                    if (elCapt && captAntiguo > 0) {
-                        elCapt.value = (parseFloat(elCapt.value) || 0) + captAntiguo;
-                    }
-                    if (elGci && gciAntiguo > 0) {
-                        elGci.value = (parseFloat(elGci.value) || 0) + gciAntiguo;
-                    }
-                });
-            }
-            
-            // Recalcular porcentajes
-            if(typeof calcularPorcentajesFuentes === 'function') calcularPorcentajesFuentes();
-        }
-    }).obtenerDatosHistoricosJSON();
+            if (captInput) captInput.value = fuente.capt || 0;
+            if (gciInput) gciInput.value = fuente.gci || 0;
+        });
+        
+        calcularPorcentajesFuentes();
+    }
+    
+    console.log('✅ Datos históricos cargados en el formulario');
 }
 
 function guardarDatosHistoricos() {
     const datos = {
         totales: {
+            // ORIGINALES
             citas: parseFloat(document.getElementById('hist-citas')?.value)||0,
             exclusivas: parseFloat(document.getElementById('hist-exclusivas')?.value)||0,
             abierto: parseFloat(document.getElementById('hist-abierto')?.value)||0,
             citasComp: parseFloat(document.getElementById('hist-citas-comp')?.value)||0,
             visitas: parseFloat(document.getElementById('hist-visitas')?.value)||0,
             exclusivasComp: parseFloat(document.getElementById('hist-exclusivas-comp')?.value)||0,
+            llamadas: parseFloat(document.getElementById('hist-llamadas')?.value)||0,
+            
+            // 🆕 NUEVOS CAMPOS
+            captAlquiler: parseFloat(document.getElementById('hist-capt-alquiler')?.value)||0,
+            leadVendedor: parseFloat(document.getElementById('hist-lead-vendedor')?.value)||0,
+            tresBs: parseFloat(document.getElementById('hist-3bs')?.value)||0,
+            bajadasPrecio: parseFloat(document.getElementById('hist-bajadas-precio')?.value)||0,
+            leadComprador: parseFloat(document.getElementById('hist-lead-comprador')?.value)||0,
+            propuestasCompra: parseFloat(document.getElementById('hist-propuestas-compra')?.value)||0,
+            leadSeguimiento: parseFloat(document.getElementById('hist-lead-seguimiento')?.value)||0,
+            arras: parseFloat(document.getElementById('hist-arras')?.value)||0,
+            
+            // FINALES
             ventas: parseFloat(document.getElementById('hist-ventas')?.value)||0,
             gci: parseFloat(document.getElementById('hist-gci')?.value)||0
         },
-        fuentes: []  // ← CAMBIO: Ahora es un array en lugar de objeto
+        fuentes: []
     };
     
-    // ============================================
-    // MEJORA 2: Leer las 19 partidas dinámicas (índices 0-18)
-    // ============================================
+    // Leer las 19 partidas dinámicas
     for (let i = 0; i < 19; i++) {
-        const captInput = document.getElementById(`fp-origen-${i}-capt`);
-        const gciInput = document.getElementById(`fp-origen-${i}-gci`);
+        const captInput = document.getElementById(`fp-origen-${i}-capt`);  // ✅ Añadido (
+        const gciInput = document.getElementById(`fp-origen-${i}-gci`);    // ✅ Añadido (
         
         datos.fuentes.push({
             capt: captInput ? parseFloat(captInput.value) || 0 : 0,
             gci: gciInput ? parseFloat(gciInput.value) || 0 : 0
         });
     }
-
+    
     google.script.run.withSuccessHandler(() => {
-        mostrarNotificacion("✅ Histórico Guardado");
+        mostrarNotificacion("✅ Histórico Guardado", "success");
         datosHistoricosCache = datos; 
-        // Si estamos en la pestaña gráficos, recargar para ver cambios
         if(vistaActualGerente === 'graficos') renderizarGraficosGenerales();
     }).guardarDatosHistoricosJSON(JSON.stringify(datos));
 }
@@ -8211,6 +8796,635 @@ function analizarCorrelacionPersonalizada() {
         })
         .obtenerDatosCorrelacion(filtros);
 }
+function renderizarAnalisisOrigenes() {
+    const container = document.getElementById('vistaContenido');
+    
+    // Mostrar loading
+    container.innerHTML = '<div style="text-align:center; padding:50px;"><div class="loading-spinner"></div><p>Cargando análisis de orígenes...</p></div>';
+    
+    // Cargar datos del backend
+    google.script.run
+        .withSuccessHandler(function(origenes2025) {
+            console.log('📊 Orígenes 2025:', origenes2025);
+            
+            // Obtener datos históricos (Facturación Pasada)
+            const origenes2024 = [];
+            if (datosHistoricosCache && datosHistoricosCache.fuentes && Array.isArray(datosHistoricosCache.fuentes)) {
+                const nombresOrigenes = [
+                    'SOI (Esfera de Influencia)', 'Base de Datos Propia', 'Networking / Eventos',
+                    'Redes Sociales Orgánicas', 'Publicidad Online (Google/Meta Ads)',
+                    'Portales Inmobiliarios (Idealista, Fotocasa)', 'Cartelería / Señalética',
+                    'Visitas Puerta Fría', 'Referidos de Clientes', 'Referidos de Colaboradores KW',
+                    'Referidos Externos (Otros profesionales)', 'Open Houses',
+                    'Campañas de Email Marketing', 'Colaboraciones con Empresas',
+                    'Programas de Fidelización', 'Ferias / Exposiciones',
+                    'Prensa / Medios Tradicionales', 'Otros'
+                ];
+                
+                datosHistoricosCache.fuentes.forEach((fuente, idx) => {
+                    origenes2024.push({
+                        nombre: nombresOrigenes[idx],
+                        captaciones: fuente.capt || 0,
+                        gci: fuente.gci || 0
+                    });
+                });
+            }
+            
+            console.log('📊 Orígenes 2024:', origenes2024);
+            
+            // Calcular totales
+            const totales2025 = {
+                capt: origenes2025.reduce((s, o) => s + o.captaciones, 0),
+                gci: origenes2025.reduce((s, o) => s + o.gci, 0)
+            };
+            
+            const totales2024 = {
+                capt: origenes2024.reduce((s, o) => s + o.captaciones, 0),
+                gci: origenes2024.reduce((s, o) => s + o.gci, 0)
+            };
+            
+            const crecimientoCapt = totales2024.capt > 0 
+                ? ((totales2025.capt - totales2024.capt) / totales2024.capt * 100).toFixed(1)
+                : '-';
+            
+            const crecimientoGCI = totales2024.gci > 0
+                ? ((totales2025.gci - totales2024.gci) / totales2024.gci * 100).toFixed(1)
+                : '-';
+            
+            const colorCapt = crecimientoCapt >= 0 ? 'var(--color-accent-good)' : 'var(--color-accent-bad)';
+            const colorGCI = crecimientoGCI >= 0 ? 'var(--color-accent-good)' : 'var(--color-accent-bad)';
+            
+            // Renderizar HTML
+            const html = `
+    <div style="background: linear-gradient(135deg, rgba(102,126,234,0.2), rgba(255,107,107,0.2)); padding: 30px; border-radius: 20px; margin-bottom: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <div>
+                <h2 style="font-size: 2em; margin: 0; color: var(--color-text-primary);">🎯 Análisis de Orígenes</h2>
+                <p style="color: var(--color-text-faded); margin: 5px 0 0 0;">Descubre de dónde viene tu negocio</p>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div style="text-align: center; padding: 15px 25px; background: rgba(0,0,0,0.3); border-radius: 12px;">
+                    <div style="font-size: 0.85em; color: #aaa;">AÑO ACTUAL</div>
+                    <div style="font-size: 1.8em; font-weight: 900; color: #00ff88;">${totales2025.gci.toLocaleString('es-ES', {maximumFractionDigits:0})}€</div>
+                </div>
+                <div style="font-size: 2em; opacity: 0.3;">vs</div>
+                <div style="text-align: center; padding: 15px 25px; background: rgba(0,0,0,0.3); border-radius: 12px;">
+                    <div style="font-size: 0.85em; color: #aaa;">AÑO ANTERIOR</div>
+                    <div style="font-size: 1.8em; font-weight: 900; color: #ff6b6b;">${totales2024.gci.toLocaleString('es-ES', {maximumFractionDigits:0})}€</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTROS MEJORADOS -->
+        <div style="background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; backdrop-filter: blur(10px);">
+            <div style="display: grid; grid-template-columns: 3fr 1fr auto; gap: 20px; align-items: center;">
+                
+                <!-- SELECTOR DE AGENTES MEJORADO -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <label style="font-weight: 600; color: var(--color-text-primary); font-size: 0.95em;">👥 AGENTES</label>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="seleccionarTodosAgentes()" class="btn" style="padding: 5px 12px; font-size: 0.85em;">✓ Todos</button>
+                            <button onclick="limpiarSeleccionAgentes()" class="btn" style="padding: 5px 12px; font-size: 0.85em;">✗ Limpiar</button>
+                        </div>
+                    </div>
+                    <div id="agentes-checkboxes-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; max-height: 150px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- LADO TRANSACCIÓN -->
+                <div>
+                    <label style="display: block; font-weight: 600; color: var(--color-text-primary); font-size: 0.95em; margin-bottom: 10px;">🎭 LADO</label>
+                    <select id="origenes-lado-filter" class="form-select" style="font-size: 1em;">
+                        <option value="TODOS">Todos</option>
+                        <option value="Vendedor">Vendedor</option>
+                        <option value="Comprador">Comprador</option>
+                        <option value="Ambos">Ambos</option>
+                    </select>
+                </div>
+
+                <!-- BOTÓN APLICAR -->
+                <div style="align-self: end;">
+                    <button class="btn-primary-action" onclick="aplicarFiltrosOrigenes()" style="padding: 15px 30px; font-size: 1.1em; white-space: nowrap;">
+                        🔍 Aplicar
+                    </button>
+                </div>
+            </div>
+            
+            <!-- TAGS DE AGENTES SELECCIONADOS -->
+            <div id="agentes-seleccionados-tags" style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 8px; min-height: 30px;">
+                <span style="color: var(--color-text-faded); font-size: 0.9em;">Todo el equipo seleccionado</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÉTRICAS PRINCIPALES -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px;">
+        <div style="background: linear-gradient(135deg, rgba(102,126,234,0.2), rgba(102,126,234,0.05)); padding: 20px; border-radius: 15px; border: 1px solid rgba(102,126,234,0.3);">
+            <div style="font-size: 0.9em; color: #aaa; margin-bottom: 5px;">📊 CAPTACIONES 2025</div>
+            <div style="font-size: 2.5em; font-weight: 900; color: #667eea; margin: 10px 0;">${totales2025.capt}</div>
+            <div style="font-size: 0.85em; color: ${colorCapt}; font-weight: 600;">${crecimientoCapt >= 0 ? '↗' : '↘'} ${crecimientoCapt}% vs 2024</div>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,255,136,0.05)); padding: 20px; border-radius: 15px; border: 1px solid rgba(0,255,136,0.3);">
+            <div style="font-size: 0.9em; color: #aaa; margin-bottom: 5px;">💰 GCI 2025</div>
+            <div style="font-size: 2em; font-weight: 900; color: #00ff88; margin: 10px 0;">${totales2025.gci.toLocaleString('es-ES', {maximumFractionDigits:0})}€</div>
+            <div style="font-size: 0.85em; color: ${colorGCI}; font-weight: 600;">${crecimientoGCI >= 0 ? '↗' : '↘'} ${crecimientoGCI}% vs 2024</div>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, rgba(255,107,107,0.2), rgba(255,107,107,0.05)); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,107,107,0.3);">
+            <div style="font-size: 0.9em; color: #aaa; margin-bottom: 5px;">📊 CAPTACIONES 2024</div>
+            <div style="font-size: 2.5em; font-weight: 900; color: #ff6b6b; margin: 10px 0;">${totales2024.capt}</div>
+            <div style="font-size: 0.85em; color: #888;">Año anterior</div>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,215,0,0.05)); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,215,0,0.3);">
+            <div style="font-size: 0.9em; color: #aaa; margin-bottom: 5px;">💰 GCI 2024</div>
+            <div style="font-size: 2em; font-weight: 900; color: #ffd700; margin: 10px 0;">${totales2024.gci.toLocaleString('es-ES', {maximumFractionDigits:0})}€</div>
+            <div style="font-size: 0.85em; color: #888;">Año anterior</div>
+        </div>
+    </div>
+
+    <!-- TABLA COMPARATIVA -->
+    <div class="section-card" style="margin-bottom: 30px;">
+        <div class="section-title">📋 Tabla Comparativa por Origen</div>
+        <div class="tabla-container">
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Origen</th>
+                        <th>Capt. 2025</th>
+                        <th>GCI 2025</th>
+                        <th>Capt. 2024</th>
+                        <th>GCI 2024</th>
+                        <th>Var. Capt.</th>
+                        <th>Var. GCI</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-origenes-body"></tbody>
+                <tfoot>
+                    <tr style="font-weight: bold; background: var(--color-surface);">
+                        <td>TOTALES</td>
+                        <td>${totales2025.capt}</td>
+                        <td>${totales2025.gci.toLocaleString('es-ES')}€</td>
+                        <td>${totales2024.capt}</td>
+                        <td>${totales2024.gci.toLocaleString('es-ES')}€</td>
+                        <td style="color: ${colorCapt};">${crecimientoCapt}%</td>
+                        <td style="color: ${colorGCI};">${crecimientoGCI}%</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- GRÁFICOS COMPARATIVOS -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div class="section-card">
+            <div class="section-title">📊 Comparativa Captaciones</div>
+            <canvas id="chart-origenes-captaciones"></canvas>
+        </div>
+        <div class="section-card">
+            <div class="section-title">💰 Comparativa GCI</div>
+            <canvas id="chart-origenes-gci"></canvas>
+        </div>
+    </div>
+
+    <!-- PIE CHART -->
+    <div class="section-card">
+        <div class="section-title">🥧 Distribución GCI 2025 por Origen</div>
+        <canvas id="chart-origenes-pie" style="max-height: 400px;"></canvas>
+    </div>
+`;
+            
+            container.innerHTML = html;
+            
+            // Rellenar tabla y gráficos
+            setTimeout(() => {
+                renderizarTablaOrigenes(origenes2025, origenes2024);
+                renderizarGraficosOrigenes(origenes2025, origenes2024);
+            }, 100);
+            
+            // 🆕 POBLAR CHECKBOXES DE AGENTES
+google.script.run
+    .withSuccessHandler(function(agentes) {
+        const container = document.getElementById('agentes-checkboxes-container');
+        if (container && agentes && agentes.length > 0) {
+            container.innerHTML = agentes.map(agente => `
+                <label style="display: flex; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                    <input type="checkbox" value="${agente[0]}" onchange="actualizarTagsAgentesSeleccionados()" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;">
+                    <span style="font-size: 0.9em;">${agente[1]}</span>
+                </label>
+            `).join('');
+            
+            // Marcar todos por defecto
+            seleccionarTodosAgentes();
+        }
+    })
+    .withFailureHandler(function(error) {
+        console.error('Error al cargar agentes:', error);
+    })
+    .obtenerListaAgentes();
+        })
+        .withFailureHandler(function(error) {
+            container.innerHTML = `<div style="text-align:center; padding:50px; color: var(--color-accent-bad);">❌ Error al cargar datos: ${error}</div>`;
+        })
+        .calcularOrigenesDelAnoActual();
+}
+function seleccionarTodosAgentes() {
+    const checkboxes = document.querySelectorAll('#agentes-checkboxes-container input[type="checkbox"]');
+    checkboxes.forEach(cb => cb.checked = true);
+    actualizarTagsAgentesSeleccionados();
+}
+
+function limpiarSeleccionAgentes() {
+    const checkboxes = document.querySelectorAll('#agentes-checkboxes-container input[type="checkbox"]');
+    checkboxes.forEach(cb => cb.checked = false);
+    actualizarTagsAgentesSeleccionados();
+}
+
+function actualizarTagsAgentesSeleccionados() {
+    const checkboxes = document.querySelectorAll('#agentes-checkboxes-container input[type="checkbox"]:checked');
+    const tagsContainer = document.getElementById('agentes-seleccionados-tags');
+    
+    if (checkboxes.length === 0 || checkboxes.length === document.querySelectorAll('#agentes-checkboxes-container input[type="checkbox"]').length) {
+        tagsContainer.innerHTML = '<span style="color: var(--color-text-faded); font-size: 0.9em;">📊 Todo el equipo seleccionado</span>';
+    } else {
+        tagsContainer.innerHTML = Array.from(checkboxes).map(cb => 
+            `<span style="background: rgba(102,126,234,0.3); padding: 5px 12px; border-radius: 20px; font-size: 0.9em; border: 1px solid rgba(102,126,234,0.5);">
+                ${cb.nextSibling.textContent}
+            </span>`
+        ).join('');
+    }
+}
+function renderizarTablaOrigenes(origenes2025, origenes2024) {
+    const tbody = document.getElementById('tabla-origenes-body');
+    
+    // Combinar datos por nombre de origen
+    const combinado = origenes2025.map(o25 => {
+        const o24 = origenes2024.find(o => o.nombre === o25.nombre) || { captaciones: 0, gci: 0 };
+        
+        const varCapt = o24.captaciones > 0 
+            ? ((o25.captaciones - o24.captaciones) / o24.captaciones * 100).toFixed(1)
+            : (o25.captaciones > 0 ? '+100' : '0');
+        
+        const varGCI = o24.gci > 0
+            ? ((o25.gci - o24.gci) / o24.gci * 100).toFixed(1)
+            : (o25.gci > 0 ? '+100' : '0');
+        
+        return {
+            nombre: o25.nombre,
+            capt2025: o25.captaciones,
+            gci2025: o25.gci,
+            capt2024: o24.captaciones,
+            gci2024: o24.gci,
+            varCapt: parseFloat(varCapt),
+            varGCI: parseFloat(varGCI)
+        };
+    });
+    
+    // Ordenar por GCI 2025 descendente
+    combinado.sort((a, b) => b.gci2025 - a.gci2025);
+    
+    // Renderizar filas
+    tbody.innerHTML = combinado.map(o => {
+        const colorCapt = o.varCapt >= 0 ? 'var(--color-accent-good)' : 'var(--color-accent-bad)';
+        const colorGCI = o.varGCI >= 0 ? 'var(--color-accent-good)' : 'var(--color-accent-bad)';
+        const iconoCapt = o.varCapt >= 0 ? '📈' : '📉';
+        const iconoGCI = o.varGCI >= 0 ? '📈' : '📉';
+        
+        return `
+            <tr>
+                <td style="text-align: left; font-weight: 500;">${o.nombre}</td>
+                <td>${o.capt2025}</td>
+                <td>${o.gci2025.toLocaleString('es-ES')}€</td>
+                <td style="opacity: 0.6;">${o.capt2024}</td>
+                <td style="opacity: 0.6;">${o.gci2024.toLocaleString('es-ES')}€</td>
+                <td style="color: ${colorCapt}; font-weight: 600;">${iconoCapt} ${o.varCapt}%</td>
+                <td style="color: ${colorGCI}; font-weight: 600;">${iconoGCI} ${o.varGCI}%</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderizarGraficosOrigenes(origenes2025, origenes2024) {
+    // Filtrar solo orígenes con datos
+    const datos2025 = origenes2025.filter(o => o.captaciones > 0 || o.gci > 0);
+    const datos2024Filtrados = datos2025.map(o25 => {
+        const o24 = origenes2024.find(o => o.nombre === o25.nombre) || { captaciones: 0, gci: 0 };
+        return o24;
+    });
+    
+    const labels = datos2025.map(o => o.nombre.length > 30 ? o.nombre.substring(0, 27) + '...' : o.nombre);
+    
+    // 1. GRÁFICO COMPARATIVA CAPTACIONES
+    const ctxCapt = document.getElementById('chart-origenes-captaciones');
+    if (ctxCapt) {
+        new Chart(ctxCapt, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '2025',
+                        data: datos2025.map(o => o.captaciones),
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    },
+                    {
+                        label: '2024',
+                        data: datos2024Filtrados.map(o => o.captaciones),
+                        backgroundColor: 'rgba(255, 107, 107, 0.3)',
+                        borderColor: 'rgba(255, 107, 107, 1)',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: true, position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y + ' captaciones';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        ticks: { color: 'rgba(255,255,255,0.7)' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    },
+                    x: {
+                        ticks: { 
+                            color: 'rgba(255,255,255,0.7)',
+                            maxRotation: 45,
+                            minRotation: 45
+                        },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+    
+    // 2. GRÁFICO COMPARATIVA GCI
+    const ctxGCI = document.getElementById('chart-origenes-gci');
+    if (ctxGCI) {
+        new Chart(ctxGCI, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '2025',
+                        data: datos2025.map(o => o.gci),
+                        backgroundColor: 'rgba(0, 255, 136, 0.8)',
+                        borderColor: 'rgba(0, 255, 136, 1)',
+                        borderWidth: 2
+                    },
+                    {
+                        label: '2024',
+                        data: datos2024Filtrados.map(o => o.gci),
+                        backgroundColor: 'rgba(255, 107, 107, 0.3)',
+                        borderColor: 'rgba(255, 107, 107, 1)',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: true, position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toLocaleString('es-ES') + '€';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        ticks: { 
+                            color: 'rgba(255,255,255,0.7)',
+                            callback: function(value) {
+                                return value.toLocaleString('es-ES') + '€';
+                            }
+                        },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    },
+                    x: {
+                        ticks: { 
+                            color: 'rgba(255,255,255,0.7)',
+                            maxRotation: 45,
+                            minRotation: 45
+                        },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+    
+    // 3. PIE CHART DISTRIBUCIÓN 2025
+    const ctxPie = document.getElementById('chart-origenes-pie');
+    if (ctxPie) {
+        // Solo mostrar top 10 + "Otros"
+        const sorted = [...datos2025].sort((a, b) => b.gci - a.gci);
+        const top10 = sorted.slice(0, 10);
+        const otros = sorted.slice(10).reduce((sum, o) => sum + o.gci, 0);
+        
+        const pieLabels = top10.map(o => o.nombre);
+        const pieData = top10.map(o => o.gci);
+        
+        if (otros > 0) {
+            pieLabels.push('Otros');
+            pieData.push(otros);
+        }
+        
+        const colores = [
+            '#667eea', '#00ff88', '#ff6b6b', '#ffd93d', '#6bcf7f',
+            '#ff8c42', '#c44dff', '#4dffdf', '#ff4db8', '#4d94ff', '#999999'
+        ];
+        
+        new Chart(ctxPie, {
+            type: 'pie',
+            data: {
+                labels: pieLabels,
+                datasets: [{
+                    data: pieData,
+                    backgroundColor: colores,
+                    borderWidth: 2,
+                    borderColor: 'rgba(0,0,0,0.3)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        position: 'right',
+                        labels: { color: 'rgba(255,255,255,0.8)' }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const pct = ((context.parsed / total) * 100).toFixed(1);
+                                return context.label + ': ' + context.parsed.toLocaleString('es-ES') + '€ (' + pct + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+function aplicarFiltrosOrigenes() {
+    // Obtener checkboxes seleccionados
+    const checkboxes = document.querySelectorAll('#agentes-checkboxes-container input[type="checkbox"]:checked');
+    const totalCheckboxes = document.querySelectorAll('#agentes-checkboxes-container input[type="checkbox"]').length;
+    const selectLado = document.getElementById('origenes-lado-filter');
+    
+    // Si todos están seleccionados o ninguno, enviar array vacío (= todos)
+    const agentesIds = (checkboxes.length === 0 || checkboxes.length === totalCheckboxes) 
+        ? [] 
+        : Array.from(checkboxes).map(cb => cb.value);
+    
+    const lado = selectLado.value;
+    
+    console.log('🔍 Aplicando filtros - Agentes:', agentesIds, 'Lado:', lado);
+    
+    // Mostrar loading en las tarjetas de stats
+    const statsCards = document.querySelectorAll('[style*="grid-template-columns: repeat(4, 1fr)"] > div');
+    statsCards.forEach(card => {
+        const valueDiv = card.querySelector('[style*="font-size: 2"]');
+        if (valueDiv) valueDiv.innerHTML = '<div class="loading-spinner" style="width:30px; height:30px;"></div>';
+    });
+    
+    // Recargar datos con filtros
+    google.script.run
+        .withSuccessHandler(function(origenes2025) {
+            console.log('📊 Orígenes filtrados 2025:', origenes2025);
+            
+            // Obtener datos históricos (sin filtro)
+            const origenes2024 = [];
+            if (datosHistoricosCache && datosHistoricosCache.fuentes && Array.isArray(datosHistoricosCache.fuentes)) {
+                const nombresOrigenes = [
+                    'SOI (Esfera de Influencia)', 'Base de Datos Propia', 'Networking / Eventos',
+                    'Redes Sociales Orgánicas', 'Publicidad Online (Google/Meta Ads)',
+                    'Portales Inmobiliarios (Idealista, Fotocasa)', 'Cartelería / Señalética',
+                    'Visitas Puerta Fría', 'Referidos de Clientes', 'Referidos de Colaboradores KW',
+                    'Referidos Externos (Otros profesionales)', 'Open Houses',
+                    'Campañas de Email Marketing', 'Colaboraciones con Empresas',
+                    'Programas de Fidelización', 'Ferias / Exposiciones',
+                    'Prensa / Medios Tradicionales', 'Otros'
+                ];
+                
+                datosHistoricosCache.fuentes.forEach((fuente, idx) => {
+                    origenes2024.push({
+                        nombre: nombresOrigenes[idx],
+                        captaciones: fuente.capt || 0,
+                        gci: fuente.gci || 0
+                    });
+                });
+            }
+            
+            // Recalcular totales
+            const totales2025 = {
+                capt: origenes2025.reduce((s, o) => s + o.captaciones, 0),
+                gci: origenes2025.reduce((s, o) => s + o.gci, 0)
+            };
+            
+            const totales2024 = {
+                capt: origenes2024.reduce((s, o) => s + o.captaciones, 0),
+                gci: origenes2024.reduce((s, o) => s + o.gci, 0)
+            };
+            
+            const crecimientoCapt = totales2024.capt > 0 
+                ? ((totales2025.capt - totales2024.capt) / totales2024.capt * 100).toFixed(1)
+                : '-';
+            
+            const crecimientoGCI = totales2024.gci > 0
+                ? ((totales2025.gci - totales2024.gci) / totales2024.gci * 100).toFixed(1)
+                : '-';
+            
+            const colorCapt = parseFloat(crecimientoCapt) >= 0 ? 'var(--color-accent-good)' : 'var(--color-accent-bad)';
+            const colorGCI = parseFloat(crecimientoGCI) >= 0 ? 'var(--color-accent-good)' : 'var(--color-accent-bad)';
+            
+            // Actualizar tarjetas superiores (las dos primeras del gradient)
+            const gradientCards = document.querySelectorAll('[style*="gradient(135deg, rgba(102,126,234,0.2)"] [style*="font-size: 1.8em"]');
+            if (gradientCards[0]) gradientCards[0].textContent = totales2025.gci.toLocaleString('es-ES', {maximumFractionDigits:0}) + '€';
+            if (gradientCards[1]) gradientCards[1].textContent = totales2024.gci.toLocaleString('es-ES', {maximumFractionDigits:0}) + '€';
+            
+            // Actualizar las 4 tarjetas de métricas
+            const metricsCards = document.querySelectorAll('[style*="grid-template-columns: repeat(4, 1fr)"] > div');
+            
+            // Tarjeta 1: Captaciones 2025
+            if (metricsCards[0]) {
+                metricsCards[0].querySelector('[style*="font-size: 2.5em"]').textContent = totales2025.capt;
+                metricsCards[0].querySelector('[style*="font-size: 0.85em"]').innerHTML = `${parseFloat(crecimientoCapt) >= 0 ? '↗' : '↘'} ${crecimientoCapt}% vs 2024`;
+                metricsCards[0].querySelector('[style*="font-size: 0.85em"]').style.color = colorCapt;
+            }
+            
+            // Tarjeta 2: GCI 2025
+            if (metricsCards[1]) {
+                metricsCards[1].querySelector('[style*="font-size: 2em"]').textContent = totales2025.gci.toLocaleString('es-ES', {maximumFractionDigits:0}) + '€';
+                metricsCards[1].querySelector('[style*="font-size: 0.85em"]').innerHTML = `${parseFloat(crecimientoGCI) >= 0 ? '↗' : '↘'} ${crecimientoGCI}% vs 2024`;
+                metricsCards[1].querySelector('[style*="font-size: 0.85em"]').style.color = colorGCI;
+            }
+            
+            // Tarjetas 3 y 4 (2024) no cambian
+            
+            // Actualizar tabla
+            const tbody = document.getElementById('tabla-origenes-body');
+            if (tbody) {
+                renderizarTablaOrigenes(origenes2025, origenes2024);
+            }
+            
+            // Actualizar footer de tabla
+            const tfoot = document.querySelector('.tabla tfoot tr');
+            if (tfoot) {
+                tfoot.innerHTML = `
+                    <td>TOTALES</td>
+                    <td>${totales2025.capt}</td>
+                    <td>${totales2025.gci.toLocaleString('es-ES')}€</td>
+                    <td>${totales2024.capt}</td>
+                    <td>${totales2024.gci.toLocaleString('es-ES')}€</td>
+                    <td style="color: ${colorCapt};">${crecimientoCapt}%</td>
+                    <td style="color: ${colorGCI};">${crecimientoGCI}%</td>
+                `;
+            }
+            
+            // Actualizar gráficos
+            setTimeout(() => {
+                // Destruir gráficos anteriores
+                ['chart-origenes-captaciones', 'chart-origenes-gci', 'chart-origenes-pie'].forEach(id => {
+                    const canvas = document.getElementById(id);
+                    if (canvas) {
+                        const existingChart = Chart.getChart(canvas);
+                        if (existingChart) existingChart.destroy();
+                    }
+                });
+                
+                renderizarGraficosOrigenes(origenes2025, origenes2024);
+            }, 100);
+            
+            mostrarNotificacion('✅ Filtros aplicados correctamente', 'success');
+        })
+        .withFailureHandler(function(error) {
+            mostrarNotificacion('❌ Error al aplicar filtros: ' + error, 'error');
+        })
+        .calcularOrigenesDelAnoActualConFiltros(agentesIds, lado);
+}
 // Parsear fecha desde formato dd/MM/yyyy
 function parsearFecha(fechaStr) {
     const partes = fechaStr.split('/');
@@ -8232,9 +9446,16 @@ function editarTransaccionModal(id, gci, comision, pct) {
     google.script.run
         .withSuccessHandler(function(agentes) {
             let optionsHTML = '<option value="">-- Seleccionar --</option>';
-            agentes.forEach(a => {
-                optionsHTML += `<option value="${a.id}|${a.nombre}">${a.nombre}</option>`;
-            });
+            
+            if (!agentes || agentes.length === 0) {
+                optionsHTML = '<option value="">❌ No hay agentes</option>';
+            } else {
+                agentes.forEach(a => {
+                    // ✅ a es array [id, nombre]
+                    optionsHTML += `<option value="${a[0]}|${a[1]}">${a[1]}</option>`;
+                });
+            }
+            
             document.getElementById('edit-tx-agente').innerHTML = optionsHTML;
             
             // Buscar la transacción completa
@@ -8261,8 +9482,11 @@ function editarTransaccionModal(id, gci, comision, pct) {
             document.getElementById('edit-tx-comision').value = tx.comision;
             document.getElementById('edit-tx-descripcion').value = tx.descripcion.replace(/TRANSACCIÓN.*\|/g, '').trim();
             
-            document.getElementById('modal-editar-tx').classList.add('active');
-            document.body.classList.add('modal-open');
+            abrirModalEncima('modal-editar-tx');
+        })
+        .withFailureHandler(function(error) {
+            console.error('Error cargando agentes:', error);
+            mostrarNotificacion('Error al cargar agentes', 'error');
         })
         .obtenerListaAgentes();
 }
@@ -8323,20 +9547,22 @@ function guardarEdicionTransaccionCompleta(event) {
 
 // Anular transacción
 function anularTransaccionConfirm(id) {
-    // Crear modal de confirmación custom (sin alert)
+    // Crear modal de confirmación custom
+    const modalId = 'modal-confirm-anular-' + Date.now();
     const modalConfirm = document.createElement('div');
+    modalConfirm.id = modalId;
     modalConfirm.innerHTML = `
-        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;">
-            <div style="background: var(--color-surface); padding: 30px; border-radius: 15px; max-width: 500px; text-align: center; border: 2px solid #ff4444;">
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+            <div style="background: var(--color-bg-alt); padding: 30px; border-radius: 15px; max-width: 500px; text-align: center; border: 2px solid #ff4444; box-shadow: 0 20px 60px rgba(255,68,68,0.5);">
                 <div style="font-size: 3em; margin-bottom: 10px;">⚠️</div>
                 <div style="font-size: 1.3em; font-weight: 700; margin-bottom: 15px; color: #ff4444;">Anular Transacción</div>
-                <div style="margin-bottom: 20px; line-height: 1.5;">
+                <div style="margin-bottom: 20px; line-height: 1.5; color: var(--color-text-primary);">
                     ¿Estás seguro de que quieres anular esta transacción?<br>
-                    <strong>Esto pondrá el GCI y comisiones en 0.</strong>
+                    <strong style="color: #ff4444;">Esto pondrá el GCI y comisiones en 0.</strong>
                 </div>
                 <div style="display: flex; gap: 15px; justify-content: center;">
-                    <button onclick="this.closest('div').parentElement.remove()" class="btn" style="background: #555;">❌ Cancelar</button>
-                    <button onclick="ejecutarAnulacionTransaccion('${id}'); this.closest('div').parentElement.remove();" class="btn" style="background: #ff4444;">✅ Sí, Anular</button>
+                    <button onclick="eliminarModalConfirmacion('${modalId}')" class="btn" style="background: #555; color: #fff;">❌ Cancelar</button>
+                    <button onclick="ejecutarAnulacionTransaccion('${id}'); eliminarModalConfirmacion('${modalId}');" class="btn" style="background: #ff4444; color: #fff;">✅ Sí, Anular</button>
                 </div>
             </div>
         </div>
@@ -8344,12 +9570,31 @@ function anularTransaccionConfirm(id) {
     document.body.appendChild(modalConfirm);
 }
 
+function eliminarModalConfirmacion(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.remove();
+    }
+}
+
 function ejecutarAnulacionTransaccion(id) {
     google.script.run
         .withSuccessHandler(function(respuesta) {
             if (respuesta.success) {
                 mostrarNotificacion('✅ Transacción anulada', 'success');
-                renderizarRegistroTransacciones();
+                
+                // ✅ CERRAR TODOS LOS MODALES
+                document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+                document.body.classList.remove('modal-open');
+                
+                // ✅ RECARGAR VISTA
+                setTimeout(() => {
+                    if (vistaActualGerente === 'transacciones') {
+                        cambiarVistaGerente('transacciones');
+                    } else {
+                        cargarDashboardGerente();
+                    }
+                }, 300);
             } else {
                 mostrarNotificacion('❌ Error: ' + respuesta.error, 'error');
             }
@@ -9416,7 +10661,6 @@ function toggleMostrarTodosGerente() {
     } else {
         btn.textContent = '👥 Mostrar Todos los Agentes';
         btn.classList.remove('active');
-        // Recargar el formulario individual
         restaurarVistaIndividualGerente();
     }
 }
@@ -9527,16 +10771,10 @@ function restaurarVistaIndividualGerente() {
         </form>
     `;
     
-    // Recargar lista de agentes en el select
-    google.script.run.withSuccessHandler(agentes => {
-        const select = document.getElementById('actividad-agente-select');
-        agentes.forEach(ag => {
-            const opt = document.createElement('option');
-            opt.value = ag.id;
-            opt.textContent = ag.nombre;
-            select.appendChild(opt);
-        });
-    }).obtenerListaAgentes();
+     // Recargar lista de agentes en el select
+    setTimeout(() => {
+        poblarSelectAgentes('actividad-agente-select');
+    }, 100);
     
     // Establecer fecha actual
     document.getElementById('gerente-form-fecha').value = new Date().toISOString().split('T')[0];
@@ -9546,9 +10784,15 @@ function restaurarVistaIndividualGerente() {
 }
 
 function renderizarFormulariosMultiplesGerente() {
+    const container = document.getElementById('formularios-container-gerente');
+    if (!container) return;
+    
     google.script.run
         .withSuccessHandler(function(agentes) {
-            const container = document.getElementById('formularios-container-gerente');
+            if (!agentes || agentes.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--color-accent-bad);">❌ No se encontraron agentes</div>';
+                return;
+            }
             
             let html = `
                 <div class="form-grupo" style="margin-bottom: 30px; padding: 20px; background: var(--color-surface); border-radius: 15px;">
@@ -9562,11 +10806,15 @@ function renderizarFormulariosMultiplesGerente() {
             `;
             
             agentes.forEach((agente, idx) => {
+                // ✅ CORRECCIÓN: agente es [id, nombre]
+                const agenteId = agente[0];
+                const agenteNombre = agente[1];
+                
                 html += `
-                    <div class="section agent-form-multi" data-agent-id="${agente.id}" data-agent-name="${agente.nombre}" style="margin-bottom: 20px; animation: fadeInUp 0.3s ${idx * 50}ms both;">
-                        <h3 style="color: var(--color-secondary); margin-bottom: 10px;">${agente.nombre}</h3>
+                    <div class="section agent-form-multi" data-agent-id="${agenteId}" data-agent-name="${agenteNombre}" style="margin-bottom: 20px; animation: fadeInUp 0.3s ${idx * 50}ms both;">
+                        <h3 style="color: var(--color-secondary); margin-bottom: 10px;">${agenteNombre}</h3>
                         
-                        <div id="aviso-gerente-${agente.id}" style="display:none; background: rgba(255,215,0,0.1); border: 1px solid #ffd700; border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 0.9em;">
+                        <div id="aviso-gerente-${agenteId}" style="display:none; background: rgba(255,215,0,0.1); border: 1px solid #ffd700; border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 0.9em;">
                             ⚠️ Ya hay actividad este día
                         </div>
                         
@@ -9600,52 +10848,45 @@ function renderizarFormulariosMultiplesGerente() {
                                 <input type="number" class="form-input multi-leadsCompradores" min="0" value="0">
                             </div>
                             <div class="form-grupo">
-    <label class="form-label">📞 Llamadas</label>
-    <input type="number" id="gerente-form-llamadas" class="form-input" min="0" value="0">
-</div>
-
-<!-- 🆕 NUEVOS CAMPOS CAPTACIÓN -->
-<div class="form-grupo">
-    <label class="form-label">🏢 Captaciones Alquiler</label>
-    <input type="number" id="gerente-form-captaciones-alquiler" class="form-input" min="0" value="0">
-</div>
-<div class="form-grupo">
-    <label class="form-label">📱 Lead Vendedor</label>
-    <input type="number" id="gerente-form-lead-vendedor" class="form-input" min="0" value="0">
-</div>
-<div class="form-grupo">
-    <label class="form-label">⚡ 3Bs Activadas</label>
-    <input type="number" id="gerente-form-3bs" class="form-input" min="0" value="0">
-</div>
-<div class="form-grupo">
-    <label class="form-label">💹 Bajadas Precio</label>
-    <input type="number" id="gerente-form-bajadas-precio" class="form-input" min="0" value="0">
-</div>
-
-<!-- 🆕 NUEVOS CAMPOS COMPRADOR -->
-<div class="form-grupo">
-    <label class="form-label">🏠 Lead Comprador</label>
-    <input type="number" id="gerente-form-lead-comprador" class="form-input" min="0" value="0">
-</div>
-<div class="form-grupo">
-    <label class="form-label">📄 Propuestas Compra</label>
-    <input type="number" id="gerente-form-propuestas-compra" class="form-input" min="0" value="0">
-</div>
-<div class="form-grupo">
-    <label class="form-label">🎯 Lead Seguimiento</label>
-    <input type="number" id="gerente-form-lead-seguimiento" class="form-input" min="0" value="0">
-</div>
-
-<!-- 🆕 CAMPO TRANSACCIONES -->
-<div class="form-grupo">
-    <label class="form-label">✍️ Arras Firmadas</label>
-    <input type="number" id="gerente-form-arras" class="form-input" min="0" value="0">
-</div>
-
-<div class="form-grupo">
-    <label class="form-label">💰 GCI (€)</label>
-    <input type="number" id="gerente-form-gci" class="form-input" min="0" step="0.01" value="0">
-</div>
+                                <label class="form-label">📞 Llamadas</label>
+                                <input type="number" class="form-input multi-llamadas" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">🏢 Capt. Alquiler</label>
+                                <input type="number" class="form-input multi-captacionesAlquiler" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">📱 Lead Vendedor</label>
+                                <input type="number" class="form-input multi-leadVendedor" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">⚡ 3Bs</label>
+                                <input type="number" class="form-input multi-tresBs" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">💹 Bajadas</label>
+                                <input type="number" class="form-input multi-bajadasPrecio" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">🏠 Lead Comprador</label>
+                                <input type="number" class="form-input multi-leadComprador" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">📄 Propuestas</label>
+                                <input type="number" class="form-input multi-propuestasCompra" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">🎯 Lead Seguim.</label>
+                                <input type="number" class="form-input multi-leadSeguimiento" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">✍️ Arras</label>
+                                <input type="number" class="form-input multi-arras" min="0" value="0">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">💰 GCI (€)</label>
+                                <input type="number" class="form-input multi-gci" min="0" step="0.01" value="0">
+                            </div>
                         </div>
                     </div>
                 `;
@@ -9662,6 +10903,7 @@ function renderizarFormulariosMultiplesGerente() {
             container.innerHTML = html;
         })
         .withFailureHandler(function(error) {
+            console.error('Error cargando agentes:', error);
             mostrarNotificacion('Error al cargar agentes', 'error');
         })
         .obtenerListaAgentes();
@@ -10854,30 +12096,39 @@ function mostrarModalCargaHistorico() {
  * Carga lista de agentes en el selector
  */
 function cargarSelectAgentesHistorico() {
-    const select = document.getElementById('hist-agente-select');
+    const select = document.getElementById('hist-agente-select');  // ✅ ID CORRECTO
     if (!select) {
-        console.error('❌ Select no encontrado');
+        console.error('❌ Select hist-agente-select no encontrado');
         return;
     }
     
-    select.innerHTML = '<option value="">-- Cargando agentes... --</option>';
+    select.innerHTML = '<option value="">Cargando agentes...</option>';
+    select.disabled = true;
     
     google.script.run
         .withSuccessHandler(function(agentes) {
+            select.disabled = false;
+            
+            if (!agentes || agentes.length === 0) {
+                select.innerHTML = '<option value="">❌ No hay agentes</option>';
+                return;
+            }
+            
             select.innerHTML = '<option value="">-- Selecciona un agente --</option>';
             
-            agentes.forEach(ag => {
+            agentes.forEach(agente => {
                 const option = document.createElement('option');
-                option.value = ag.id;
-                option.textContent = ag.nombre;
+                option.value = agente[0]; // ✅ ID es índice 0
+                option.textContent = agente[1]; // ✅ Nombre es índice 1
                 select.appendChild(option);
             });
             
-            console.log('✅ ' + agentes.length + ' agentes cargados');
+            console.log(`✅ ${agentes.length} agentes cargados en histórico`);
         })
         .withFailureHandler(function(error) {
-            console.error('❌ Error al cargar agentes:', error);
+            select.disabled = false;
             select.innerHTML = '<option value="">❌ Error al cargar</option>';
+            console.error('Error cargando agentes en histórico:', error);
         })
         .obtenerListaAgentes();
 }
@@ -11150,6 +12401,355 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
         notif.classList.remove('show');
     }, 3000);
 }
+function crearGraficoProductividad() {
+    const canvasId = 'chart-productividad';
+    const canvas = document.getElementById(canvasId);
+    
+    if (!canvas) return;
+    if (!datosGlobales || datosGlobales.length === 0) {
+        canvas.parentElement.innerHTML = '<div style="text-align:center; padding:40px; color:#666;">Esperando datos...</div>';
+        return;
+    }
+
+    if (window.chartProductividadInstance instanceof Chart) {
+        window.chartProductividadInstance.destroy();
+    }
+
+    // Ordenar y filtrar Top 10
+    const top10 = [...datosGlobales]
+        .filter(a => a.realizado && a.realizado.gci > 0)
+        .sort((a, b) => b.realizado.gci - a.realizado.gci)
+        .slice(0, 10);
+
+    if (top10.length === 0) {
+        canvas.parentElement.innerHTML = '<div style="text-align:center; padding:40px; color:#888;">Sin producción registrada</div>';
+        return;
+    }
+
+    // CREAR GRADIENTE HORIZONTAL (De izquierda a derecha)
+    const ctx = canvas.getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 400, 0); 
+    gradient.addColorStop(0, 'rgba(0, 200, 81, 0.8)');  // Verde intenso (inicio)
+    gradient.addColorStop(1, 'rgba(0, 200, 81, 0.2)');  // Verde suave (final)
+
+    window.chartProductividadInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: top10.map(a => a.agente), // Nombres de agentes
+            datasets: [{
+                label: 'GCI Generado',
+                data: top10.map(a => a.realizado.gci),
+                backgroundColor: gradient,
+                borderColor: '#00C851',
+                borderWidth: 1,
+                borderRadius: 4,
+                barPercentage: 0.6 // Barras un poco más finas y elegantes
+            }]
+        },
+        options: {
+            indexAxis: 'y', // Horizontal
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(20, 20, 20, 0.95)',
+                    titleColor: '#fff',
+                    bodyColor: '#ddd',
+                    callbacks: {
+                        label: function(context) {
+                            return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(context.raw);
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { 
+                        color: '#aaa',
+                        callback: function(value) {
+                            // Abreviar (100k)
+                            return (value / 1000) + 'k€'; 
+                        }
+                    }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { 
+                        color: '#fff', // Nombres en BLANCO para que se lean bien sobre fondo oscuro
+                        font: { size: 12, weight: 'bold' } 
+                    }
+                }
+            }
+        }
+    });
+}
+
+function crearGraficoEvolucionCitas() {
+    if (!datosGlobales || datosGlobales.length === 0) return;
+    
+    // Calcular evolución mensual de citas del equipo
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const citasPorMes = new Array(12).fill(0);
+    
+    datosGlobales.forEach(agente => {
+        if (agente.evolucionMensual && agente.evolucionMensual.citasCaptacion) {
+            agente.evolucionMensual.citasCaptacion.realizado.forEach((val, idx) => {
+                citasPorMes[idx] += val || 0;
+            });
+        }
+    });
+    
+    const ctx = document.getElementById('chart-evolucion-citas');
+    if (!ctx) return;
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: meses,
+            datasets: [{
+                label: 'Citas Captación',
+                data: citasPorMes,
+                borderColor: 'rgba(34, 197, 94, 1)',
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+function crearGraficoEvolucionVisitas() {
+    if (!datosGlobales || datosGlobales.length === 0) return;
+    
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const visitasPorMes = new Array(12).fill(0);
+    
+    datosGlobales.forEach(agente => {
+        if (agente.evolucionMensual && agente.evolucionMensual.casasEnsenadas) {
+            agente.evolucionMensual.casasEnsenadas.realizado.forEach((val, idx) => {
+                visitasPorMes[idx] += val || 0;
+            });
+        }
+    });
+    
+    const ctx = document.getElementById('chart-evolucion-visitas');
+    if (!ctx) return;
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: meses,
+            datasets: [{
+                label: 'Casas Enseñadas',
+                data: visitasPorMes,
+                borderColor: 'rgba(59, 130, 246, 1)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+function crearGraficoVelocidadCaptacion() {
+    const ctx = document.getElementById('chart-velocidad-captacion');
+    if (!ctx || !datosGlobales) return;
+    
+    const agentes = datosGlobales.filter(a => a.realizado.citasCaptacion > 0)
+        .map(a => ({
+            nombre: a.agente,
+            ratio: a.realizado.exclusivasVenta / Math.max(a.realizado.citasCaptacion, 1)
+        }))
+        .sort((a, b) => b.ratio - a.ratio)
+        .slice(0, 10);
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: agentes.map(a => a.agente),
+            datasets: [{
+                label: 'Exclusivas por Cita',
+                data: agentes.map(a => a.ratio),
+                backgroundColor: 'rgba(251, 146, 60, 0.8)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => ctx.parsed.y.toFixed(2) + ' excl/cita'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function crearGraficoBalanceRoles() {
+    const ctx = document.getElementById('chart-balance-roles');
+    if (!ctx || !datosGlobales) return;
+    
+    const vendedor = datosGlobales.reduce((s, a) => s + (a.realizado.exclusivasVenta || 0), 0);
+    const comprador = datosGlobales.reduce((s, a) => s + (a.realizado.exclusivasComprador || 0), 0);
+    const visitas = datosGlobales.reduce((s, a) => s + (a.realizado.casasEnsenadas || 0), 0);
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Lado Vendedor', 'Lado Comprador', 'Visitas'],
+            datasets: [{
+                data: [vendedor, comprador, visitas],
+                backgroundColor: [
+                    'rgba(239, 68, 68, 0.8)',
+                    'rgba(59, 130, 246, 0.8)',
+                    'rgba(168, 85, 247, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+function crearGraficoEficienciaVisitas() {
+    const ctx = document.getElementById('chart-eficiencia-visitas');
+    if (!ctx || !datosGlobales) return;
+    
+    const agentes = datosGlobales
+        .filter(a => a.realizado.casasEnsenadas > 10)
+        .map(a => ({
+            nombre: a.agente,
+            eficiencia: a.realizado.gci / Math.max(a.realizado.casasEnsenadas, 1)
+        }))
+        .sort((a, b) => b.eficiencia - a.eficiencia)
+        .slice(0, 10);
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: agentes.map(a => a.agente),
+            datasets: [{
+                label: 'GCI por Visita (€)',
+                data: agentes.map(a => a.eficiencia),
+                backgroundColor: 'rgba(168, 85, 247, 0.8)'
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => ctx.parsed.x.toFixed(0) + '€/visita'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function crearGraficoTopRatios() {
+    const ctx = document.getElementById('chart-top-ratios');
+    if (!ctx || !datosGlobales) return;
+    
+    const top5 = [...datosGlobales]
+        .sort((a, b) => b.cumplimientoGlobal - a.cumplimientoGlobal)
+        .slice(0, 5);
+    
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['GCI', 'Citas', 'Exclusivas', 'Visitas', 'Conversión'],
+            datasets: top5.map((a, idx) => ({
+                label: a.agente,
+                data: [
+                    (a.realizado.gci / 50000) * 100,
+                    (a.realizado.citasCaptacion / 100) * 100,
+                    (a.realizado.exclusivasVenta / 50) * 100,
+                    (a.realizado.casasEnsenadas / 100) * 100,
+                    a.cumplimientoGlobal
+                ],
+                borderColor: `hsl(${idx * 72}, 70%, 50%)`,
+                backgroundColor: `hsla(${idx * 72}, 70%, 50%, 0.2)`
+            }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+}
+function autoCargarAgentesEnModal(modalId) {
+    // Buscar todos los selects de agentes dentro del modal
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    const selectsAgentes = modal.querySelectorAll('select[id*="agente"], select[id*="agent"]');
+    selectsAgentes.forEach(select => {
+        if (select.options.length <= 1) { // Solo si está vacío
+            const esMultiple = select.multiple;
+            cargarAgentesEnSelect(select.id, esMultiple);
+        }
+    });
+}
+
+// Y modifica tu función abrirModalEncima:
+function abrirModalEncima(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    modal.classList.add('active');
+    document.body.classList.add('modal-open');
+    
+    // Auto-cargar agentes
+    setTimeout(() => {
+        autoCargarAgentesEnModal(modalId);
+    }, 100);
+}
+function cargarAgentesEnCualquierModal() {
+    // Buscar TODOS los selects de agentes en la página
+    const todosLosSelects = document.querySelectorAll('select[id*="agente"], select[id*="agent"]');
+    
+    todosLosSelects.forEach(select => {
+        // Solo cargar si está visible y vacío
+        if (select.offsetParent !== null && select.options.length <= 1) {
+            console.log('🔄 Cargando agentes en:', select.id);
+            poblarSelectAgentes(select.id);
+        }
+    });
+}
+
+// Y llámala cada vez que abras un modal
+function abrirModalEncima(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    modal.classList.add('active');
+    document.body.classList.add('modal-open');
+    
+    // Auto-cargar agentes en cualquier selector
+    setTimeout(cargarAgentesEnCualquierModal, 100);
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 📝 INSTALACIÓN COMPLETA
@@ -11392,6 +12992,12 @@ console.log('✅ JavaScript de Histórico y Gráficos cargado correctamente');
                     </form>
                 </div>
             </div>
+            <div id="modal-comparativa-agentes" class="modal">
+    <div class="modal-content" style="max-width: 1400px;">
+        <span class="modal-close" onclick="cerrarModalSuperior('modal-comparativa-agentes')">&times;</span>
+        <div class="modal-body" id="comparativa-content"></div>
+    </div>
+</div>
             
             <!-- ═══════════════════════════════════════════════════════════════════ -->
             <!-- TAB 3: LISTADO COMPLETO -->
