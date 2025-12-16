@@ -28,7 +28,7 @@ const kpiNames = {
   exclusivasVenta: 'Exclusivas Venta',
   captacionesAbierto: 'Captaciones Abierto',
   
-  // CAPTACIÓN - NUEVOS 🆕
+  // 🆕 CAPTACIÓN - NUEVOS
   captacionesAlquiler: 'Captaciones Alquiler',
   leadVendedor: 'Lead Vendedor',
   tresBs: '3Bs Activadas',
@@ -40,7 +40,7 @@ const kpiNames = {
   casasEnsenadas: 'Casas Enseñadas',
   leadsCompradores: 'Leads Compradores',
   
-  // COMPRADOR - NUEVOS 🆕
+  // 🆕 COMPRADOR - NUEVOS
   leadComprador: 'Lead Comprador',
   propuestasCompra: 'Propuestas Compra',
   leadSeguimiento: 'Lead Seguimiento',
@@ -48,7 +48,7 @@ const kpiNames = {
   // GENERAL - ORIGINALES
   llamadas: 'Llamadas',
   
-  // GENERAL - NUEVOS 🆕
+  // 🆕 GENERAL - NUEVOS
   arras: 'Arras Firmadas'
 };
 function onOpen() {
@@ -84,6 +84,55 @@ function getKpiMetadata(key, valor) {
         case 'leadsCompradores': return { icon: '📧', label: 'Leads Compr.', unidad: '', claseCritica: '', thresholds: null };
         case 'llamadas': return { icon: '📞', label: 'Llamadas', unidad: '', claseCritica: '', thresholds: null };
         case 'volumenNegocio': return { icon: '💼', label: 'Volumen Negocio', unidad: '€', claseCritica: '', thresholds: null };
+        
+        // ✅ NUEVOS KPIs
+        case 'beneficioNeto': 
+    const porcentajeBeneficio = window.datosBeneficioGlobal ? window.datosBeneficioGlobal.porcentajeBeneficio : 0;
+    let colorBeneficio = '#ff6b6b'; // Rojo por defecto
+    if (porcentajeBeneficio >= 40) colorBeneficio = '#00ff88'; // Verde
+    else if (porcentajeBeneficio >= 25) colorBeneficio = '#ffd700'; // Naranja
+    
+    return { 
+        icon: '💰', 
+        label: 'Beneficio Neto', 
+        unidad: '€', 
+        claseCritica: porcentajeBeneficio < 25 ? 'critical' : '', 
+        thresholds: { bueno: 40, regular: 25 },
+        colorCustom: colorBeneficio
+    };
+        case 'totalTransacciones': 
+            return { 
+                icon: '📊', 
+                label: 'Transacciones', 
+                unidad: '', 
+                claseCritica: v < 5 ? 'critical' : '', 
+                thresholds: { bueno: 15, regular: 8 } 
+            };
+
+case 'captacionesAlquiler':
+    return { icon: '🏢', label: 'Capt. Alquiler', unidad: '', claseCritica: '', thresholds: null };
+
+case 'leadVendedor':
+    return { icon: '📱', label: 'Lead Vendedor', unidad: '', claseCritica: v > 5 ? '' : 'critical', thresholds: { bueno: 5, regular: 2 } };
+
+case 'tresBs':
+    return { icon: '⚡', label: '3Bs Activadas', unidad: '', claseCritica: v > 3 ? '' : 'critical', thresholds: { bueno: 3, regular: 1 } };
+
+case 'bajadasPrecio':
+    return { icon: '💹', label: 'Bajadas Precio', unidad: '', claseCritica: '', thresholds: { bueno: 2, regular: 1 } };
+
+case 'leadComprador':
+    return { icon: '🏠', label: 'Lead Comprador', unidad: '', claseCritica: v > 5 ? '' : 'critical', thresholds: { bueno: 5, regular: 2 } };
+
+case 'propuestasCompra':
+    return { icon: '📄', label: 'Propuestas Compra', unidad: '', claseCritica: v > 3 ? '' : 'critical', thresholds: { bueno: 3, regular: 1 } };
+
+case 'leadSeguimiento':
+    return { icon: '🎯', label: 'Lead Seguimiento', unidad: '', claseCritica: v > 10 ? '' : 'critical', thresholds: { bueno: 10, regular: 5 } };
+
+case 'arras':
+    return { icon: '✍️', label: 'Arras Firmadas', unidad: '', claseCritica: v > 1 ? '' : 'critical', thresholds: { bueno: 1, regular: 0 } };
+        
         default: return { icon: '❓', label: key, unidad: '', claseCritica: '', thresholds: null };
     }
 }
@@ -95,7 +144,11 @@ const CONFIG = {
   HOJA_CONFIGURACION: 'Configuración',
   HOJA_INVENTARIO: 'Inventario_Inmuebles',
  
-  METRICAS: ['Citas Captación', 'Exclusivas Venta', 'Exclusivas Comprador', 'Captaciones Abierto', 'Citas Compradores', 'Casas Enseñadas', 'Leads Compradores', 'Llamadas', 'GCI', 'Volumen Negocio']
+  METRICAS: ['Citas Captación', 'Exclusivas Venta', 'Exclusivas Comprador', 
+    'Captaciones Abierto', 'Citas Compradores', 'Casas Enseñadas', 
+    'Leads Compradores', 'Llamadas', 'GCI', 'Volumen Negocio',
+    'Captaciones Alquiler', 'Lead Vendedor', '3Bs Activadas', 
+    'Bajadas Precio', 'Propuestas Compra', 'Arras Firmadas']
 };
 // ============================================
 // MEJORA 2: 18 ORÍGENES DE NEGOCIO
@@ -418,27 +471,44 @@ function abrirDashboard() {
   SpreadsheetApp.getUi().showModalDialog(html, 'Dashboard Inmobiliario');
 }
 
-function obtenerListaAgentes() {
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const hoja = ss.getSheetByName(CONFIG.HOJA_AGENTES);
-    if (!hoja) throw new Error('No se encontró la hoja de Agentes. Ejecuta "Inicializar Sistema" primero.');
-    const datos = hoja.getDataRange().getValues();
-    const agentes = [];
-    for (let i = 1; i < datos.length; i++) {
-      if (datos[i][0] && datos[i][1]) {
-        agentes.push({
-          id: datos[i][0],
-          nombre: datos[i][1],
-          email: datos[i][2],
-          objetivosAcumulados: datos[i][6] === 'SI'
-        });
-      }
-    }
-    return agentes;
-  } catch (error) {
-    throw new Error('Error al obtener agentes: ' + error.toString());
-  }
+function editarTransaccionModal(id, gci, comision, pct) {
+    // Cargar lista de agentes
+    google.script.run
+        .withSuccessHandler(function(agentes) {
+            let optionsHTML = '<option value="">-- Seleccionar --</option>';
+            agentes.forEach(a => {
+                optionsHTML += `<option value="${a.id}|${a.nombre}">${a.nombre}</option>`;
+            });
+            document.getElementById('edit-tx-agente').innerHTML = optionsHTML;
+            
+            // Buscar la transacción completa
+            const tx = window.transaccionesGlobales.find(t => t.id === id);
+            if (!tx) {
+                mostrarNotificacion('Transacción no encontrada', 'error');
+                return;
+            }
+            
+            // Rellenar todos los campos
+            document.getElementById('edit-tx-id').value = tx.id;
+            document.getElementById('edit-tx-fecha').value = convertirFechaParaInput(tx.fecha);
+            
+            // Seleccionar agente
+            const agenteOption = Array.from(document.getElementById('edit-tx-agente').options)
+                .find(opt => opt.text === tx.agente);
+            if (agenteOption) agenteOption.selected = true;
+            
+            document.getElementById('edit-tx-tipo').value = tx.tipo;
+            document.getElementById('edit-tx-lado').value = tx.lado;
+            document.getElementById('edit-tx-gci').value = tx.gci;
+            document.getElementById('edit-tx-volumen').value = tx.volumenNegocio;
+            document.getElementById('edit-tx-pct').value = tx.pctComision;
+            document.getElementById('edit-tx-comision').value = tx.comision;
+            document.getElementById('edit-tx-descripcion').value = tx.descripcion.replace(/TRANSACCIÓN.*\|/g, '').trim();
+            
+            document.getElementById('modal-editar-tx').classList.add('active');
+            document.body.classList.add('modal-open');
+        })
+        .obtenerListaAgentes();
 }
 
 function guardarActividad(datos) {
@@ -446,16 +516,50 @@ function guardarActividad(datos) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const hoja = ss.getSheetByName(CONFIG.HOJA_ACTIVIDAD);
     if (!hoja) throw new Error('No se encontró la hoja de Actividad.');
+    
     const ultimaFila = hoja.getLastRow();
     const nuevoId = 'ACT' + String(ultimaFila + 1).padStart(5, '0');
     const fecha = new Date(datos.fecha);
+    
     const fila = [
-      nuevoId, fecha, datos.idAgente, datos.nombreAgente,
-      datos.citasCaptacion || 0, datos.exclusivasVenta || 0, datos.exclusivasComprador || 0,
-      datos.captacionesAbierto || 0, datos.citasCompradores || 0, datos.casasEnsenadas || 0,
-      datos.leadsCompradores || 0, datos.llamadas || 0, datos.gci || 0, 0, datos.notas || '', new Date(), 0, 0
+      nuevoId, 
+      fecha, 
+      datos.idAgente, 
+      datos.nombreAgente,
+      // COLUMNAS 5-18 (ORIGINALES)
+      datos.citasCaptacion || 0, 
+      datos.exclusivasVenta || 0, 
+      datos.exclusivasComprador || 0,
+      datos.captacionesAbierto || 0, 
+      datos.citasCompradores || 0, 
+      datos.casasEnsenadas || 0,
+      datos.leadsCompradores || 0, 
+      datos.llamadas || 0, 
+      datos.gci || 0, 
+      datos.volumenNegocio || 0, 
+      datos.notas || '', 
+      new Date(), 
+      datos.comisionPagada || 0, 
+      datos.pctComision || 0,
+      // 🆕 COLUMNAS 19-28 (NUEVAS)
+      datos.captacionesAlquiler || 0,
+      datos.leadVendedor || 0,
+      datos.tresBs || 0,
+      datos.bajadasPrecio || 0,
+      datos.leadComprador || 0,
+      datos.propuestasCompra || 0,
+      datos.leadSeguimiento || 0,
+      datos.arras || 0,
+      datos.ladoTransaccion || '',
+      datos.tipoTransaccion || ''
     ];
+    
     hoja.appendRow(fila);
+    
+    // 🆕 FORMATEAR columnas numéricas nuevas (U-Z: 21-26)
+    const filaInsertada = hoja.getLastRow();
+    hoja.getRange(filaInsertada, 21, 1, 6).setNumberFormat('0'); // Columnas U-Z como número entero
+    
     return { success: true, message: 'Actividad guardada correctamente', id: nuevoId };
   } catch (error) {
     throw new Error('Error al guardar actividad: ' + error.toString());
@@ -478,30 +582,35 @@ function guardarTransaccionGCI(datosTransaccion) {
       const idTransaccion = `${idBase}-${String(i + 1).padStart(2, '0')}`;
       
       const gci = parseFloat(agente.gci) || 0;
-let comisionPct = parseFloat(agente.comisionPct) || 40;
-let comisionImporte = parseFloat(agente.comisionImporte) || 0;
+      let comisionPct = parseFloat(agente.comisionPct) || 40;
+      let comisionImporte = parseFloat(agente.comisionImporte) || 0;
 
-// Recálculo bidireccional según campo modificado
-if (agente.campoModificado === 'importe' && gci > 0) {
-  comisionPct = (comisionImporte / gci) * 100;
-} else {
-  comisionImporte = (gci * comisionPct / 100);
-}
+      // Recálculo bidireccional según campo modificado
+      if (agente.campoModificado === 'importe' && gci > 0) {
+        comisionPct = (comisionImporte / gci) * 100;
+      } else {
+        comisionImporte = (gci * comisionPct / 100);
+      }
 
-const notas = `TRANSACCIÓN ${datosTransaccion.tipo.toUpperCase()} - ${datosTransaccion.descripcion || 'Venta/Alquiler'} | Lado: ${agente.lado} | Comis: ${comisionPct.toFixed(1)}%`;
+      const notas = `TRANSACCIÓN ${datosTransaccion.tipo.toUpperCase()} - ${datosTransaccion.descripcion || 'Venta/Alquiler'} | Lado: ${agente.lado} | Comis: ${comisionPct.toFixed(1)}%`;
       
       hoja.appendRow([
         idTransaccion,              // 1: ID
         fecha,                      // 2: Fecha
         agente.id,                  // 3: ID_Agente
         agente.nombre,              // 4: Nombre_Agente
-        0,0,0,0,0,0,0,0,           // 5-12: KPIs en 0
+        0,0,0,0,0,0,0,0,           // 5-12: KPIs originales en 0
         gci,                        // 13: GCI
         precioVenta,                // 14: Volumen_Negocio
         notas,                      // 15: Notas
         new Date(),                 // 16: Timestamp
-        comisionImporte,            // 17: ✅ Comision_Pagada = GCI × %
-        comisionPct                 // 18: Pct_Comision
+        comisionImporte,            // 17: Comision_Pagada
+        comisionPct,                // 18: Pct_Comision
+        0,0,0,0,0,0,0,0,           // 19-26: Nuevos KPIs en 0 (Captaciones_Alquiler, Lead_Vendedor, 3Bs, Bajadas, Lead_Comprador, Propuestas, Lead_Seguimiento, Arras)
+        agente.lado,                // 27: Lado_Transaccion
+        datosTransaccion.tipo,      // 28: Tipo_Transaccion (Venta/Alquiler/Otros)
+        agente.tipoCaptacion || '', // 29: 🆕 Tipo_Captacion (Exclusiva/Abierto/Alquiler)
+        agente.origenLead || ''     // 30: 🆕 Origen_Lead
       ]);
     });
     
@@ -518,10 +627,16 @@ const notas = `TRANSACCIÓN ${datosTransaccion.tipo.toUpperCase()} - ${datosTran
 
 function obtenerDatosDashboard(filtros) {
   try {
+    Logger.log('🚀 obtenerDatosDashboard INICIADO');
+    Logger.log('🚀 filtros recibido: ' + JSON.stringify(filtros));
+    Logger.log('🚀 Tipo de filtros: ' + typeof filtros);
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const hojaActividad = ss.getSheetByName(CONFIG.HOJA_ACTIVIDAD);
     const hojaObjetivos = ss.getSheetByName(CONFIG.HOJA_OBJETIVOS);
     const hojaAgentes = ss.getSheetByName(CONFIG.HOJA_AGENTES);
+    
+    Logger.log('🚀 Hojas encontradas: Actividad=' + !!hojaActividad + ', Objetivos=' + !!hojaObjetivos + ', Agentes=' + !!hojaAgentes);
+    
     
     if (!hojaActividad || !hojaObjetivos || !hojaAgentes) {
       throw new Error('Faltan hojas necesarias. Ejecuta "Inicializar Sistema".');
@@ -597,9 +712,22 @@ for (let i = 1; i < todasActividades.length; i++) {
     const mesesPeriodo = calcularMesesEnPeriodo(fechaInicio, fechaFin);
     const evolucionMensualEquipo = { labels: mesesPeriodo.map(m => obtenerNombreMesAbreviado(m.mes)) };
     
-    Object.keys(kpiNames).forEach(key => {
-        evolucionMensualEquipo[key] = { realizado: Array(mesesPeriodo.length).fill(0), objetivo: Array(mesesPeriodo.length).fill(0) };
-    });
+    // ✅ SOLO KPIs con datos mensuales históricos
+const kpisConEvolucionMensual = [
+    'gci', 'citasCaptacion', 'exclusivasVenta', 'exclusivasComprador',
+    'captacionesAbierto', 'citasCompradores', 'casasEnsenadas', 
+    'leadsCompradores', 'llamadas', 'volumenNegocio', 'actividadTotal',
+    // 🆕 NUEVOS KPIs
+    'captacionesAlquiler', 'leadVendedor', 'tresBs', 'bajadasPrecio',
+    'leadComprador', 'propuestasCompra', 'leadSeguimiento', 'arras'
+];
+
+kpisConEvolucionMensual.forEach(key => {
+    evolucionMensualEquipo[key] = { 
+        realizado: Array(mesesPeriodo.length).fill(0), 
+        objetivo: Array(mesesPeriodo.length).fill(0) 
+    };
+});
     
     const agentesActivos = [];
     
@@ -686,7 +814,7 @@ for (let i = 1; i < todasActividades.length; i++) {
       const evolucionMensual = calcularEvolucionMensual(agente.id, mesesPeriodo, agente.esAcumulativo, actividadFiltrada, objetivosFiltrados);
 
       mesesPeriodo.forEach((mes, idx) => {
-        Object.keys(kpiNames).forEach(key => {
+    kpisConEvolucionMensual.forEach(key => {
           if (evolucionMensual[key]) {
             evolucionMensualEquipo[key].realizado[idx] += evolucionMensual[key].realizado[idx];
             evolucionMensualEquipo[key].objetivo[idx] += evolucionMensual[key].objetivo[idx];
@@ -774,16 +902,16 @@ for (let i = 1; i < todasActividades.length; i++) {
 
 
     const numAgentes = resultados.length;
-    if (numAgentes > 0) {
-      mesesPeriodo.forEach((mes, idx) => {
-        Object.keys(kpiNames).forEach(key => {
-          if (!['gci', 'citasCaptacion', 'exclusivasVenta', 'exclusivasComprador', 'captacionesAbierto', 'citasCompradores', 'casasEnsenadas', 'leadsCompradores', 'actividadTotal'].includes(key)) {
-            evolucionMensualEquipo[key].realizado[idx] /= numAgentes;
-            evolucionMensualEquipo[key].objetivo[idx] /= numAgentes;
-          }
-        });
-      });
-    }
+if (numAgentes > 0) {
+  mesesPeriodo.forEach((mes, idx) => {
+    kpisConEvolucionMensual.forEach(key => {  // ✅ USAR kpisConEvolucionMensual
+      if (!['gci', 'citasCaptacion', 'exclusivasVenta', 'exclusivasComprador', 'captacionesAbierto', 'citasCompradores', 'casasEnsenadas', 'leadsCompradores', 'actividadTotal', 'llamadas', 'volumenNegocio', 'captacionesAlquiler', 'leadVendedor', 'tresBs', 'bajadasPrecio', 'leadComprador', 'propuestasCompra', 'leadSeguimiento', 'arras'].includes(key)) {
+  evolucionMensualEquipo[key].realizado[idx] /= numAgentes;
+  evolucionMensualEquipo[key].objetivo[idx] /= numAgentes;
+}
+    });
+  });
+}
 
     // ✅ CALCULAR HISTÓRICO AÑO ANTERIOR (2024)
     const anioAnterior = fechaInicio.getFullYear() - 1;
@@ -829,8 +957,15 @@ for (let i = 1; i < todasActividades.length; i++) {
         if (idxVisitas >= 0) evolucionMensual2024.casasEnsenadas.realizado[mesIdx] += Number(fila[idxVisitas]) || 0;
       }
       
-      Logger.log('✅ Evolución mensual ' + anioAnterior + ' calculada');
+     Logger.log('✅ Evolución mensual ' + anioAnterior + ' calculada');
     }
+    
+    // 🚀 LOGS FUERA DEL IF, CON VARIABLES CORRECTAS
+    Logger.log('🚀 Preparando return...');
+    Logger.log('🚀 Número de agentes: ' + resultados.length);
+    Logger.log('🚀 evolucionMensualEquipo existe: ' + !!evolucionMensualEquipo);
+    Logger.log('🚀 HACIENDO RETURN...');
+
 
     return {
       agentes: resultados,
@@ -840,8 +975,10 @@ for (let i = 1; i < todasActividades.length; i++) {
     };
 
   } catch (error) {
-    Logger.log('ERROR: ' + error.toString());
-    throw error;
+    Logger.log('❌❌❌ ERROR en obtenerDatosDashboard');
+    Logger.log('❌ Mensaje: ' + error.message);
+    Logger.log('❌ Stack: ' + error.stack);
+    throw error; // ← IMPORTANTE: lanzar el error
   }
 }
 
@@ -1206,10 +1343,10 @@ function calcularObjetivosAcumuladosPendientes(idAgente, fechaInicio, todasActiv
 }
 
 function obtenerObjetivoMes(idAgente, year, mes, todosObjetivos) {
-  // ✅ CAMBIO: i=0 en lugar de i=1
   for (let i = 0; i < todosObjetivos.length; i++) {
     if (todosObjetivos[i][0] === idAgente && todosObjetivos[i][2] === year && todosObjetivos[i][3] === mes) {
       return {
+        // CAMPOS ORIGINALES (columnas 5-14 = índices 4-13)
         citasCaptacion: parseFloat(todosObjetivos[i][4]) || 0,
         exclusivasVenta: parseFloat(todosObjetivos[i][5]) || 0,
         exclusivasComprador: parseFloat(todosObjetivos[i][6]) || 0,
@@ -1219,11 +1356,29 @@ function obtenerObjetivoMes(idAgente, year, mes, todosObjetivos) {
         leadsCompradores: parseFloat(todosObjetivos[i][10]) || 0,
         llamadas: parseFloat(todosObjetivos[i][11]) || 0,
         gci: parseFloat(todosObjetivos[i][12]) || 0,
-        volumenNegocio: parseFloat(todosObjetivos[i][13]) || 0
+        volumenNegocio: parseFloat(todosObjetivos[i][13]) || 0,
+        
+        // 🆕 NUEVOS CAMPOS (columnas 15-22 = índices 14-21)
+        captacionesAlquiler: parseFloat(todosObjetivos[i][14]) || 0,
+        leadVendedor: parseFloat(todosObjetivos[i][15]) || 0,
+        tresBs: parseFloat(todosObjetivos[i][16]) || 0,
+        bajadasPrecio: parseFloat(todosObjetivos[i][17]) || 0,
+        leadComprador: parseFloat(todosObjetivos[i][18]) || 0,
+        propuestasCompra: parseFloat(todosObjetivos[i][19]) || 0,
+        leadSeguimiento: parseFloat(todosObjetivos[i][20]) || 0,
+        arras: parseFloat(todosObjetivos[i][21]) || 0
       };
     }
   }
-  return { citasCaptacion: 0, exclusivasVenta: 0, exclusivasComprador: 0, captacionesAbierto: 0, citasCompradores: 0, casasEnsenadas: 0, leadsCompradores: 0, llamadas: 0, gci: 0, volumenNegocio: 0 };
+  
+  // Default cuando no hay objetivo definido
+  return {
+    citasCaptacion: 0, exclusivasVenta: 0, exclusivasComprador: 0,
+    captacionesAbierto: 0, citasCompradores: 0, casasEnsenadas: 0,
+    leadsCompradores: 0, llamadas: 0, gci: 0, volumenNegocio: 0,
+    captacionesAlquiler: 0, leadVendedor: 0, tresBs: 0, bajadasPrecio: 0,
+    leadComprador: 0, propuestasCompra: 0, leadSeguimiento: 0, arras: 0
+  };
 }
 
 // --- FIX: LEER MES A MES IGNORANDO ESPACIOS EN EL ID ---
@@ -1292,59 +1447,71 @@ function obtenerActividadMes(idAgente, year, mes, todasActividades) {
 
 function calcularEvolucionMensual(idAgente, mesesPeriodo, esAcumulativo, todasActividades, todosObjetivos) {
   const evolucion = { labels: mesesPeriodo.map(m => obtenerNombreMesAbreviado(m.mes)) };
-  Object.keys(kpiNames).forEach(key => {
-      evolucion[key] = { realizado: [], objetivo: [] };
-  });
-  let pendientes = {
-  // ORIGINALES
-  citasCaptacion: 0,
-  exclusivasVenta: 0,
-  exclusivasComprador: 0,
-  captacionesAbierto: 0,
-  citasCompradores: 0,
-  casasEnsenadas: 0,
-  leadsCompradores: 0,
-  llamadas: 0,
-  gci: 0,
-  volumenNegocio: 0,
   
-  // 🆕 NUEVOS
-  captacionesAlquiler: 0,
-  leadVendedor: 0,
-  tresBs: 0,
-  bajadasPrecio: 0,
-  leadComprador: 0,
-  propuestasCompra: 0,
-  leadSeguimiento: 0,
-  arras: 0
-};
+  // ✅ SOLO CREAR EVOLUCIÓN PARA KPIs CON DATOS MENSUALES
+  const kpisConEvolucionMensual = [
+    'gci', 'citasCaptacion', 'exclusivasVenta', 'exclusivasComprador',
+    'captacionesAbierto', 'citasCompradores', 'casasEnsenadas', 
+    'leadsCompradores', 'llamadas', 'volumenNegocio', 'actividadTotal',
+    'cumplimientoGlobal', 'conversionCaptacion', 'conversionComprador',
+    'ratioCierreExclusivas', 'productividad', 'ticketPromedio',
+    // 🆕 NUEVOS KPIs
+    'captacionesAlquiler', 'leadVendedor', 'tresBs', 'bajadasPrecio',
+    'leadComprador', 'propuestasCompra', 'leadSeguimiento', 'arras'
+];
+  
+  kpisConEvolucionMensual.forEach(key => {
+    evolucion[key] = { realizado: [], objetivo: [] };
+  });
+
+  let pendientes = {
+    citasCaptacion: 0,
+    exclusivasVenta: 0,
+    exclusivasComprador: 0,
+    captacionesAbierto: 0,
+    citasCompradores: 0,
+    casasEnsenadas: 0,
+    leadsCompradores: 0,
+    llamadas: 0,
+    gci: 0,
+    volumenNegocio: 0
+  };
+
   const inicioAno = new Date(mesesPeriodo[0].year, 0, 1);
   const primerMesPeriodo = new Date(mesesPeriodo[0].year, mesesPeriodo[0].mes - 1, 1);
+  
   if (esAcumulativo && inicioAno < primerMesPeriodo) {
-      pendientes = calcularObjetivosAcumuladosPendientes(idAgente, primerMesPeriodo, todasActividades, todosObjetivos);
+    pendientes = calcularObjetivosAcumuladosPendientes(idAgente, primerMesPeriodo, todasActividades, todosObjetivos);
   }
+
   for (const mesInfo of mesesPeriodo) {
     const actividadMes = obtenerActividadMes(idAgente, mesInfo.year, mesInfo.mes, todasActividades);
     const objetivoMesBase = obtenerObjetivoMes(idAgente, mesInfo.year, mesInfo.mes, todosObjetivos);
     const objetivoMesAcumulado = { ...objetivoMesBase };
+    
     if (esAcumulativo) {
-        Object.keys(pendientes).forEach(key => {
-            objetivoMesAcumulado[key] += pendientes[key];
-            const cubierto = (actividadMes[key] || 0) - (objetivoMesBase[key] || 0);
-            if (cubierto > 0) {
-                pendientes[key] = Math.max(0, pendientes[key] - cubierto);
-            }
-        });
+      Object.keys(pendientes).forEach(key => {
+        objetivoMesAcumulado[key] += pendientes[key];
+        const cubierto = (actividadMes[key] || 0) - (objetivoMesBase[key] || 0);
+        if (cubierto > 0) {
+          pendientes[key] = Math.max(0, pendientes[key] - cubierto);
+        }
+      });
     }
+
     const ratiosMes = calcularRatios(actividadMes, objetivoMesAcumulado);
     const cumplimientosMes = calcularCumplimientos(actividadMes, objetivoMesAcumulado);
     const cumplimientoGlobalMes = calcularCumplimientoGlobal(cumplimientosMes);
+
+    // ✅ SOLO AÑADIR A EVOLUCIÓN SI EXISTE EN kpisConEvolucionMensual
     Object.keys(actividadMes).forEach(key => {
       if (evolucion[key]) evolucion[key].realizado.push(actividadMes[key]);
     });
+    
     Object.keys(objetivoMesAcumulado).forEach(key => {
       if (evolucion[key]) evolucion[key].objetivo.push(objetivoMesAcumulado[key]);
     });
+    
     Object.keys(ratiosMes).forEach(key => {
       if (evolucion[key]) {
         evolucion[key].realizado.push(ratiosMes[key]);
@@ -1352,8 +1519,11 @@ function calcularEvolucionMensual(idAgente, mesesPeriodo, esAcumulativo, todasAc
         evolucion[key].objetivo.push(meta.thresholds?.bueno || 0);
       }
     });
-    evolucion.cumplimientoGlobal.realizado.push(cumplimientoGlobalMes);
-    evolucion.cumplimientoGlobal.objetivo.push(100);
+
+    if (evolucion.cumplimientoGlobal) {
+      evolucion.cumplimientoGlobal.realizado.push(cumplimientoGlobalMes);
+      evolucion.cumplimientoGlobal.objetivo.push(100);
+    }
   }
  
   return evolucion;
@@ -2254,6 +2424,9 @@ function obtenerEstadisticasInventario() {
   } catch (error) { throw new Error('Error al obtener estadísticas: ' + error.toString()); }
 }
 // ====== FUNCIÓN PARA LA PESTAÑA TRANSACCIONES ======
+// ==========================================
+// 🛠️ FIX: TRANSACCIONES (INDICES 100% REALES)
+// ==========================================
 function obtenerTransacciones(filtros) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -2263,37 +2436,85 @@ function obtenerTransacciones(filtros) {
     const datos = hoja.getDataRange().getValues();
     const transacciones = [];
 
+    // Configuración de Fechas
     let fechaInicio = new Date(new Date().getFullYear(), 0, 1);
     let fechaFin = new Date();
+    
     if (filtros && filtros.fechaInicio) fechaInicio = new Date(filtros.fechaInicio);
     if (filtros && filtros.fechaFin) fechaFin = new Date(filtros.fechaFin);
+    
+    // Cobertura horaria completa
+    fechaInicio.setHours(0,0,0,0);
+    fechaFin.setHours(23,59,59,999);
 
+    // Iteramos los datos
     for (let i = 1; i < datos.length; i++) {
-      const notas = (datos[i][12] || "").toUpperCase(); // Columna Notas
-      if (notas.includes('TRANSACCIÓN')) {
-        const fechaRaw = datos[i][1];
+      const row = datos[i];
+      
+      // 1. Validar GCI (Columna 13 -> Índice 12)
+      const gci = parseFloat(row[12]) || 0;
+      
+      // 2. Validar si es transacción: GCI > 0
+      if (gci > 0) {
+        const fechaRaw = row[1]; // Columna B
         if (!fechaRaw) continue;
+        
         const fecha = new Date(fechaRaw);
-        if (fecha instanceof Date && !isNaN(fecha) && fecha >= fechaInicio && fecha <= fechaFin) {
+        
+        // 3. Filtro de Fecha
+        if (fecha >= fechaInicio && fecha <= fechaFin) {
+          
+          // --- RECUPERACIÓN DE DATOS (NUEVOS ENCABEZADOS) ---
+          const notas = String(row[14] || "");       // Col 15: Notas (Índice 14)
+          let tipo = String(row[27] || "").trim();   // Col 28: Tipo_Transaccion (Índice 27)
+          let lado = String(row[26] || "").trim();   // Col 27: Lado_Transaccion (Índice 26)
+          
+          // Fallback: Si las columnas nuevas están vacías (datos antiguos), buscamos en Notas
+          if (tipo === "") {
+             const matchTipo = notas.toUpperCase().match(/TRANSACCIÓN\s+(\w+)/);
+             tipo = matchTipo ? matchTipo[1] : 'Venta'; 
+          }
+          if (lado === "") {
+             const matchLado = notas.toUpperCase().match(/LADO:\s*(\w+)/);
+             lado = matchLado ? matchLado[1] : 'Ambos';
+          }
+
+          // Limpiar descripción (quitar etiquetas técnicas si viene de notas)
+          let descripcion = notas;
+          if (descripcion.includes('|')) {
+             descripcion = descripcion.split('|')[0].replace(/TRANSACCIÓN\s+\w+\s*-\s*/i, '').trim();
+          }
+
           transacciones.push({
-            id: datos[i][0],
+            id: row[0],                                    // Col A: ID
             fecha: Utilities.formatDate(fecha, Session.getScriptTimeZone(), 'dd/MM/yyyy'),
-            agente: datos[i][3] || 'N/A',
-            tipo: notas.match(/TRANSACCIÓN (\w+)/)?.[1] || 'N/A',
-            lado: notas.match(/LADO: (\w+)/)?.[1] || 'N/A',
-            descripcion: notas.match(/DESCRIPCIÓN: (.*?)( \| LADO| \| COMISIÓN|$)/)?.[1] || 'Sin descripción',
-            gci: parseFloat(datos[i][11]) || 0
+            agente: row[3] || 'N/A',                       // Col D: Nombre_Agente
+            tipo: tipo,
+            lado: lado,
+            descripcion: descripcion || 'Sin detalle',
+            gci: gci,                                      // Col M: GCI
+            volumenNegocio: parseFloat(row[13]) || 0,      // Col N: Volumen
+            comision: parseFloat(row[16]) || 0,            // Col Q: Comision_Pagada
+            pctComision: parseFloat(row[17]) || 0          // Col R: Pct_Comision
           });
         }
       }
     }
 
-    transacciones.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    // Ordenar por fecha descendente
+    transacciones.sort((a, b) => {
+        const partsA = a.fecha.split('/');
+        const partsB = b.fecha.split('/');
+        const dateA = new Date(partsA[2], partsA[1]-1, partsA[0]);
+        const dateB = new Date(partsB[2], partsB[1]-1, partsB[0]);
+        return dateB - dateA;
+    });
 
-    return { transacciones };
+    return { transacciones: transacciones };
+    
   } catch (error) {
-    Logger.log('Error en obtenerTransacciones: ' + error);
-    return { transacciones: [] };
+    Logger.log('❌ Error en obtenerTransacciones: ' + error);
+    return { transacciones: [], error: error.toString() };
   }
 }
 function lanzarAnalisisIA() {
@@ -4474,6 +4695,7 @@ function actualizarActividad(datos) {
           // Actualizar la fila encontrada
           const fila = i + 1;
           
+          // COLUMNAS ORIGINALES (5-16)
           hoja.getRange(fila, 5).setValue(parseInt(datos.citasCaptacion) || 0);
           hoja.getRange(fila, 6).setValue(parseInt(datos.exclusivasVenta) || 0);
           hoja.getRange(fila, 7).setValue(parseInt(datos.exclusivasComprador) || 0);
@@ -4486,6 +4708,19 @@ function actualizarActividad(datos) {
           hoja.getRange(fila, 14).setValue(parseFloat(datos.volumenNegocio) || 0);
           hoja.getRange(fila, 15).setValue(datos.notas || '');
           hoja.getRange(fila, 16).setValue(new Date()); // Timestamp actualización
+          
+          // 🆕 COLUMNAS NUEVAS (19-26)
+          hoja.getRange(fila, 19).setValue(parseInt(datos.captacionesAlquiler) || 0);
+          hoja.getRange(fila, 20).setValue(parseInt(datos.leadVendedor) || 0);
+          hoja.getRange(fila, 21).setValue(parseInt(datos.tresBs) || 0);
+          hoja.getRange(fila, 22).setValue(parseInt(datos.bajadasPrecio) || 0);
+          hoja.getRange(fila, 23).setValue(parseInt(datos.leadComprador) || 0);
+          hoja.getRange(fila, 24).setValue(parseInt(datos.propuestasCompra) || 0);
+          hoja.getRange(fila, 25).setValue(parseInt(datos.leadSeguimiento) || 0);
+          hoja.getRange(fila, 26).setValue(parseInt(datos.arras) || 0);
+          
+          // 🆕 FORMATEAR columnas numéricas nuevas
+          hoja.getRange(fila, 21, 1, 6).setNumberFormat('0');
           
           return { success: true, message: 'Actividad actualizada correctamente', accion: 'actualizar' };
         }
@@ -5640,6 +5875,245 @@ function paso7_TestBackendCompleto() {
     Logger.log('   Stack: ' + error.stack);
   }
 }
+function test_VerificarError() {
+  try {
+    Logger.log('🔍 Probando obtenerDatosDashboard...');
+    const resultado = obtenerDatosDashboard(null);
+    
+    if (resultado) {
+      Logger.log('✅ ÉXITO: ' + resultado.agentes.length + ' agentes');
+    } else {
+      Logger.log('❌ Resultado es NULL');
+    }
+  } catch (error) {
+    Logger.log('❌❌❌ ERROR CAPTURADO');
+    Logger.log('❌ Mensaje: ' + error.message);
+    Logger.log('❌ Línea: ' + error.stack);
+  }
+}
+function test_VerActividadMes() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hoja = ss.getSheetByName('Actividad_Diaria');
+  const datos = hoja.getDataRange().getValues();
+  
+  // Ver headers
+  Logger.log('📋 HEADERS: ' + datos[0]);
+  Logger.log('📋 Total columnas: ' + datos[0].length);
+  
+  // Ver una fila de ejemplo
+  Logger.log('📋 FILA 2: ' + datos[1]);
+  
+  // Verificar columnas 19-26
+  Logger.log('📋 Col 19 (CaptAlquiler): ' + datos[0][18]);
+  Logger.log('📋 Col 20 (LeadVendedor): ' + datos[0][19]);
+  Logger.log('📋 Col 26 (Arras): ' + datos[0][25]);
+}
+function agregarColumnasNuevasObjetivos() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hoja = ss.getSheetByName('Objetivos');
+  
+  if (!hoja) {
+    throw new Error('No se encontró la hoja Objetivos');
+  }
+  
+  // Obtener headers actuales
+  const headers = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getValues()[0];
+  Logger.log('📋 Headers actuales: ' + headers.length + ' columnas');
+  Logger.log('📋 Headers: ' + headers.join(', '));
+  
+  // Verificar si ya existen
+  if (headers.includes('Obj_Captaciones_Alquiler')) {
+    Logger.log('⚠️ Las columnas nuevas ya existen');
+    return;
+  }
+  
+  // Nuevas columnas (con prefijo Obj_ para consistencia)
+  const nuevasColumnas = [
+    'Obj_Captaciones_Alquiler',
+    'Obj_Lead_Vendedor',
+    'Obj_3Bs_Activadas',
+    'Obj_Bajadas_Precio',
+    'Obj_Lead_Comprador',
+    'Obj_Propuestas_Compra',
+    'Obj_Lead_Seguimiento',
+    'Obj_Arras_Firmadas'
+  ];
+  
+  // Insertar 8 columnas ANTES de "Fecha_Creacion" (columna 15)
+  hoja.insertColumnsAfter(14, 8);
+  
+  // Escribir headers en las columnas 15-22
+  for (let i = 0; i < nuevasColumnas.length; i++) {
+    hoja.getRange(1, 15 + i).setValue(nuevasColumnas[i]);
+  }
+  
+  // Rellenar con 0 todas las filas existentes (columnas 15-22)
+  const ultimaFila = hoja.getLastRow();
+  if (ultimaFila > 1) {
+    hoja.getRange(2, 15, ultimaFila - 1, 8)
+      .setValue(0)
+      .setNumberFormat('0');
+  }
+  
+  Logger.log('✅ Añadidas ' + nuevasColumnas.length + ' columnas nuevas');
+  Logger.log('✅ Total columnas ahora: ' + hoja.getLastColumn());
+  Logger.log('✅ Columnas 15-22: ' + nuevasColumnas.join(', '));
+  Logger.log('✅ Fecha_Creacion movida a columna 23');
+}
+function test_VerEstructuraHistorico() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hoja = ss.getSheetByName('Historico_Agentes');
+  
+  if (!hoja) {
+    Logger.log('❌ No existe Historico_Agentes');
+    return;
+  }
+  
+  const headers = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getValues()[0];
+  Logger.log('📋 Headers actuales: ' + headers.length + ' columnas');
+  Logger.log('📋 Columnas: ' + headers.join(', '));
+  
+  if (hoja.getLastRow() > 1) {
+    const fila2 = hoja.getRange(2, 1, 1, hoja.getLastColumn()).getValues()[0];
+    Logger.log('📋 Fila ejemplo: ' + fila2);
+  }
+}
+function calcularOrigenesDelAnoActual() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hoja = ss.getSheetByName('Actividad_Diaria');
+    if (!hoja) return [];
+    
+    const datos = hoja.getDataRange().getValues();
+    const anoActual = new Date().getFullYear();
+    
+    // Obtener lista de orígenes
+    const origenes = obtenerOrigenesNegocio();
+    
+    // Inicializar contadores
+    const resultado = {};
+    origenes.forEach(origen => {
+      resultado[origen] = { captaciones: 0, gci: 0 };
+    });
+    
+    // Recorrer filas (saltar header)
+    for (let i = 1; i < datos.length; i++) {
+      const fila = datos[i];
+      const fecha = fila[1]; // Columna B
+      const gci = parseFloat(fila[12]) || 0; // Columna M: GCI
+      const origenLead = fila[29]; // Columna AD: Origen_Lead (col 30, índice 29)
+      const notas = String(fila[14] || '').toUpperCase(); // Columna O: Notas
+      
+      // Filtrar solo año actual
+      if (!fecha || fecha.getFullYear() !== anoActual) continue;
+      
+      // Filtrar solo transacciones (que tienen GCI > 0 y "TRANSACCIÓN" en notas)
+      if (gci <= 0 || !notas.includes('TRANSACCIÓN')) continue;
+      
+      // Si tiene origen definido, contabilizar
+      if (origenLead && resultado[origenLead] !== undefined) {
+        resultado[origenLead].captaciones += 1;
+        resultado[origenLead].gci += gci;
+      }
+    }
+    
+    // Convertir a array
+    return origenes.map(origen => ({
+      nombre: origen,
+      captaciones: resultado[origen].captaciones,
+      gci: resultado[origen].gci
+    }));
+    
+  } catch (error) {
+    Logger.log('Error en calcularOrigenesDelAnoActual: ' + error);
+    return [];
+  }
+}
+function calcularOrigenesDelAnoActualConFiltros(agentesIds, lado) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hoja = ss.getSheetByName('Actividad_Diaria');
+    if (!hoja) return [];
+    
+    const datos = hoja.getDataRange().getValues();
+    const anoActual = new Date().getFullYear();
+    
+    // Obtener lista de orígenes
+    const origenes = obtenerOrigenesNegocio();
+    
+    // Inicializar contadores
+    const resultado = {};
+    origenes.forEach(origen => {
+      resultado[origen] = { captaciones: 0, gci: 0 };
+    });
+    
+    // Recorrer filas (saltar header)
+    for (let i = 1; i < datos.length; i++) {
+      const fila = datos[i];
+      const fecha = fila[1]; // Columna B
+      const idAgente = fila[2]; // Columna C
+      const gci = parseFloat(fila[12]) || 0; // Columna M: GCI
+      const ladoTx = fila[26]; // Columna AA: Lado_Transaccion
+      const origenLead = fila[29]; // Columna AD: Origen_Lead
+      const notas = String(fila[14] || '').toUpperCase(); // Columna O: Notas
+      
+      // Filtrar solo año actual
+      if (!fecha || fecha.getFullYear() !== anoActual) continue;
+      
+      // Filtrar solo transacciones (que tienen GCI > 0 y "TRANSACCIÓN" en notas)
+      if (gci <= 0 || !notas.includes('TRANSACCIÓN')) continue;
+      
+      // 🆕 APLICAR FILTRO DE AGENTES
+      if (agentesIds && agentesIds.length > 0 && !agentesIds.includes(idAgente)) continue;
+      
+      // 🆕 APLICAR FILTRO DE LADO
+      if (lado && lado !== 'TODOS' && ladoTx !== lado) continue;
+      
+      // Si tiene origen definido, contabilizar
+      if (origenLead && resultado[origenLead] !== undefined) {
+        resultado[origenLead].captaciones += 1;
+        resultado[origenLead].gci += gci;
+      }
+    }
+    
+    // Convertir a array
+    return origenes.map(origen => ({
+      nombre: origen,
+      captaciones: resultado[origen].captaciones,
+      gci: resultado[origen].gci
+    }));
+    
+  } catch (error) {
+    Logger.log('Error en calcularOrigenesDelAnoActualConFiltros: ' + error);
+    return [];
+  }
+}
+function obtenerListaAgentes() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hoja = ss.getSheetByName('Agentes');
+    if (!hoja) return [];
+    
+    const datos = hoja.getDataRange().getValues();
+    const agentes = [];
+    
+    // Saltar header, empezar desde fila 2
+    for (let i = 1; i < datos.length; i++) {
+      const id = datos[i][0];
+      const nombre = datos[i][1];
+      
+      if (id && nombre) {
+        agentes.push([id, nombre]);
+      }
+    }
+    
+    return agentes;
+  } catch (error) {
+    Logger.log('Error en obtenerListaAgentes: ' + error);
+    return [];
+  }
+}
+
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 📝 NOTA: Estas funciones se añaden al final del archivo .gs
