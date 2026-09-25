@@ -54,19 +54,29 @@ haciendo a mano el trabajo que la herramienta hace sola.
 ## 3. Test de 30 segundos: ¿qué es eso que tiene abierto dentro de VS Code?
 
 Que Claude aparezca dentro de VS Code **no significa que sea Claude Code**. Hay tres cosas
-distintas que se ven parecidas, y solo una toca los ficheros. Esta prueba las distingue:
+distintas que se ven parecidas, y solo una toca los ficheros.
 
-> Abrir la carpeta del proyecto en VS Code (`Archivo → Abrir carpeta`) y escribirle esto al panel
-> de Claude:
+**Cuidado con un espejismo muy fácil de creer:** que la lista de ficheros se vea en la columna
+izquierda no demuestra nada. Esa columna es el explorador de VS Code, y es independiente del panel
+de Claude. Que compartan ventana no los conecta. Un chat embebido en un panel **no ve** lo que
+muestra el explorador de al lado, igual que un navegador abierto en la otra mitad de la pantalla
+tampoco lo ve. Esa es exactamente la ilusión que hace pensar que "Claude está dentro pero no
+funciona solo".
+
+La prueba tiene que ser sobre el **contenido** de un fichero, no sobre su nombre — un chat puede
+adivinar que existe un `index.html` y sonar convincente:
+
+> Con la carpeta del proyecto abierta, elegir en la columna izquierda un fichero concreto y
+> escribirle al panel de Claude:
 >
-> **"Dime qué ficheros hay en esta carpeta y hazme un resumen de la estructura del proyecto."**
+> **"Abre el fichero `<nombre exacto>`, dime cuántas líneas tiene y resúmeme qué hace."**
 
 Según lo que conteste:
 
 | Respuesta | Qué es | Qué hacer |
 |---|---|---|
-| Lista los ficheros de verdad | **Es Claude Code y funciona.** El problema es de configuración | Ir al indicador de modo, abajo en la caja de texto, y ponerlo en **Auto**. Si está en *Plan* o *Manual*, Claude solo describe o pide permiso a cada paso — y eso se parece mucho a "me dice lo que tengo que hacer" |
-| Dice que no puede ver tus ficheros, o pide que se los pegues | **Es el chat, metido dentro de VS Code** (un panel de navegador o una extensión de terceros). Parece integrado pero tiene cero acceso al disco. Esta es la trampa | Desinstalarlo e instalar la extensión oficial |
+| Lo abre y da datos reales y verificables | **Es Claude Code y funciona.** El problema es de configuración | Ir al indicador de modo, abajo en la caja de texto, y ponerlo en **Auto**. Si está en *Plan* o *Manual*, Claude solo describe o pide permiso a cada paso — y eso se parece mucho a "me dice lo que tengo que hacer" |
+| Dice que no puede acceder a tus ficheros, pide que le pegues el contenido, o responde en genérico sin datos concretos | **Es el chat, metido dentro de VS Code** (un panel de navegador o una extensión de terceros). Parece integrado pero tiene cero acceso al disco. Esta es la trampa | Desinstalarlo e instalar la extensión oficial |
 | Sale una pantalla de *Sign in*, o "Not logged in · Please run /login" | Es la extensión oficial, **pero sin sesión iniciada** | Iniciar sesión. Requiere plan de pago (Pro, Max, Team o Enterprise); el plan gratuito no incluye Claude Code |
 | No responde nada útil y no hay carpeta abierta | Claude Code **sin proyecto**. Sin carpeta abierta no tiene sobre qué trabajar | `Archivo → Abrir carpeta` y seleccionar la carpeta de kwwise.es |
 
@@ -91,13 +101,15 @@ Deja de darme instrucciones para que yo las copie y las ejecute a mano, y
 deja de pedirme que te pegue el contenido de los ficheros. Si necesitas ver
 un fichero, ábrelo tú. Si necesitas ejecutar algo, ejecútalo tú.
 
-Para empezar: dime qué ficheros hay en esta carpeta, hazme un resumen de la
-estructura del proyecto y dime con qué está construida la web.
+Para empezar: recorre tú la carpeta, hazme un resumen de la estructura del
+proyecto, dime con qué está construida la web y cuántas líneas tiene cada
+fichero principal.
 ```
 
-La última frase es la prueba de fuego. **Si vuelve con una lista real de ficheros, ya está
-resuelto** y se acabó el copia-pega. Si pide que se los peguen, no es Claude Code: hay que volver
-al test del apartado anterior.
+La última frase es la prueba de fuego, y por eso pide **cifras**: los nombres de fichero se pueden
+adivinar, el número de líneas no. **Si vuelve con datos concretos y comprobables, ya está
+resuelto** y se acabó el copia-pega. Si pide que le peguen el contenido, o contesta en genérico,
+no es Claude Code: hay que volver al test del apartado anterior.
 
 Y si contesta bien pero sigue limitándose a describir en vez de tocar nada, entonces está en modo
 *Plan*. Segundo mensaje:
@@ -308,7 +320,9 @@ A partir de ahí, escribir `/nuevo-video` en Claude Code dispara toda la secuenc
 
 ## 8. Un aviso sobre el tamaño de los ficheros
 
-Vale la pena mirar esto, porque probablemente sea **parte de la causa** del copia-pega actual.
+Este apartado puede que no aplique a KWY: si en el explorador de VS Code se ven muchos ficheros,
+el proyecto ya está repartido y no hay nada que partir. Aun así conviene comprobar que ninguno se
+ha ido de las manos, porque es un problema silencioso.
 
 En el repositorio `codigo` de KWSync hay ficheros de este tamaño:
 
@@ -320,8 +334,11 @@ En el repositorio `codigo` de KWSync hay ficheros de este tamaño:
 
 Un fichero HTML de casi 20.000 líneas no cabe cómodamente en una ventana de chat. Eso obliga a ir
 pegando fragmentos, y a que la IA trabaje sin ver el conjunto — que es justo la dinámica lenta y
-propensa a errores que se quiere eliminar. Si KWY tiene la misma forma (un HTML gigante con todo
-el CSS y el JavaScript dentro), pasa lo mismo.
+propensa a errores que se quiere eliminar.
+
+Para salir de dudas en KWY, basta con preguntárselo a Claude Code una vez conectado: *"dime los
+diez ficheros más largos del proyecto y cuántas líneas tiene cada uno"*. Por encima de unas 2.000
+líneas en un solo fichero, conviene plantearse dividirlo.
 
 Con Claude Code el problema se alivia mucho, porque lee y edita los ficheros por partes en lugar
 de necesitarlos enteros en el contexto. Pero conviene además **partirlos**: separar el CSS a su
