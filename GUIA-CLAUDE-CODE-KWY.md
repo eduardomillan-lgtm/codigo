@@ -23,7 +23,94 @@ que ir y volver, es una pestaña más dentro del mismo editor.
 
 ---
 
-## 2. Paso 0 (innegociable): KWY tiene que estar en Git
+## 2. Por qué Claude le dijo "ya no podemos seguir así"
+
+No puedo saber el momento exacto sin ver esa conversación, pero las causas realistas son estas
+cuatro, y casi siempre es una combinación:
+
+1. **El proyecto se hizo más grande que una ventana de chat.** Una web es muchos ficheros. Un chat
+   solo puede llevar uno pegado por mensaje. En cuanto KWY pasó de un puñado de ficheros — o uno
+   solo se hizo demasiado grande para pegarlo entero — el método dejó de funcionar.
+2. **El chat no puede tocar el servidor.** kwwise.es está desplegado en algún sitio. Una
+   conversación de chat no puede subir ficheros, ejecutar un despliegue, leer los logs ni
+   comprobar si la web sigue funcionando. En cuanto el trabajo pasó de "escríbeme esta función" a
+   "arregla lo que está roto en producción", el chat chocó contra un muro.
+3. **Los límites de longitud de la conversación.** Los chats largos con ficheros grandes pegados
+   se agotan y hay que empezar de cero, perdiendo todo el contexto cada vez.
+4. **Pérdida de fidelidad.** Al pegar un fichero enorme y pedir que lo devuelva entero, se pierden
+   trozos por el camino. Es un método que introduce errores en silencio.
+
+**Aquí está la clave: el diagnóstico de Claude era correcto, pero la solución que dio era solo la
+mitad.** "Deja de pasar el código por el chat, trabaja sobre los ficheros reales con un editor y
+una terminal" es exactamente lo que había que hacer. Lo que faltó fue la segunda mitad: *"…y usa
+Claude Code, que trabaja sobre esos ficheros él mismo"*.
+
+Es decir: **no se ha ido hacia atrás, se ha quedado a un paso de terminar la mudanza.** Hizo la
+parte incómoda (montar el entorno local) sin la parte que la hace rápida. Por eso ahora está
+haciendo a mano el trabajo que la herramienta hace sola.
+
+---
+
+## 3. Test de 30 segundos: ¿qué es eso que tiene abierto dentro de VS Code?
+
+Que Claude aparezca dentro de VS Code **no significa que sea Claude Code**. Hay tres cosas
+distintas que se ven parecidas, y solo una toca los ficheros. Esta prueba las distingue:
+
+> Abrir la carpeta del proyecto en VS Code (`Archivo → Abrir carpeta`) y escribirle esto al panel
+> de Claude:
+>
+> **"Dime qué ficheros hay en esta carpeta y hazme un resumen de la estructura del proyecto."**
+
+Según lo que conteste:
+
+| Respuesta | Qué es | Qué hacer |
+|---|---|---|
+| Lista los ficheros de verdad | **Es Claude Code y funciona.** El problema es de configuración | Ir al indicador de modo, abajo en la caja de texto, y ponerlo en **Auto**. Si está en *Plan* o *Manual*, Claude solo describe o pide permiso a cada paso — y eso se parece mucho a "me dice lo que tengo que hacer" |
+| Dice que no puede ver tus ficheros, o pide que se los pegues | **Es el chat, metido dentro de VS Code** (un panel de navegador o una extensión de terceros). Parece integrado pero tiene cero acceso al disco. Esta es la trampa | Desinstalarlo e instalar la extensión oficial |
+| Sale una pantalla de *Sign in*, o "Not logged in · Please run /login" | Es la extensión oficial, **pero sin sesión iniciada** | Iniciar sesión. Requiere plan de pago (Pro, Max, Team o Enterprise); el plan gratuito no incluye Claude Code |
+| No responde nada útil y no hay carpeta abierta | Claude Code **sin proyecto**. Sin carpeta abierta no tiene sobre qué trabajar | `Archivo → Abrir carpeta` y seleccionar la carpeta de kwwise.es |
+
+Para identificar la extensión buena: se llama exactamente **"Claude Code"**, el editor es
+**Anthropic**, y el icono es una chispa (✻). Cualquier otra cosa del marketplace con "Claude" en
+el nombre es de terceros y no tiene acceso a los ficheros.
+
+---
+
+## 4. Qué escribirle exactamente a su Claude
+
+Esto se puede copiar y pegar tal cual en el panel de Claude:
+
+```text
+Para. Vamos a cambiar de método.
+
+Estoy usando Claude Code dentro de VS Code, con la carpeta del proyecto de
+kwwise.es abierta. Quiero que trabajes directamente sobre los ficheros: que
+los leas tú, los edites tú y ejecutes tú los comandos en la terminal.
+
+Deja de darme instrucciones para que yo las copie y las ejecute a mano, y
+deja de pedirme que te pegue el contenido de los ficheros. Si necesitas ver
+un fichero, ábrelo tú. Si necesitas ejecutar algo, ejecútalo tú.
+
+Para empezar: dime qué ficheros hay en esta carpeta, hazme un resumen de la
+estructura del proyecto y dime con qué está construida la web.
+```
+
+La última frase es la prueba de fuego. **Si vuelve con una lista real de ficheros, ya está
+resuelto** y se acabó el copia-pega. Si pide que se los peguen, no es Claude Code: hay que volver
+al test del apartado anterior.
+
+Y si contesta bien pero sigue limitándose a describir en vez de tocar nada, entonces está en modo
+*Plan*. Segundo mensaje:
+
+```text
+Deja el modo plan y haz los cambios directamente sobre los ficheros.
+```
+
+(O cambiarlo a mano en el indicador de modo, abajo en la caja de texto.)
+
+---
+
+## 5. Paso 0 (innegociable): KWY tiene que estar en Git
 
 Antes de cualquier otra cosa. Una plataforma con ~700 agentes y un repositorio de vídeos por
 roles no se puede mantener sin control de versiones:
@@ -56,7 +143,7 @@ puede pedir directamente a Claude Code una vez instalado: sabe hacerlo solo.
 
 ---
 
-## 3. Las tres formas de usar Claude Code (elegir una)
+## 6. Las tres formas de usar Claude Code (elegir una)
 
 ### Opción A — Extensión de VS Code · **la recomendada**
 
@@ -117,11 +204,11 @@ se ha escrito así.*
 
 ---
 
-## 4. Las cuatro cosas que de verdad multiplican la velocidad en KWY
+## 7. Las cuatro cosas que de verdad multiplican la velocidad en KWY
 
 Instalar Claude Code quita el copia-pega. Estas cuatro quitan el resto de la fricción.
 
-### 4.1. Un fichero `CLAUDE.md` en la raíz del proyecto
+### 7.1. Un fichero `CLAUDE.md` en la raíz del proyecto
 
 Es, con diferencia, **el mayor ahorro de tiempo diario**. Claude Code lo lee automáticamente al
 arrancar en cada sesión, así que deja de ser necesario reexplicar el contexto de la plataforma
@@ -159,10 +246,12 @@ Plataforma interna para ~700 agentes. Repositorio de vídeos organizado por role
 Se puede generar un primer borrador pidiéndoselo a Claude Code con el comando `/init`, y luego
 corregirlo a mano.
 
-### 4.2. Firebase CLI instalado
+### 7.2. La herramienta de despliegue, en la misma máquina
 
 Para que Claude Code pueda cerrar el ciclo completo él solo — editar, probar en local y
-desplegar — sin que nadie copie comandos:
+desplegar — sin que nadie copie comandos.
+
+**Si kwwise.es está en Firebase Hosting:**
 
 ```powershell
 npm install -g firebase-tools
@@ -173,7 +262,19 @@ Con esto, Claude puede ejecutar `firebase emulators:start` para probar los cambi
 leer los logs de las Cloud Functions y desplegar cuando se le dice. Hoy esos comandos se están
 copiando y pegando a mano; a partir de aquí, no.
 
-### 4.3. Trabajar en ramas, no sobre producción
+**Si está en un hosting clásico (FTP, cPanel, Plesk, un VPS):** el principio es el mismo, cambia
+la herramienta. Lo que hay que conseguir es que el despliegue sea *un comando ejecutable desde la
+terminal*, no una subida manual arrastrando ficheros. Un script `deploy.ps1` con el `rsync`, el
+`scp` o el cliente FTP correspondiente es suficiente. A partir de ahí Claude Code lo ejecuta él.
+
+La forma rápida de resolverlo es preguntárselo a él directamente:
+
+```text
+Explícame cómo se despliega este proyecto ahora mismo, y escríbeme un script
+que lo haga en un solo comando. Luego lo añadimos al CLAUDE.md.
+```
+
+### 7.3. Trabajar en ramas, no sobre producción
 
 Con 700 usuarios, un error desplegado se nota. El flujo sano:
 
@@ -187,7 +288,7 @@ firebase deploy                         # solo cuando está comprobado
 
 Claude Code gestiona todo esto solo si se le pide; lo que importa es que sea la costumbre.
 
-### 4.4. Comandos propios para las tareas repetitivas
+### 7.4. Comandos propios para las tareas repetitivas
 
 Todo lo que se haga más de tres veces se puede convertir en un comando de una línea. Se crean
 como ficheros `.md` en `.claude/commands/` dentro del proyecto. Por ejemplo,
@@ -205,7 +306,7 @@ A partir de ahí, escribir `/nuevo-video` en Claude Code dispara toda la secuenc
 
 ---
 
-## 5. Un aviso sobre el tamaño de los ficheros
+## 8. Un aviso sobre el tamaño de los ficheros
 
 Vale la pena mirar esto, porque probablemente sea **parte de la causa** del copia-pega actual.
 
@@ -230,13 +331,13 @@ verificando que todo sigue funcionando antes de desplegar.
 
 ---
 
-## 6. Plan de arranque: unos 45 minutos
+## 9. Plan de arranque: unos 45 minutos
 
 | # | Tarea | Tiempo |
 |---|-------|--------|
 | 1 | Instalar la extensión de Claude Code en VS Code e iniciar sesión | 5 min |
 | 2 | Poner KWY bajo Git y subirlo a un repositorio privado de GitHub (revisando el `.gitignore`) | 15 min |
-| 3 | Instalar Firebase CLI (`npm install -g firebase-tools`) y hacer `firebase login` | 5 min |
+| 3 | Dejar el despliegue como un comando de terminal (Firebase CLI, o un script `deploy`) | 5 min |
 | 4 | Crear el `CLAUDE.md` con `/init` y repasarlo a mano | 15 min |
 | 5 | Poner el modo de permisos en *Auto* y hacer un primer cambio pequeño de prueba | 5 min |
 
@@ -245,12 +346,12 @@ aceptar**. Cero copia-pega.
 
 ---
 
-## 7. Resumen para quien no quiera leer lo anterior
+## 10. Resumen para quien no quiera leer lo anterior
 
 1. Instalar la **extensión de Claude Code en VS Code**. Esto por sí solo elimina el copia-pega.
 2. Poner **KWY en Git/GitHub**. Sin esto no hay red de seguridad para una plataforma de 700 usuarios.
 3. Escribir un **`CLAUDE.md`** con el contexto de la plataforma, para no reexplicarlo cada día.
-4. Instalar el **Firebase CLI**, para que Claude pueda probar y desplegar sin intermediarios.
+4. Dejar el **despliegue como un comando de terminal** (Firebase CLI o un script `deploy`), para que Claude pueda probar y desplegar sin intermediarios.
 5. Usar **modo Plan y ramas** para cualquier cambio serio en producción.
 
 ---
