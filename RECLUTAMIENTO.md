@@ -385,6 +385,51 @@ número**, a nombre del Market Center y no de la oficina, solo para
 reclutamiento: separa reputaciones y separa facturación. Menú → Kelly/KWSync →
 *Ver plantillas de Meta que faltan* te saca las cuatro que harían falta.
 
+### Kelly también cualifica, y ahí está el valor de verdad
+
+Kelly no solo envía: **conversa y cualifica**. Lo que hace con un comprador
+—una pregunta por mensaje, con botones, sin repetir, parando cuando toca y
+avisando si piden que les llamen— sirve igual para un candidato.
+
+Y resuelve el punto más débil del sistema. El score se calcula con producción
+**estimada** de los portales, y eso infravalora a un perfil concreto: el agente
+que trabaja por referidos y publica poco. Caso real del sistema:
+
+| Fuente del dato | Producción | Score | Prioridad |
+|---|---|---|---|
+| Estimada del portal | 3 anuncios de ~280.000 € | 58 | B · llamar este mes |
+| **Dicha por él a Kelly** | **23 operaciones, honorarios 20-40k** | **76** | **A · llamar esta semana** |
+
+El mismo agente. Kelly lo rescata de la cola larga.
+
+**Cinco preguntas, no diez:**
+
+1. ¿Cuántas operaciones cerraste el año pasado? *(botones)*
+2. ¿Honorarios medios por operación? *(botones)*
+3. Si pudieras cambiar UNA cosa de cómo trabajas hoy, ¿cuál sería? *(abierta)*
+4. ¿Qué te haría considerar un cambio? *(botones)*
+5. ¿Hablamos 15 minutos con la TL? *(botones)*
+
+La 3 es la que más vale: con eso la TL sabe por dónde entrar en la llamada.
+
+**Dos reglas que no se tocan:**
+
+- **Kelly no abre la conversación de reclutamiento.** Entra cuando el candidato
+  ya ha respondido y ha consentido. El primero sigue siendo la llamada.
+- **Kelly no pregunta por el split.** El mensaje del día 28 promete *«la rellenas
+  tú, no me mandas ningún número»*. Si luego el bot le pregunta cuánto se queda,
+  se rompe la promesa y con ella la confianza. Solo necesitamos saber si produce
+  y qué le duele.
+
+Kelly devuelve las respuestas llamando a `recRecibirCualificacion(payload)` con
+un JSON. El sistema recalcula el score con los datos reales, guarda el dolor y
+el motivador en la ficha, marca el consentimiento, decide el estado según lo que
+haya contestado a la última pregunta y lo registra todo en `Rec_Toques` para la
+auditoría. Si el candidato está en la lista de supresión, no guarda nada.
+
+Menú → Kelly/KWSync → *Especificación de cualificación para Kelly* saca la hoja
+con las preguntas en ES y EN, los botones y el formato del JSON.
+
 ### El hueco que había, y que ya está cerrado
 
 Marbella es pequeña: **un agente de la competencia puede ser además cliente
@@ -480,16 +525,17 @@ El módulo de reclutamiento no guarda ninguna clave en el código.
 | `Rec_Busquedas_LinkedIn` | Las 8 cadenas de búsqueda, listas para pegar |
 | `Rec_Cola_Kelly` | Toques entregados a Kelly, con plantilla y variables |
 | `Rec_Plantillas_Kelly` | Las plantillas de Meta que faltan para reclutamiento |
+| `Rec_Cualificacion_Kelly` | Las 5 preguntas de cualificación y el formato del JSON |
 
 ---
 
 ## 13. Pruebas
 
 `test_reclutamiento.js` carga el módulo en Node con los servicios de Google
-simulados y valida 73 casos: normalización de teléfonos (incluidos los
+simulados y valida 92 casos: normalización de teléfonos (incluidos los
 británicos de los compradores UK), deduplicación, parser de `robots.txt`,
 clasificación de perfiles, scoring, plantillas, enlaces de WhatsApp y
-supresión, además del parser de perfiles del X-ray de Google y el mapeo de plantillas de Kelly.
+supresión, además del parser de perfiles del X-ray de Google el mapeo de plantillas de Kelly y el parser de rangos de botón (incluidos los separadores de miles en inglés).
 
 ```bash
 node test_reclutamiento.js

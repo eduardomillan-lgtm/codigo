@@ -141,7 +141,8 @@ function recCrearMenu() {
     .addSubMenu(SpreadsheetApp.getUi().createMenu('🤝 Kelly / KWSync')
       .addItem('Importar bajas de Kelly (cierra el hueco de opt-out)', 'recSincronizarSupresionKWSync')
       .addItem('Exportar nuestras bajas para KWSync', 'recExportarSupresionParaKWSync')
-      .addItem('Ver plantillas de Meta que faltan', 'recVerPlantillasKelly'))
+      .addItem('Ver plantillas de Meta que faltan', 'recVerPlantillasKelly')
+      .addItem('Especificación de cualificación para Kelly', 'recEspecificacionKelly'))
     .addItem('🗑️ Purgar datos fuera de retención', 'recPurgarRetencion')
     .addSeparator()
     .addItem('⏰ Activar automatización diaria (7:00)', 'recInstalarTriggerDiario')
@@ -2955,6 +2956,266 @@ function recExportarSupresionParaKWSync() {
     'Cárgalo en la lista de supresión de KWSync. Así una baja dada aquí\n' +
     'tampoco recibe campañas de Kelly: el "no" es de la persona, no del canal.',
     ui.ButtonSet.OK);
+}
+
+// ============================================================
+//  21. CUALIFICACIÓN DE CANDIDATOS CON KELLY
+// ============================================================
+
+/**
+ * Kelly no solo envía: conversa y cualifica. Lo que hace con un comprador
+ * —una pregunta por mensaje, con botones, sin repetir, parando cuando toca y
+ * avisando al agente si piden que les llamen— sirve igual para un candidato.
+ *
+ * LO QUE GANAMOS: el score se calcula hoy con producción ESTIMADA de los
+ * portales. Kelly saca los números reales del propio agente, así que la cola
+ * de la Team Leader deja de ordenarse por una estimación y pasa a ordenarse
+ * por lo que el candidato ha dicho.
+ *
+ * DOS REGLAS QUE NO SE TOCAN
+ *
+ * 1. Kelly NO abre la conversación de reclutamiento. Entra cuando el
+ *    candidato ya ha respondido y ha dado su consentimiento. El primer
+ *    contacto sigue siendo la llamada de la TL.
+ *
+ * 2. Kelly NO pregunta por el split. El mensaje del día 28 promete
+ *    literalmente "la rellenas tú, no me mandas ningún número". Si después
+ *    el bot le pregunta cuánto se queda, la promesa se rompe y con ella la
+ *    confianza. El split es asunto suyo; nosotros solo necesitamos saber si
+ *    produce y qué le duele.
+ */
+
+const REC_CUALIFICACION_KELLY = [
+  {
+    orden: 1,
+    clave: 'operaciones',
+    pregunta_es: '¿Cuántas operaciones cerraste el año pasado?',
+    pregunta_en: 'How many deals did you close last year?',
+    botones: ['1-5', '6-15', '16-30', 'Más de 30'],
+    botones_en: ['1-5', '6-15', '16-30', 'More than 30'],
+    porque: 'Empieza por lo que halaga y es fácil de contestar. Y es el dato que más pesa en el score.'
+  },
+  {
+    orden: 2,
+    clave: 'honorarios_medios',
+    pregunta_es: '¿Y los honorarios medios por operación, más o menos?',
+    pregunta_en: 'And your average fee per deal, roughly?',
+    botones: ['Menos de 10.000 €', '10.000-20.000 €', '20.000-40.000 €', 'Más de 40.000 €'],
+    botones_en: ['Under €10,000', '€10,000-20,000', '€20,000-40,000', 'Over €40,000'],
+    porque: 'Con esto y el anterior sale el volumen real. Tres villas valen más que veinte pisos.'
+  },
+  {
+    orden: 3,
+    clave: 'dolor',
+    pregunta_es: 'Si pudieras cambiar UNA cosa de cómo trabajas hoy, ¿cuál sería?',
+    pregunta_en: 'If you could change ONE thing about how you work today, what would it be?',
+    botones: [],
+    botones_en: [],
+    porque: 'Abierta a propósito. Es el dato más valioso de toda la conversación: con esto la TL sabe por dónde entrar en la llamada.'
+  },
+  {
+    orden: 4,
+    clave: 'motivador',
+    pregunta_es: '¿Qué te haría considerar un cambio de agencia?',
+    pregunta_en: 'What would make you consider moving agency?',
+    botones: ['Ingresos', 'Formación', 'Herramientas', 'Autonomía', 'Nada ahora mismo'],
+    botones_en: ['Income', 'Training', 'Tools', 'Autonomy', 'Nothing right now'],
+    porque: '"Nada ahora mismo" también es una respuesta útil: pasa a nurture y se deja de insistir.'
+  },
+  {
+    orden: 5,
+    clave: 'cita',
+    pregunta_es: '¿Te apetece hablar 15 minutos con {{tl}}? Sin compromiso.',
+    pregunta_en: 'Fancy a 15-minute chat with {{tl}}? No commitment.',
+    botones: ['Sí, esta semana', 'Sí, más adelante', 'No por ahora'],
+    botones_en: ['Yes, this week', 'Yes, later on', 'Not right now'],
+    porque: 'El cierre. "Más adelante" no es un no: es nurture con fecha.'
+  }
+];
+
+/** Vuelca la especificación para quien configure Kelly. */
+function recEspecificacionKelly() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let hoja = ss.getSheetByName('Rec_Cualificacion_Kelly');
+  if (hoja) ss.deleteSheet(hoja);
+  hoja = ss.insertSheet('Rec_Cualificacion_Kelly');
+
+  hoja.getRange(1, 1, 1, 6).setValues([[
+    'Orden', 'Clave', 'Pregunta (ES)', 'Pregunta (EN)', 'Botones', 'Por qué así'
+  ]]).setBackground(REC.COLOR_CABECERA).setFontColor('#ffffff').setFontWeight('bold');
+  hoja.setFrozenRows(1);
+
+  const filas = REC_CUALIFICACION_KELLY.map(p => [
+    p.orden, p.clave, p.pregunta_es, p.pregunta_en,
+    p.botones.length ? p.botones.join(' · ') : '(respuesta abierta)',
+    p.porque
+  ]);
+  hoja.getRange(2, 1, filas.length, 6).setValues(filas)
+    .setWrap(true).setVerticalAlignment('top');
+  hoja.setColumnWidth(3, 300).setColumnWidth(4, 300).setColumnWidth(5, 200).setColumnWidth(6, 340);
+
+  hoja.getRange(filas.length + 3, 1).setValue(
+    'CÓMO SE CONFIGURA EN KELLY\n\n' +
+    'Es el mismo patrón que ya usa con compradores, cambiando las preguntas:\n' +
+    '  • una pregunta por mensaje\n' +
+    '  • botones siempre que se pueda\n' +
+    '  • nunca repetir una pregunta ya hecha\n' +
+    '  • si lleva dos mensajes sin dar dato, parar y ofrecer la llamada\n' +
+    '  • si pide que le llamen, dejar el cuestionario y avisar a la TL\n\n' +
+    'DOS REGLAS QUE NO SE TOCAN\n\n' +
+    '1. Kelly NO abre la conversación de reclutamiento. Entra cuando el candidato\n' +
+    '   ya ha respondido y ha consentido. El primer contacto es la llamada de la TL.\n\n' +
+    '2. Kelly NO pregunta por el split ni por lo que gana.\n' +
+    '   El mensaje del día 28 promete "la rellenas tú, no me mandas ningún número".\n' +
+    '   Si luego el bot le pregunta cuánto se queda, se rompe la promesa. El split\n' +
+    '   es asunto suyo: solo necesitamos saber si produce y qué le duele.\n\n' +
+    'DÓNDE ATERRIZAN LAS RESPUESTAS\n\n' +
+    'Kelly llama a recRecibirCualificacion(payload) con un JSON así:\n\n' +
+    '{\n' +
+    '  "telefono": "+34600111222",\n' +
+    '  "operaciones": "6-15",\n' +
+    '  "honorarios_medios": "20.000-40.000 €",\n' +
+    '  "dolor": "no tengo apoyo para captar producto nuevo",\n' +
+    '  "motivador": "Herramientas",\n' +
+    '  "cita": "Sí, esta semana",\n' +
+    '  "idioma": "ES"\n' +
+    '}\n\n' +
+    'Al recibirlo, el sistema: recalcula el score con la producción REAL,\n' +
+    'guarda el dolor y el motivador en la ficha, marca el consentimiento,\n' +
+    'saca al candidato de la secuencia automática y lo deja en la cola de la TL\n' +
+    'con el estado que corresponda.'
+  ).setWrap(true);
+
+  hoja.activate();
+  SpreadsheetApp.getUi().alert('🤖 Especificación para Kelly',
+    'Hoja "Rec_Cualificacion_Kelly" con las 5 preguntas en ES y EN, los botones\n' +
+    'y el formato del JSON de vuelta.\n\n' +
+    'Pásasela a quien configure Kelly. Son 5 preguntas, no 10: Kelly ya sabe\n' +
+    'que vale más un candidato contento a medio cualificar que uno completo\n' +
+    'que ha bloqueado el número.',
+    SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+/**
+ * ENTRADA DE DATOS DESDE KELLY.
+ * Kelly llama aquí cuando termina de cualificar a un candidato.
+ * Devuelve qué ha cambiado, para que Kelly pueda registrarlo en su log.
+ */
+function recRecibirCualificacion(payload) {
+  const d = (typeof payload === 'string') ? JSON.parse(payload) : (payload || {});
+  const tel = recNormalizarTelefono_(d.telefono);
+  if (!tel) throw new Error('Falta el teléfono o no es válido.');
+
+  // Nunca aceptar datos de alguien que pidió la baja
+  if (recEstaSuprimido_(recCargarSupresion_(), tel, d.email || '', '')) {
+    return { ok: false, motivo: 'El candidato está en la lista de supresión. No se guarda nada.' };
+  }
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hCa = ss.getSheetByName(REC.H_CANDIDATOS);
+  if (!hCa || hCa.getLastRow() < 2) throw new Error('No hay candidatos en la base.');
+
+  const n = hCa.getLastRow() - 1;
+  const tels = hCa.getRange(2, REC_COL.TELEFONO, n, 1).getValues();
+  let fila = -1;
+  for (let i = 0; i < tels.length; i++) {
+    if (recNormalizarTelefono_(tels[i][0]) === tel) { fila = i + 2; break; }
+  }
+  if (fila === -1) return { ok: false, motivo: 'Ese teléfono no está en Rec_Candidatos.' };
+
+  const cambios = [];
+
+  // Producción real, que sustituye a la estimada de los portales
+  const ops = recRangoAPunto_(d.operaciones);
+  const hon = recRangoAPunto_(d.honorarios_medios);
+  if (ops !== null) { hCa.getRange(fila, REC_COL.INMUEBLES).setValue(ops); cambios.push('operaciones'); }
+  if (hon !== null) { hCa.getRange(fila, REC_COL.PRECIO_MEDIO).setValue(hon); cambios.push('honorarios'); }
+
+  // El dolor y el motivador van a notas: es lo que la TL lee antes de llamar
+  const notaPrev = String(hCa.getRange(fila, REC_COL.NOTAS).getValue());
+  const trozos = [];
+  if (d.dolor) trozos.push('DOLOR: ' + String(d.dolor).substring(0, 300));
+  if (d.motivador) trozos.push('LE MUEVE: ' + String(d.motivador).substring(0, 100));
+  if (trozos.length) {
+    hCa.getRange(fila, REC_COL.NOTAS).setValue(
+      (notaPrev ? notaPrev + ' | ' : '') + trozos.join(' | ') +
+      ' [Kelly ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd') + ']');
+    cambios.push('dolor y motivador');
+  }
+
+  // Ha conversado con Kelly: el consentimiento de WhatsApp está dado
+  if (String(hCa.getRange(fila, REC_COL.CONSENT_WA).getValue()).toUpperCase() !== 'SI') {
+    hCa.getRange(fila, REC_COL.CONSENT_WA).setValue('SI');
+    hCa.getRange(fila, REC_COL.FECHA_CONSENT).setValue(new Date());
+    cambios.push('consentimiento');
+  }
+  if (d.idioma) hCa.getRange(fila, REC_COL.IDIOMA_PREF).setValue(String(d.idioma).toUpperCase() === 'EN' ? 'EN' : 'ES');
+
+  // El estado depende de lo que haya contestado a la última pregunta
+  const cita = String(d.cita || '').toLowerCase();
+  const motivador = String(d.motivador || '').toLowerCase();
+  let estado, sacarDeSecuencia = false;
+
+  if (/esta semana|this week/.test(cita)) {
+    estado = 'Entrevista agendada'; sacarDeSecuencia = true;
+  } else if (/más adelante|mas adelante|later/.test(cita)) {
+    estado = 'Conversación activa';
+  } else if (/no por ahora|not right now/.test(cita) || /nada ahora|nothing right now/.test(motivador)) {
+    estado = 'No ahora (nurture)';
+    hCa.getRange(fila, REC_COL.PLAN).setValue('NURTURE');
+    hCa.getRange(fila, REC_COL.PASO).setValue(0);
+    cambios.push('pasa a nurture');
+  } else {
+    estado = 'Conversación activa';
+  }
+  hCa.getRange(fila, REC_COL.ESTADO).setValue(estado);
+  if (sacarDeSecuencia) {
+    hCa.getRange(fila, REC_COL.PLAN).setValue('');
+    hCa.getRange(fila, REC_COL.PROXIMO_TOQUE).setValue('');
+  }
+
+  // Recalcular el score: ahora con datos reales, no con la estimación del portal
+  const ficha = hCa.getRange(fila, 1, 1, REC_N_COLS).getValues()[0];
+  const score = recScoreCandidato_(ficha);
+  hCa.getRange(fila, REC_COL.SCORE).setValue(score);
+  hCa.getRange(fila, REC_COL.TEMPERATURA).setValue(recTemperatura_(score));
+
+  // Dejar el registro en el log de toques, para la auditoría del RGPD
+  const hTo = ss.getSheetByName(REC.H_TOQUES);
+  const ahora = new Date();
+  hTo.appendRow([recNuevoId_('T'), ficha[REC_COL.ID - 1],
+    (ficha[REC_COL.NOMBRE - 1] + ' ' + ficha[REC_COL.APELLIDOS - 1]).trim(),
+    ahora, Utilities.formatDate(ahora, Session.getScriptTimeZone(), 'HH:mm'),
+    'WhatsApp', 'Kelly · cualificación', 'Cualificación', 'HECHO',
+    estado, JSON.stringify(d).substring(0, 1000), 'Kelly (bot)',
+    'Cualificado por Kelly']);
+
+  return {
+    ok: true,
+    candidato: ficha[REC_COL.ID - 1],
+    nombre: (ficha[REC_COL.NOMBRE - 1] + ' ' + ficha[REC_COL.APELLIDOS - 1]).trim(),
+    score: score,
+    temperatura: recTemperatura_(score),
+    estado: estado,
+    cambios: cambios
+  };
+}
+
+/** Convierte un rango de botón ("6-15", "20.000-40.000 €") en su punto medio. */
+function recRangoAPunto_(valor) {
+  const v = String(valor || '').trim();
+  if (!v) return null;
+
+  // Quitar el separador de miles solo cuando lo es, para que "20.000" no se
+  // lea como 20 y "€10,000" no se lea como 10. Un decimal real se conserva.
+  const limpio = v.replace(/[.,](?=\d{3}(?!\d))/g, '');
+  const numeros = (limpio.match(/\d+(?:\.\d+)?/g) || []).map(Number);
+  if (!numeros.length) return null;
+
+  if (/más de|mas de|more than|over|\+$/i.test(v)) return Math.round(numeros[0] * 1.4);
+  if (/menos de|under|less than/i.test(v))         return Math.round(numeros[0] * 0.6);
+  if (numeros.length >= 2)                          return Math.round((numeros[0] + numeros[1]) / 2);
+  return Math.round(numeros[0]);
 }
 
 // ============================================================

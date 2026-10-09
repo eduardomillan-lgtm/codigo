@@ -210,6 +210,35 @@ tt('el mapeo solo devuelve plantillas declaradas',
    ['Invitación a evento','Valor 3 — calculadora','Valor 1 — dato de mercado','Nurture mensual','xyz']
      .every(x => PLANT[ctx.recPlantillaKellyPara_(x)] !== undefined));
 
+console.log('\n── Kelly: rangos de botón a número ──');
+t('rango simple',            ctx.recRangoAPunto_('6-15'), 11);
+t('rango 1-5',               ctx.recRangoAPunto_('1-5'), 3);
+t('euros con punto de miles', ctx.recRangoAPunto_('20.000-40.000 €'), 30000);
+t('euros con coma de miles',  ctx.recRangoAPunto_('€10,000-20,000'), 15000);
+t('tope superior ES',        ctx.recRangoAPunto_('Más de 30'), 42);
+t('tope superior EN',        ctx.recRangoAPunto_('More than 30'), 42);
+t('tope superior en euros',  ctx.recRangoAPunto_('Más de 40.000 €'), 56000);
+t('tope inferior ES',        ctx.recRangoAPunto_('Menos de 10.000 €'), 6000);
+t('tope inferior EN',        ctx.recRangoAPunto_('Under €10,000'), 6000);
+t('sin números da nulo',     ctx.recRangoAPunto_('Nada ahora mismo'), null);
+t('vacío da nulo',           ctx.recRangoAPunto_(''), null);
+tt('un decimal real se conserva', Math.abs(ctx.recRangoAPunto_('1.5') - 2) < 0.6);
+
+console.log('\n── Kelly: integridad del cuestionario ──');
+const Q = vm.runInContext('REC_CUALIFICACION_KELLY', ctx);
+tt('son 5 preguntas, no 10',   Q.length === 5);
+tt('todas tienen ES y EN',     Q.every(q => q.pregunta_es && q.pregunta_en));
+tt('el orden es 1..5',         JSON.stringify(Q.map(q=>q.orden)) === '[1,2,3,4,5]');
+tt('NO se pregunta por el split — contradiría la promesa del día 28',
+   !Q.some(q => /split|comisi[oó]n|cu[aá]nto te quedas|cu[aá]nto ganas|what you keep/i
+                 .test(q.pregunta_es + ' ' + q.pregunta_en)));
+tt('el dolor es pregunta abierta',
+   Q.find(q => q.clave === 'dolor').botones.length === 0);
+tt('la producción se pregunta antes del cierre',
+   Q.find(q => q.clave === 'operaciones').orden < Q.find(q => q.clave === 'cita').orden);
+tt('toda pregunta con botones los tiene en los dos idiomas',
+   Q.every(q => q.botones.length === q.botones_en.length));
+
 console.log('\n' + '─'.repeat(50));
 console.log(fail === 0 ? '✅ ' + ok + ' PRUEBAS PASADAS' : '❌ ' + fail + ' FALLOS de ' + (ok+fail));
 process.exit(fail ? 1 : 0);
