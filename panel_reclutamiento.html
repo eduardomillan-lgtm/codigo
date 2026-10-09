@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f172a; --bg2:#1e293b; --surf:rgba(255,255,255,.05); --surf2:rgba(255,255,255,.08);
+    --bor:rgba(255,255,255,.1); --prim:#dc2626; --prim2:#991b1b;
+    --txt:#f1f5f9; --txt2:#cbd5e1; --txt3:#94a3b8;
+    --good:#22c55e; --warn:#f59e0b; --bad:#ef4444; --info:#60a5fa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Montserrat',-apple-system,"Segoe UI",Roboto,sans-serif;
+       background:var(--bg);color:var(--txt);font-size:13px;padding:14px}
+
+  header{display:flex;justify-content:space-between;align-items:center;
+         background:linear-gradient(135deg,var(--prim),var(--prim2));
+         padding:14px 18px;border-radius:12px;box-shadow:0 6px 20px rgba(220,38,38,.3);margin-bottom:14px}
+  header h1{font-size:17px;font-weight:900;letter-spacing:-.3px}
+  header .sub{font-size:11px;opacity:.85;margin-top:2px}
+  header button{background:rgba(255,255,255,.18);border:0;color:#fff;padding:8px 14px;
+         border-radius:7px;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px}
+  header button:hover{background:rgba(255,255,255,.28)}
+
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+  .kpi{background:var(--surf);border:1px solid var(--bor);border-radius:10px;padding:12px 14px}
+  .kpi .n{font-size:24px;font-weight:900;line-height:1}
+  .kpi .l{font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-top:5px}
+
+  .cols{display:grid;grid-template-columns:1fr 310px;gap:14px;align-items:start}
+
+  .panel{background:var(--surf);border:1px solid var(--bor);border-radius:12px;padding:14px}
+  .panel h2{font-size:13px;font-weight:800;margin-bottom:12px;display:flex;
+            justify-content:space-between;align-items:center}
+  .panel h2 .badge{background:var(--prim);padding:2px 9px;border-radius:20px;font-size:11px}
+
+  .cola{max-height:calc(100vh - 290px);overflow-y:auto;padding-right:4px}
+  .cola::-webkit-scrollbar{width:7px}
+  .cola::-webkit-scrollbar-thumb{background:var(--bor);border-radius:4px}
+
+  .card{background:var(--bg2);border:1px solid var(--bor);border-radius:10px;
+        padding:13px;margin-bottom:11px;border-left:3px solid var(--txt3)}
+  .card.A{border-left-color:var(--good)} .card.B{border-left-color:var(--warn)}
+  .card.C{border-left-color:var(--txt3)} .card.D{border-left-color:var(--bad)}
+  .card.hecho{opacity:.35}
+
+  .ctop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .cname{font-size:14px;font-weight:800}
+  .cmeta{font-size:11px;color:var(--txt3);margin-top:3px;line-height:1.5}
+  .chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+  .chip{background:var(--surf2);padding:3px 8px;border-radius:5px;font-size:10px;
+        color:var(--txt2);font-weight:600;white-space:nowrap}
+  .chip.canal{background:rgba(96,165,250,.2);color:var(--info)}
+  .chip.sc{background:rgba(34,197,94,.18);color:var(--good)}
+  .chip.wa{background:rgba(34,197,94,.18);color:var(--good)}
+  .chip.nowa{background:rgba(245,158,11,.18);color:var(--warn)}
+
+  .obj{font-size:11px;color:var(--warn);margin-top:9px;font-style:italic;line-height:1.5}
+
+  .msg{background:rgba(0,0,0,.3);border:1px solid var(--bor);border-radius:7px;
+       padding:10px 11px;margin-top:9px;font-size:11.5px;line-height:1.6;
+       white-space:pre-wrap;max-height:150px;overflow-y:auto;color:var(--txt2);
+       font-family:ui-monospace,Menlo,monospace}
+
+  .acc{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .acc a,.acc button{text-decoration:none;border:0;cursor:pointer;font-family:inherit;
+       padding:8px 12px;border-radius:6px;font-size:11px;font-weight:700;display:inline-block}
+  .b-wa{background:#25D366;color:#063}
+  .b-tel{background:var(--info);color:#042}
+  .b-li{background:#0A66C2;color:#fff}
+  .b-copy{background:var(--surf2);color:var(--txt2)}
+
+  .res{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px;
+       border-top:1px solid var(--bor);padding-top:9px}
+  .res button{background:var(--surf2);color:var(--txt2);border:1px solid var(--bor);
+       padding:6px 10px;border-radius:5px;font-size:10.5px;font-weight:700;
+       cursor:pointer;font-family:inherit}
+  .res button:hover{background:var(--prim);color:#fff;border-color:var(--prim)}
+  .res button.g:hover{background:var(--good);border-color:var(--good);color:#042}
+  .res button.r:hover{background:var(--bad);border-color:var(--bad)}
+
+  .emb div{display:flex;justify-content:space-between;padding:6px 0;
+           border-bottom:1px solid var(--bor);font-size:11.5px}
+  .emb div:last-child{border:0}
+  .emb b{font-weight:800}
+
+  .temps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+  .temp{text-align:center;padding:9px 4px;border-radius:8px;font-weight:900}
+  .temp.A{background:rgba(34,197,94,.2);color:var(--good)}
+  .temp.B{background:rgba(245,158,11,.2);color:var(--warn)}
+  .temp.C{background:rgba(100,116,139,.25);color:var(--txt3)}
+  .temp.D{background:rgba(239,68,68,.2);color:var(--bad)}
+  .temp .n{font-size:19px;line-height:1}
+  .temp .l{font-size:9px;margin-top:3px;opacity:.85}
+
+  .vacio{text-align:center;padding:40px 20px;color:var(--txt3)}
+  .vacio .ic{font-size:38px;margin-bottom:10px}
+  .cargando{text-align:center;padding:50px;color:var(--txt3)}
+  .toast{position:fixed;bottom:18px;right:18px;background:var(--good);color:#042;
+         padding:11px 18px;border-radius:8px;font-weight:800;font-size:12px;
+         box-shadow:0 8px 24px rgba(0,0,0,.4);opacity:0;transform:translateY(10px);
+         transition:.25s;pointer-events:none;z-index:99}
+  .toast.on{opacity:1;transform:translateY(0)}
+  .toast.err{background:var(--bad);color:#fff}
+  .nota{font-size:10.5px;color:var(--txt3);line-height:1.6;margin-top:10px;
+        background:rgba(245,158,11,.08);border-left:2px solid var(--warn);padding:8px 10px}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🎯 Reclutamiento · Market Center Marbella</h1>
+    <div class="sub" id="saludo">Cargando…</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button onclick="generar()">📨 Generar toques</button>
+    <button onclick="cargar()">🔄 Refrescar</button>
+  </div>
+</header>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="cols">
+  <div class="panel">
+    <h2>Cola de trabajo de hoy <span class="badge" id="nCola">0</span></h2>
+    <div class="cola" id="cola"><div class="cargando">Cargando cola…</div></div>
+  </div>
+
+  <div>
+    <div class="panel" style="margin-bottom:14px">
+      <h2>Temperatura</h2>
+      <div class="temps" id="temps"></div>
+      <h2>Embudo</h2>
+      <div class="emb" id="emb"></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:14px">
+      <h2>Próximas entrevistas</h2>
+      <div id="entrevistas"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Fuentes de captación</h2>
+      <div class="emb" id="fuentes"></div>
+      <div class="nota">
+        <b>Regla de oro del canal:</b> primero la llamada, el WhatsApp después.
+        Nunca al revés. Si abres en frío por WhatsApp masivo, Meta te degrada
+        el número y además es el canal con más riesgo legal.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var DATOS = null;
+
+function cargar(){
+  document.getElementById('cola').innerHTML = '<div class="cargando">Cargando cola…</div>';
+  google.script.run.withSuccessHandler(pintar)
+    .withFailureHandler(function(e){ toast('Error: ' + e.message, true); })
+    .recDatosPanel();
+}
+
+function generar(){
+  toast('Generando cola…');
+  google.script.run.withSuccessHandler(function(){ toast('Cola generada'); cargar(); })
+    .withFailureHandler(function(e){ toast('Error: ' + e.message, true); })
+    .recGenerarToquesDelDia();
+}
+
+function esc(s){
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function pintar(d){
+  DATOS = d;
+  document.getElementById('saludo').textContent =
+    (d.tl && d.tl.indexOf('[') === -1 ? d.tl + ' · ' : '') +
+    new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+
+  var t = d.totales;
+  document.getElementById('kpis').innerHTML = [
+    ['#f1f5f9', t.candidatos, 'Candidatos en base'],
+    ['#60a5fa', t.enSecuencia, 'En secuencia activa'],
+    ['#f59e0b', t.toquesPendientes, 'Toques pendientes'],
+    ['#22c55e', d.temperaturas.A, 'Prioridad A'],
+    ['#cbd5e1', (d.embudo['Entrevista agendada']||0) + (d.embudo['Entrevistado']||0), 'En entrevista']
+  ].map(function(k){
+    return '<div class="kpi"><div class="n" style="color:'+k[0]+'">'+k[1]+'</div>'+
+           '<div class="l">'+k[2]+'</div></div>';
+  }).join('');
+
+  document.getElementById('temps').innerHTML = ['A','B','C','D'].map(function(x){
+    var leyenda = {A:'esta semana',B:'este mes',C:'secuencia',D:'nurture'}[x];
+    return '<div class="temp '+x+'"><div class="n">'+(d.temperaturas[x]||0)+'</div>'+
+           '<div class="l">'+x+' · '+leyenda+'</div></div>';
+  }).join('');
+
+  var emb = Object.keys(d.embudo).filter(function(k){ return d.embudo[k] > 0; });
+  document.getElementById('emb').innerHTML = emb.length
+    ? emb.map(function(k){ return '<div><span>'+esc(k)+'</span><b>'+d.embudo[k]+'</b></div>'; }).join('')
+    : '<div style="color:var(--txt3)">Sin datos todavía</div>';
+
+  var fu = Object.keys(d.fuentes).sort(function(a,b){ return d.fuentes[b]-d.fuentes[a]; }).slice(0,8);
+  document.getElementById('fuentes').innerHTML = fu.length
+    ? fu.map(function(k){ return '<div><span>'+esc(k)+'</span><b>'+d.fuentes[k]+'</b></div>'; }).join('')
+    : '<div style="color:var(--txt3)">Sin captaciones aún</div>';
+
+  document.getElementById('entrevistas').innerHTML = d.entrevistas.length
+    ? d.entrevistas.map(function(e){
+        return '<div style="padding:7px 0;border-bottom:1px solid var(--bor);font-size:11.5px">'+
+          '<b>'+esc(e.nombre)+'</b><br><span style="color:var(--txt3)">'+
+          esc(e.fecha)+' · '+esc(e.fase)+'</span></div>';
+      }).join('')
+    : '<div style="color:var(--txt3);font-size:11.5px">Ninguna agendada. '+
+      'Objetivo semanal: <b>3</b>.</div>';
+
+  pintarCola(d.cola);
+}
+
+function pintarCola(cola){
+  document.getElementById('nCola').textContent = cola.length;
+  if (!cola.length){
+    document.getElementById('cola').innerHTML =
+      '<div class="vacio"><div class="ic">✅</div><b>Cola vacía</b><br>' +
+      '<span style="font-size:11.5px">Dale a «Generar toques» o capta más candidatos<br>' +
+      'desde el menú 🎯 Reclutamiento → Captar candidatos.</span></div>';
+    return;
+  }
+
+  document.getElementById('cola').innerHTML = cola.map(function(c,i){
+    var botones = '';
+    if (c.canal === 'WhatsApp' && c.enlace)
+      botones += '<a class="b-wa" href="'+esc(c.enlace)+'" target="_blank" '+
+                 'onclick="marcar(\''+c.idToque+'\',\'Enviado\','+i+')">💬 Abrir WhatsApp</a>';
+    if (c.telefono)
+      botones += '<a class="b-tel" href="tel:'+esc(c.telefono)+'">📞 '+esc(c.telefono)+'</a>';
+    if (c.linkedin)
+      botones += '<a class="b-li" href="'+esc(c.linkedin)+'" target="_blank">in LinkedIn</a>';
+    botones += '<button class="b-copy" onclick="copiar('+i+')">📋 Copiar texto</button>';
+
+    var chips = '<span class="chip canal">'+esc(c.canal)+'</span>';
+    if (c.score) chips += '<span class="chip sc">Score '+c.score+'</span>';
+    if (c.agencia) chips += '<span class="chip">'+esc(c.agencia)+'</span>';
+    if (c.zona) chips += '<span class="chip">📍 '+esc(c.zona)+'</span>';
+    if (c.inmuebles) chips += '<span class="chip">🏠 '+esc(c.inmuebles)+'</span>';
+    if (c.idiomas) chips += '<span class="chip">🗣 '+esc(c.idiomas)+'</span>';
+    chips += c.consentWA === 'SI'
+      ? '<span class="chip wa">WA consentido</span>'
+      : '<span class="chip nowa">WA sin consentir</span>';
+
+    return '<div class="card '+esc(c.temperatura)+'" id="card'+i+'">'+
+      '<div class="ctop"><div>'+
+        '<div class="cname">'+esc(c.nombre || 'Sin nombre')+'</div>'+
+        '<div class="cmeta">'+esc(c.paso)+' · '+esc(c.tipo)+'</div>'+
+      '</div><div class="cmeta">'+esc(c.fecha)+'</div></div>'+
+      '<div class="chips">'+chips+'</div>'+
+      (c.objetivo ? '<div class="obj">🎯 '+esc(c.objetivo)+'</div>' : '')+
+      '<div class="msg" id="msg'+i+'">'+esc(c.mensaje)+'</div>'+
+      '<div class="acc">'+botones+'</div>'+
+      '<div class="res">'+
+        '<button class="g" onclick="marcar(\''+c.idToque+'\',\'Entrevista agendada\','+i+')">✅ Entrevista agendada</button>'+
+        '<button class="g" onclick="marcar(\''+c.idToque+'\',\'Contactado — interesado\','+i+')">👍 Interesado</button>'+
+        '<button onclick="marcar(\''+c.idToque+'\',\'No contesta\','+i+')">📵 No contesta</button>'+
+        '<button onclick="marcar(\''+c.idToque+'\',\'Contactado — no interesado\','+i+')">🤷 No interesado</button>'+
+        '<button class="r" onclick="marcar(\''+c.idToque+'\',\'Pide la baja\','+i+')">🚫 Pide la baja</button>'+
+        '<button class="r" onclick="marcar(\''+c.idToque+'\',\'Número erróneo\','+i+')">❌ Nº erróneo</button>'+
+      '</div></div>';
+  }).join('');
+}
+
+function copiar(i){
+  var txt = DATOS.cola[i].mensaje;
+  var ta = document.createElement('textarea');
+  ta.value = txt; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); toast('Texto copiado'); }
+  catch(e){ toast('No he podido copiar', true); }
+  document.body.removeChild(ta);
+}
+
+function marcar(idToque, resultado, i){
+  var card = document.getElementById('card'+i);
+  if (resultado === 'Pide la baja' &&
+      !confirm('Vas a registrar la BAJA de ' + DATOS.cola[i].nombre + '.\n\n' +
+               'Queda bloqueado en todos los canales y no se le vuelve a contactar. ¿Seguro?'))
+    return;
+
+  if (card) card.classList.add('hecho');
+  google.script.run
+    .withSuccessHandler(function(r){
+      toast(r && r.optOut ? 'Baja registrada y bloqueada' : 'Registrado: ' + resultado);
+      if (resultado !== 'Enviado') setTimeout(cargar, 700);
+    })
+    .withFailureHandler(function(e){
+      if (card) card.classList.remove('hecho');
+      toast('Error: ' + e.message, true);
+    })
+    .recMarcarResultadoToque(idToque, resultado, '');
+}
+
+var tTimer = null;
+function toast(msg, err){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast on' + (err ? ' err' : '');
+  clearTimeout(tTimer);
+  tTimer = setTimeout(function(){ t.className = 'toast' + (err ? ' err' : ''); }, 2600);
+}
+
+cargar();
+</script>
+</body>
+</html>
