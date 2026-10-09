@@ -135,6 +135,9 @@ La llamada a un teléfono que el propio agente publica **para recibir llamadas
 profesionales** es, con diferencia, el primer contacto más defendible. Y además
 convierte mucho más.
 
+> Si tienes **Kelly** (la capa de WhatsApp de KWSync), los toques 3 en adelante
+> pueden ir por ahí una vez el agente ha consentido. El primero, no. Sección 9.
+
 ### El opt-in se consigue en la propia llamada
 
 Al final del guion de apertura hay una frase que parece de relleno y no lo es:
@@ -337,7 +340,70 @@ ni pierdes el reporting oficial.
 
 ---
 
-## 9. La calculadora de ingresos (día 28)
+## 9. Encaje con Kelly (KWSync)
+
+Kelly ya es la capa de WhatsApp de KWSync: Cloud API, plantillas aprobadas por
+Meta, página de consentimiento en siete idiomas con prueba documental, gestión
+de BAJA, ventana de 24 h, seguimientos, reactivación, campañas y topes de envío.
+Todo eso está resuelto y **no hay que construirlo otra vez**.
+
+Pero el reclutamiento **no puede ir por el mismo camino que los leads de
+cliente**, por tres razones:
+
+**1. El número.** El de Kelly es el de la oficina, y es el que contesta a los
+leads en menos de un minuto. Ese número es infraestructura de ingresos. La
+prospección en frío a agentes de la competencia es justo el tráfico que genera
+bloqueos y denuncias, y un número con la calificación caída pierde límite de
+envío. No se arriesga la respuesta a leads para ahorrarle clics a la TL.
+
+**2. La base legal.** La premisa de Kelly es *"contestar a lo que el cliente ha
+preguntado no necesita más permiso: la consulta la hizo él"*. Un agente al que
+reclutas **no ha preguntado nada**. No hay consulta previa, así que esa premisa
+no te cubre.
+
+**3. Las plantillas.** Las de Kelly son de servicio. Una de reclutamiento es
+categoría **MARKETING** para Meta: otras reglas, otro precio y más rechazos en
+revisión. Y reutilizar una plantilla de servicio para prospección es motivo de
+sanción, porque la autorización va ligada a la finalidad.
+
+### El reparto que sí funciona
+
+| Toque | Canal | Por qué |
+|---|---|---|
+| 1 · llamada | Teléfono de la TL | El canal más defendible y el que más convierte |
+| 2 · WhatsApp si no contesta | `wa.me` desde el móvil de la TL | Riesgo cero para el número de la oficina |
+| **3 en adelante, con consentimiento** | **Kelly** | Ya tiene plantillas, consentimiento y topes |
+
+Para activarlo: `MODO_WHATSAPP = KELLY` en `Rec_Config`. Los toques de WhatsApp
+de candidatos **con consentimiento** dejan de generar enlaces y se escriben en
+`Rec_Cola_Kelly` con teléfono, idioma, plantilla sugerida y variables, listos
+para que Kelly los consuma. Sin consentimiento no se entrega nada: se reencamina
+a LinkedIn o a llamada, igual que antes.
+
+**Decide el número antes de pedir plantillas.** Lo razonable es un **segundo
+número**, a nombre del Market Center y no de la oficina, solo para
+reclutamiento: separa reputaciones y separa facturación. Menú → Kelly/KWSync →
+*Ver plantillas de Meta que faltan* te saca las cuatro que harían falta.
+
+### El hueco que había, y que ya está cerrado
+
+Marbella es pequeña: **un agente de la competencia puede ser además cliente
+vuestro**. Si le dijo BAJA a Kelly como cliente y el reclutamiento le seguía
+escribiendo como candidato, estabais incumpliendo su derecho de oposición. El
+«no» es de la persona, no del canal.
+
+Menú → Kelly/KWSync → *Importar bajas de Kelly* lee la lista de supresión de
+KWSync y para en seco a esos candidatos. Rellena `KWSYNC_SHEET_ID` y
+`KWSYNC_HOJA_BAJAS` en `Rec_Config` y la automatización diaria lo hace solo,
+**antes** de generar los toques del día.
+
+Es de **solo lectura** sobre KWSync: este módulo no escribe nunca en vuestro
+sistema de leads en producción. Para el sentido contrario hay un export CSV que
+cargáis vosotros.
+
+---
+
+## 10. La calculadora de ingresos (día 28)
 
 `calculadora_ingresos_agente.xlsx` es el activo del paso que más convierte de
 toda la secuencia. El agente mete cuatro datos y ve lo que se habría quedado
@@ -373,7 +439,7 @@ mano, incluidos los casos límite (producción que no llega al tope y hoja vací
 
 ---
 
-## 10. Seguridad: hay una clave expuesta
+## 11. Seguridad: hay una clave expuesta
 
 El archivo `gs`, línea ~3565, tiene la clave de Gemini escrita en el código:
 
@@ -399,7 +465,7 @@ El módulo de reclutamiento no guarda ninguna clave en el código.
 
 ---
 
-## 11. Hojas que crea el sistema
+## 12. Hojas que crea el sistema
 
 | Hoja | Para qué |
 |---|---|
@@ -412,16 +478,18 @@ El módulo de reclutamiento no guarda ninguna clave en el código.
 | `Rec_Config` | Parámetros sin tocar código |
 | `Rec_RGPD` | Registro de actividad y ponderación de interés legítimo |
 | `Rec_Busquedas_LinkedIn` | Las 8 cadenas de búsqueda, listas para pegar |
+| `Rec_Cola_Kelly` | Toques entregados a Kelly, con plantilla y variables |
+| `Rec_Plantillas_Kelly` | Las plantillas de Meta que faltan para reclutamiento |
 
 ---
 
-## 12. Pruebas
+## 13. Pruebas
 
 `test_reclutamiento.js` carga el módulo en Node con los servicios de Google
-simulados y valida 65 casos: normalización de teléfonos (incluidos los
+simulados y valida 73 casos: normalización de teléfonos (incluidos los
 británicos de los compradores UK), deduplicación, parser de `robots.txt`,
 clasificación de perfiles, scoring, plantillas, enlaces de WhatsApp y
-supresión, además del parser de perfiles del X-ray de Google.
+supresión, además del parser de perfiles del X-ray de Google y el mapeo de plantillas de Kelly.
 
 ```bash
 node test_reclutamiento.js
@@ -444,5 +512,8 @@ Ejecútalo siempre que toques los pesos del scoring o la normalización.
 - [Datos de contacto profesionales y art. 19 LOPDGDD (Prodat)](https://www.prodat.es/blog/los-datos-de-contacto-profesionales-y-su-regulacion-en-el-reglamento-europeo-de-proteccion-de-datos/) · [La LSSI no desplaza al RGPD](https://jorgegarciaherrero.com/la-lssi-no-desplaza-al-rgpd-el-rgpd-abraza-a-la-lssi/)
 - [Guía de la AEPD sobre protección de datos y relaciones laborales](https://www.aepd.es/prensa-y-comunicacion/notas-de-prensa/aepd-publica-guia-pd-y-relaciones-laborales)
 - [CommandMC — SmartPlans de Recruits](https://documentation.kw.com/docs-command/html/kellercloud/commandmc/recruits/manage-recruits/add-recruit-smartplan.html) · [Crear un SmartPlan](https://documentation.kw.com/docs-command/html/kellercloud/command/smartplans/create-custom-smartplan.html)
+- [Command no tiene WhatsApp nativo — petición abierta en el foro de ideas de KW](https://ideas.kw.com/forums/959210-command/suggestions/50787875-proposal-for-native-whatsapp-integration-in-kw-com)
+- [KW abre Command a desarrolladores externos, feb. 2026 (Inman)](https://www.inman.com/2026/02/23/keller-williams-opens-command-platform-to-3rd-party-developers/) · [nota oficial](https://www.businesswire.com/news/home/20260223307158/en/Keller-Williams-Opens-Command-to-Power-Agent-Choice-and-Best-in-Class-Integrations)
+- [KWIQ, el asistente de IA de KW (HousingWire)](https://www.housingwire.com/articles/keller-williams-launches-ai-powered-real-estate-assistant/)
 - [Google Places API (New) — Text Search](https://developers.google.com/maps/documentation/places/web-service/text-search)
 - [Autónomos inmobiliarios en Andalucía (El Confidencial Digital)](https://www.elconfidencialdigital.com/articulo/legal/andalucia-suma-12500-autonomos-inmobiliarios-cinco-anos/202610071637561491500.html)

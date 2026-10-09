@@ -138,6 +138,10 @@ function recCrearMenu() {
     .addSeparator()
     .addItem('📤 Exportar para CommandMC', 'recExportarCommandMC')
     .addItem('🔐 Gestionar opt-out / supresión', 'recAbrirSupresion')
+    .addSubMenu(SpreadsheetApp.getUi().createMenu('🤝 Kelly / KWSync')
+      .addItem('Importar bajas de Kelly (cierra el hueco de opt-out)', 'recSincronizarSupresionKWSync')
+      .addItem('Exportar nuestras bajas para KWSync', 'recExportarSupresionParaKWSync')
+      .addItem('Ver plantillas de Meta que faltan', 'recVerPlantillasKelly'))
     .addItem('🗑️ Purgar datos fuera de retención', 'recPurgarRetencion')
     .addSeparator()
     .addItem('⏰ Activar automatización diaria (7:00)', 'recInstalarTriggerDiario')
@@ -195,6 +199,7 @@ function recInicializarTodo() {
     'Siguiente_Paso', 'Fecha_Siguiente', 'Notas'
   ]));
 
+  creadas.push(recCrearHojaColaKelly_(ss));
   creadas.push(recCrearHoja_(ss, REC.H_CONFIG, ['Clave', 'Valor', 'Descripción']));
   creadas.push(recCrearHoja_(ss, REC.H_RGPD, ['Campo', 'Contenido']));
 
@@ -248,7 +253,10 @@ function recSembrarConfig_(ss) {
     ['MC_EMAIL', '', 'Email del Market Center'],
     ['MC_WEB', '', 'Web del Market Center'],
     ['MC_DIRECCION', '', 'Dirección de la oficina (para invitaciones)'],
-    ['MODO_WHATSAPP', 'LINK', 'LINK = enlaces wa.me manuales | API = Cloud API con plantillas'],
+    ['MODO_WHATSAPP', 'LINK', 'LINK = enlaces wa.me manuales | KELLY = entrega a Kelly/KWSync | API = Cloud API propia'],
+    ['KWSYNC_SHEET_ID', '', 'ID de la hoja de cálculo de KWSync, para leer sus bajas (solo lectura)'],
+    ['KWSYNC_HOJA_BAJAS', '', 'Nombre de la pestaña de KWSync donde están las bajas y consentimientos revocados'],
+    ['KWSYNC_COL_TELEFONO', '', 'Letra de la columna del teléfono en esa pestaña. Vacío = se detecta sola'],
     ['WA_EN_PRIMER_TOQUE', 'SI', 'SI/NO — permitir WhatsApp si no contestan la llamada'],
     ['MAX_TOQUES_DIA', '40', 'Tope de toques generados por día'],
     ['RETENCION_DIAS', '365', 'Días que conservamos un candidato sin avance'],
@@ -1863,6 +1871,7 @@ function recGenerarToques_(silencioso) {
     REC.WA_EN_PRIMER_TOQUE ? 'SI' : 'NO').toUpperCase() === 'SI';
 
   const toques = [];
+  const entregasKelly = [];
   const actualizaciones = [];   // [filaHoja, paso, proximoToque, nToques, ultimoToque, estado]
   let saltadosSupresion = 0, saltadosConsent = 0, finalizados = 0;
 
@@ -1910,7 +1919,8 @@ function recGenerarToques_(silencioso) {
 
     if (siguiente.canal === 'WhatsApp') {
       const esPrimerContactoEscrito = (Number(f[REC_COL.N_TOQUES - 1]) || 0) <= 1;
-      const bloqueaApi = (modoWA === 'API' && consent !== 'SI');
+      // KELLY y API comparten la regla: sin consentimiento no se envía automático
+      const bloqueaApi = ((modoWA === 'API' || modoWA === 'KELLY') && consent !== 'SI');
       const bloqueaPrimero = (esPrimerContactoEscrito && !waPrimerToque && consent !== 'SI');
       if ((siguiente.requiereConsent && consent !== 'SI') || bloqueaApi || bloqueaPrimero) {
         // Reencaminamos a LinkedIn si lo tenemos, si no a llamada
@@ -1932,6 +1942,24 @@ function recGenerarToques_(silencioso) {
     else if (canal === 'Email') enlace = 'mailto:' + String(f[REC_COL.EMAIL - 1]).trim();
 
     const ahora = new Date();
+
+    // En modo KELLY el toque de WhatsApp no se envía: se entrega a Kelly,
+    // que ya tiene plantillas aprobadas, consentimiento y topes de Meta.
+    if (modoWA === 'KELLY' && canal === 'WhatsApp' && consent === 'SI') {
+      entregasKelly.push([
+        '', f[REC_COL.ID - 1],
+        (f[REC_COL.NOMBRE - 1] + ' ' + f[REC_COL.APELLIDOS - 1]).trim(),
+        tel, idioma.toUpperCase(),
+        recPlantillaKellyPara_(siguiente.tipo),
+        JSON.stringify({
+          nombre: String(f[REC_COL.NOMBRE - 1]).trim(),
+          zona: String(f[REC_COL.ZONA - 1]).trim(),
+          agencia: String(f[REC_COL.AGENCIA - 1]).trim()
+        }),
+        mensaje, 'SI', ahora, 'PENDIENTE', '', plan + ' · paso ' + siguiente.paso
+      ]);
+    }
+
     toques.push([
       recNuevoId_('T'),
       f[REC_COL.ID - 1],
@@ -1971,6 +1999,17 @@ function recGenerarToques_(silencioso) {
     hTo.setColumnWidth(11, 560);
   }
 
+  // Volcar la cola de Kelly, enlazando cada fila con su toque
+  if (entregasKelly.length) {
+    const hKe = ss.getSheetByName('Rec_Cola_Kelly');
+    if (hKe) {
+      const porCandidato = {};
+      toques.forEach(t => { porCandidato[String(t[1])] = t[0]; });
+      entregasKelly.forEach(e => { e[0] = porCandidato[String(e[1])] || ''; });
+      hKe.getRange(hKe.getLastRow() + 1, 1, entregasKelly.length, 13).setValues(entregasKelly);
+    }
+  }
+
   // Aplicar actualizaciones a los candidatos
   for (const u of actualizaciones) {
     const [fila, paso, proximo, nToques, ultimo, estado] = u;
@@ -1982,7 +2021,7 @@ function recGenerarToques_(silencioso) {
   }
 
   const stats = {
-    toques: toques.length, asignados: asignados,
+    toques: toques.length, asignados: asignados, kelly: entregasKelly.length,
     saltadosSupresion: saltadosSupresion, saltadosConsent: saltadosConsent,
     finalizados: finalizados
   };
@@ -1992,6 +2031,7 @@ function recGenerarToques_(silencioso) {
     (saltadosSupresion ? 'Bloqueados por opt-out: ' + saltadosSupresion + '\n' : '') +
     (saltadosConsent ? 'WhatsApp reencaminado por falta de consentimiento: ' + saltadosConsent + '\n' : '') +
     (finalizados ? 'Planes finalizados (pasan a nurture): ' + finalizados + '\n' : '') +
+    (entregasKelly.length ? 'Entregados a Kelly: ' + entregasKelly.length + '\n' : '') +
     '\nAbre el panel: menú 🎯 Reclutamiento → Panel diario.',
     ui.ButtonSet.OK);
   return stats;
@@ -2019,6 +2059,15 @@ function recRenderPlantilla_(texto, f) {
   };
   return String(texto).replace(/\{\{(\w+)\}\}/g, (m, k) =>
     vals[k] !== undefined ? vals[k] : m);
+}
+
+/** Qué plantilla de Kelly corresponde a cada tipo de paso del plan. */
+function recPlantillaKellyPara_(tipo) {
+  const t = String(tipo).toLowerCase();
+  if (/invitaci|evento/.test(t))                return 'recruit_invitacion_evento';
+  if (/calculadora|recurso|informe|modelo/.test(t)) return 'recruit_recurso';
+  if (/valor|dato|mercado|prueba social/.test(t))   return 'recruit_valor_mercado';
+  return 'recruit_seguimiento';
 }
 
 function recEnlaceWhatsApp_(tel, mensaje) {
@@ -2572,6 +2621,11 @@ function recInstalarTriggerDiario() {
 
 function recRutinaDiaria() {
   try {
+    // Primero las bajas: nunca generar un toque a quien ya dijo BAJA en Kelly
+    if (recLeerConfig_('KWSYNC_SHEET_ID', '') && recLeerConfig_('KWSYNC_HOJA_BAJAS', '')) {
+      try { recSincronizarSupresionKWSync_silencioso_(); }
+      catch (e) { Logger.log('Sync KWSync falló: ' + e.message); }
+    }
     recRecalcularScores(true);
     recAutoAsignarPlanes();
     recGenerarToques_(true);
@@ -2599,6 +2653,308 @@ function recRutinaDiaria() {
   } catch (e) {
     Logger.log('Error en recRutinaDiaria: ' + e.message);
   }
+}
+
+// ============================================================
+//  20. INTEGRACIÓN CON KELLY (KWSync)
+// ============================================================
+
+/**
+ * CONTEXTO
+ * Kelly es la capa de pago de KWSync: WhatsApp Business Cloud API con
+ * plantillas aprobadas por Meta, página de consentimiento en siete idiomas
+ * con prueba documental, gestión de BAJA, control de la ventana de 24 h,
+ * seguimientos, reactivación y campañas.
+ *
+ * DECISIÓN DE ARQUITECTURA — por qué este módulo NO envía por Cloud API
+ *
+ * 1. El número de WhatsApp de Kelly es el de la oficina, y es el que
+ *    responde a los leads de cliente en menos de un minuto. Ese número es
+ *    infraestructura de ingresos. La prospección en frío a agentes de la
+ *    competencia es justo el tráfico que genera bloqueos y denuncias, y un
+ *    número con la calificación caída pierde límite de envío. No se pone en
+ *    riesgo la respuesta a leads para ahorrarle clics a la Team Leader.
+ *
+ * 2. La premisa legal de Kelly es que "la consulta la hizo él": el cliente
+ *    escribió primero. Un agente al que reclutamos NO ha preguntado nada.
+ *    La base jurídica es distinta y más débil, así que el primer contacto
+ *    no puede ir por el mismo camino.
+ *
+ * 3. Las plantillas de Kelly son de servicio (primer contacto de lead, aviso
+ *    al agente, resumen de cualificación, seguimientos, consentimiento). Una
+ *    plantilla de reclutamiento es categoría MARKETING para Meta: otras
+ *    reglas, otro precio y más probabilidad de rechazo en revisión.
+ *
+ * REPARTO QUE SÍ FUNCIONA
+ *   Toques 1-2 (sin consentimiento) → llamada + wa.me manual, desde el móvil
+ *                                     de la Team Leader. Riesgo cero para el
+ *                                     número de la oficina.
+ *   Toques 3+ (con consentimiento)  → se entregan a Kelly, que ya tiene
+ *                                     plantillas, consentimiento y topes.
+ *
+ * Este módulo prepara la entrega; no escribe en KWSync.
+ */
+
+/**
+ * Deja el toque en una cola que Kelly puede consumir, en lugar de enviarlo.
+ * Se activa poniendo MODO_WHATSAPP = KELLY en Rec_Config.
+ */
+function recCrearHojaColaKelly_(ss) {
+  return recCrearHoja_(ss, 'Rec_Cola_Kelly', [
+    'ID_Toque', 'ID_Candidato', 'Nombre', 'Teléfono', 'Idioma',
+    'Plantilla_Sugerida', 'Variables', 'Texto_Plano',
+    'Consentimiento', 'Generado', 'Estado_Kelly', 'Enviado_El', 'Notas'
+  ]);
+}
+
+/**
+ * Plantillas de reclutamiento que habría que dar de alta en Meta.
+ * NO existen todavía: las de Kelly son de servicio al cliente.
+ * Categoría MARKETING en todas, porque promocionan una oportunidad.
+ */
+const REC_PLANTILLAS_KELLY = {
+  recruit_valor_mercado: {
+    categoria: 'MARKETING',
+    variables: ['nombre', 'zona', 'dato'],
+    uso: 'Toques de valor: dato de mercado de su zona (pasos 4, 14 del plan)'
+  },
+  recruit_invitacion_evento: {
+    categoria: 'MARKETING',
+    variables: ['nombre', 'fecha', 'tema', 'direccion'],
+    uso: 'Invitación a formación abierta (paso 8)'
+  },
+  recruit_recurso: {
+    categoria: 'MARKETING',
+    variables: ['nombre', 'recurso'],
+    uso: 'Envío de la calculadora o del informe (pasos 10, 14)'
+  },
+  recruit_seguimiento: {
+    categoria: 'MARKETING',
+    variables: ['nombre', 'motivo'],
+    uso: 'Reapertura y nurture mensual (plan NURTURE)'
+  }
+};
+
+function recVerPlantillasKelly() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let hoja = ss.getSheetByName('Rec_Plantillas_Kelly');
+  if (hoja) ss.deleteSheet(hoja);
+  hoja = ss.insertSheet('Rec_Plantillas_Kelly');
+
+  hoja.getRange(1, 1, 1, 4)
+    .setValues([['Nombre de plantilla', 'Categoría Meta', 'Variables', 'Para qué paso']])
+    .setBackground(REC.COLOR_CABECERA).setFontColor('#ffffff').setFontWeight('bold');
+  hoja.setFrozenRows(1);
+
+  const filas = Object.keys(REC_PLANTILLAS_KELLY).map(k => {
+    const p = REC_PLANTILLAS_KELLY[k];
+    return [k, p.categoria, p.variables.join(', '), p.uso];
+  });
+  hoja.getRange(2, 1, filas.length, 4).setValues(filas);
+
+  hoja.getRange(filas.length + 3, 1).setValue(
+    'QUÉ HACER CON ESTO\n\n' +
+    'Las plantillas que ya tiene Kelly son de SERVICIO al cliente: primer contacto de\n' +
+    'lead, aviso al agente, resumen de cualificación, seguimientos y consentimiento.\n' +
+    'Ninguna sirve para reclutar, y reutilizar una plantilla de servicio para\n' +
+    'prospección es motivo de sanción por parte de Meta: la autorización va ligada\n' +
+    'a la finalidad.\n\n' +
+    'Estas cuatro son las que harían falta, todas de categoría MARKETING.\n\n' +
+    'ANTES DE PEDIRLAS, DECIDE EL NÚMERO:\n\n' +
+    '• Si las das de alta en el número de la oficina, la prospección en frío comparte\n' +
+    '  reputación con la respuesta a leads de cliente. Un pico de bloqueos te baja el\n' +
+    '  límite de envío y te deja sin contestar a las 23:40, que es justo lo que Kelly\n' +
+    '  vino a resolver.\n\n' +
+    '• Lo razonable es un SEGUNDO número, a nombre del Market Center y no de la\n' +
+    '  oficina, solo para reclutamiento. Separa reputaciones y separa facturación.\n\n' +
+    'Y recuerda: el primer contacto NO va por aquí. Va por llamada. Estas plantillas\n' +
+    'son para los toques 3 en adelante, cuando el agente ya ha dado su consentimiento.'
+  ).setWrap(true);
+  hoja.setColumnWidth(1, 220).setColumnWidth(4, 320);
+  hoja.activate();
+
+  SpreadsheetApp.getUi().alert('📋 Plantillas que faltan para Kelly',
+    'Hoja "Rec_Plantillas_Kelly" con las 4 plantillas de reclutamiento que\n' +
+    'habría que dar de alta en Meta, todas de categoría MARKETING.\n\n' +
+    'Las que ya tiene Kelly son de servicio al cliente y no se pueden reutilizar:\n' +
+    'la autorización de Meta va ligada a la finalidad.\n\n' +
+    'Lee la nota del final antes de pedirlas: hay que decidir si van en el número\n' +
+    'de la oficina o en uno nuevo solo para reclutamiento.',
+    SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+/**
+ * Importa las bajas de KWSync a nuestra lista de supresión.
+ *
+ * EL HUECO QUE CIERRA: Marbella es pequeña y un agente de la competencia
+ * puede ser además cliente vuestro. Si le dijo BAJA a Kelly como cliente y
+ * nosotros seguimos escribiéndole como candidato, estamos incumpliendo su
+ * derecho de oposición: el "no" es de la persona, no del canal.
+ *
+ * Es de SOLO LECTURA sobre KWSync. Este módulo no escribe nunca en vuestro
+ * sistema de leads en producción.
+ */
+function recSincronizarSupresionKWSync() {
+  return recSincronizarSupresionKWSync_(false);
+}
+
+/** Igual, sin diálogos: la usa la rutina diaria. */
+function recSincronizarSupresionKWSync_silencioso_() {
+  return recSincronizarSupresionKWSync_(true);
+}
+
+function recSincronizarSupresionKWSync_(silencioso) {
+  const ui = silencioso ? REC_UI_MUDA : SpreadsheetApp.getUi();
+  const idExterno = recLeerConfig_('KWSYNC_SHEET_ID', '');
+  const hojaExterna = recLeerConfig_('KWSYNC_HOJA_BAJAS', '');
+
+  if (!idExterno || !hojaExterna) {
+    ui.alert('⚙️ Falta configuración',
+      'En la hoja Rec_Config, rellena:\n\n' +
+      '• KWSYNC_SHEET_ID — el ID de la hoja de cálculo de KWSync\n' +
+      '  (lo que va entre /d/ y /edit en su URL)\n' +
+      '• KWSYNC_HOJA_BAJAS — el nombre de la pestaña donde KWSync guarda\n' +
+      '  las bajas y los consentimientos revocados\n' +
+      '• KWSYNC_COL_TELEFONO — opcional, la letra de la columna del teléfono\n' +
+      '  (por defecto busca la que más parezca un teléfono)\n\n' +
+      'La cuenta que ejecuta el script necesita acceso de LECTURA a esa hoja.\n' +
+      'No se escribe nada en KWSync.',
+      ui.ButtonSet.OK);
+    return { nuevas: 0, detenidos: 0 };
+  }
+
+  let externa;
+  try {
+    externa = SpreadsheetApp.openById(idExterno).getSheetByName(hojaExterna);
+  } catch (e) {
+    ui.alert('❌ No puedo abrir KWSync',
+      e.message + '\n\nComprueba el ID y que esta cuenta tenga acceso de lectura.',
+      ui.ButtonSet.OK);
+    return { nuevas: 0, detenidos: 0 };
+  }
+  if (!externa) { ui.alert('❌ No existe la pestaña "' + hojaExterna + '" en esa hoja.'); return { nuevas: 0, detenidos: 0 }; }
+  if (externa.getLastRow() < 2) { ui.alert('La pestaña de bajas de KWSync está vacía.'); return { nuevas: 0, detenidos: 0 }; }
+
+  const datos = externa.getDataRange().getValues();
+  const cabecera = datos[0].map(c => String(c).toLowerCase());
+
+  // Localizar la columna del teléfono
+  let colTel = -1;
+  const forzada = recLeerConfig_('KWSYNC_COL_TELEFONO', '');
+  if (forzada) {
+    colTel = forzada.toUpperCase().charCodeAt(0) - 65;
+  } else {
+    colTel = cabecera.findIndex(c => /tel|móvil|movil|phone|whatsapp|número|numero/.test(c));
+    if (colTel === -1) {
+      // Sin cabecera reconocible: la columna con más teléfonos válidos
+      let mejor = -1, mejorCuenta = 0;
+      for (let c = 0; c < datos[0].length; c++) {
+        let cuenta = 0;
+        for (let f = 1; f < Math.min(datos.length, 60); f++) {
+          if (recNormalizarTelefono_(datos[f][c])) cuenta++;
+        }
+        if (cuenta > mejorCuenta) { mejorCuenta = cuenta; mejor = c; }
+      }
+      colTel = mejor;
+    }
+  }
+  if (colTel < 0) {
+    ui.alert('❌ No encuentro la columna del teléfono',
+      'Indica la letra en KWSYNC_COL_TELEFONO en Rec_Config.', ui.ButtonSet.OK);
+    return { nuevas: 0, detenidos: 0 };
+  }
+
+  const colEmail = cabecera.findIndex(c => /mail|correo/.test(c));
+  const colFecha = cabecera.findIndex(c => /fecha|date|baja/.test(c));
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hSu = ss.getSheetByName(REC.H_SUPRESION);
+  const yaEstan = recCargarSupresion_();
+
+  const nuevas = [];
+  for (let f = 1; f < datos.length; f++) {
+    const tel = recNormalizarTelefono_(datos[f][colTel]);
+    const email = colEmail >= 0 ? String(datos[f][colEmail]).trim().toLowerCase() : '';
+    const fecha = (colFecha >= 0 && datos[f][colFecha] instanceof Date) ? datos[f][colFecha] : new Date();
+
+    if (tel && !yaEstan[tel.toLowerCase()]) {
+      yaEstan[tel.toLowerCase()] = true;
+      nuevas.push([tel, 'Teléfono', '', fecha, 'Baja registrada en Kelly/KWSync',
+                   'Sincronización KWSync', 'automático']);
+    }
+    if (email && email.indexOf('@') !== -1 && !yaEstan[email]) {
+      yaEstan[email] = true;
+      nuevas.push([email, 'Email', '', fecha, 'Baja registrada en Kelly/KWSync',
+                   'Sincronización KWSync', 'automático']);
+    }
+  }
+
+  if (nuevas.length) {
+    hSu.getRange(hSu.getLastRow() + 1, 1, nuevas.length, 7).setValues(nuevas);
+  }
+
+  // Aplicar a los candidatos que ya estuvieran en secuencia
+  const hCa = ss.getSheetByName(REC.H_CANDIDATOS);
+  let detenidos = 0;
+  if (hCa.getLastRow() > 1) {
+    const sup = recCargarSupresion_();
+    const n = hCa.getLastRow() - 1;
+    const cands = hCa.getRange(2, 1, n, REC_N_COLS).getValues();
+    for (let i = 0; i < cands.length; i++) {
+      const c = cands[i];
+      if (String(c[REC_COL.ESTADO - 1]) === 'Opt-out') continue;
+      if (!recEstaSuprimido_(sup, c[REC_COL.TELEFONO - 1], c[REC_COL.EMAIL - 1], c[REC_COL.LINKEDIN - 1])) continue;
+      hCa.getRange(i + 2, REC_COL.ESTADO).setValue('Opt-out');
+      hCa.getRange(i + 2, REC_COL.PLAN).setValue('');
+      hCa.getRange(i + 2, REC_COL.PROXIMO_TOQUE).setValue('');
+      hCa.getRange(i + 2, REC_COL.CONSENT_WA).setValue('NO');
+      detenidos++;
+    }
+  }
+
+  ui.alert('🔐 Supresión sincronizada',
+    'Bajas leídas de KWSync: ' + (datos.length - 1) + '\n' +
+    'Nuevas incorporadas a nuestra lista: ' + nuevas.length + '\n' +
+    'Candidatos detenidos en seco: ' + detenidos + '\n\n' +
+    (detenidos ? 'Esos ' + detenidos + ' habían dicho BAJA a Kelly y nosotros les\n' +
+                 'seguíamos escribiendo. Ya no.\n\n' : '') +
+    'Conviene dejarlo automático: menú → Activar automatización diaria.',
+    ui.ButtonSet.OK);
+
+  return { nuevas: nuevas.length, detenidos: detenidos };
+}
+
+/**
+ * Exporta NUESTRAS bajas para que las carguéis en KWSync.
+ * No escribimos en KWSync a propósito: es vuestro sistema en producción.
+ */
+function recExportarSupresionParaKWSync() {
+  const ui = SpreadsheetApp.getUi();
+  const hSu = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(REC.H_SUPRESION);
+  if (!hSu || hSu.getLastRow() < 2) { ui.alert('No hay bajas registradas todavía.'); return; }
+
+  const datos = hSu.getRange(2, 1, hSu.getLastRow() - 1, 7).getValues();
+  const filas = [['identificador', 'tipo', 'fecha', 'motivo', 'origen']];
+  datos.forEach(f => {
+    if (!String(f[0]).trim()) return;
+    filas.push([f[0], f[1],
+      f[3] instanceof Date ? Utilities.formatDate(f[3], Session.getScriptTimeZone(), 'yyyy-MM-dd') : '',
+      f[4], 'Reclutamiento MC Marbella']);
+  });
+
+  const csv = filas.map(fila => fila.map(c =>
+    '"' + String(c === null || c === undefined ? '' : c).replace(/"/g, '""') + '"'
+  ).join(',')).join('\n');
+
+  const nombre = 'Bajas_Reclutamiento_para_KWSync_' +
+    Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd') + '.csv';
+  const archivo = DriveApp.createFile(nombre, csv, MimeType.CSV);
+
+  ui.alert('📤 Bajas exportadas',
+    'Registros: ' + (filas.length - 1) + '\n\n' + archivo.getUrl() + '\n\n' +
+    'Cárgalo en la lista de supresión de KWSync. Así una baja dada aquí\n' +
+    'tampoco recibe campañas de Kelly: el "no" es de la persona, no del canal.',
+    ui.ButtonSet.OK);
 }
 
 // ============================================================

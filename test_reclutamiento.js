@@ -195,6 +195,21 @@ tt('cubre el segmento de autónomos',
 tt('cubre el cambio de sector',
    qs.some(q => /concierge|yacht|private banker/.test(q.query)));
 
+console.log('\n── Kelly: mapeo de paso a plantilla de Meta ──');
+t('invitación a evento', ctx.recPlantillaKellyPara_('Invitación a evento'), 'recruit_invitacion_evento');
+t('envío de calculadora', ctx.recPlantillaKellyPara_('Valor 3 — calculadora'), 'recruit_recurso');
+t('dato de mercado',     ctx.recPlantillaKellyPara_('Valor 1 — dato de mercado'), 'recruit_valor_mercado');
+t('informe trimestral',  ctx.recPlantillaKellyPara_('Informe trimestral'), 'recruit_recurso');
+t('nurture por defecto', ctx.recPlantillaKellyPara_('Nurture mensual'), 'recruit_seguimiento');
+t('tipo desconocido cae en seguimiento', ctx.recPlantillaKellyPara_('xyz'), 'recruit_seguimiento');
+
+const PLANT = vm.runInContext('REC_PLANTILLAS_KELLY', ctx);
+tt('toda plantilla de reclutamiento es MARKETING',
+   Object.keys(PLANT).every(k => PLANT[k].categoria === 'MARKETING'));
+tt('el mapeo solo devuelve plantillas declaradas',
+   ['Invitación a evento','Valor 3 — calculadora','Valor 1 — dato de mercado','Nurture mensual','xyz']
+     .every(x => PLANT[ctx.recPlantillaKellyPara_(x)] !== undefined));
+
 console.log('\n' + '─'.repeat(50));
 console.log(fail === 0 ? '✅ ' + ok + ' PRUEBAS PASADAS' : '❌ ' + fail + ' FALLOS de ' + (ok+fail));
 process.exit(fail ? 1 : 0);
