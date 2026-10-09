@@ -150,6 +150,51 @@ tt('índices de columna sin huecos ni repetidos',
    JSON.stringify(Object.keys(C).map(k=>C[k]).sort((a,b)=>a-b))
    === JSON.stringify(Array.from({length:36},(_,i)=>i+1)));
 
+console.log('\n── X-ray: parser de perfiles de LinkedIn ──');
+const p1 = ctx.recParsearPerfilLinkedIn_({
+  title: 'Ana García - Asesora Inmobiliaria - Panorama Properties | LinkedIn',
+  link: 'https://www.linkedin.com/in/anagarcia-marbella?trk=abc',
+  snippet: 'Ubicación: Marbella · 6 años de experiencia · Experiencia: Panorama Properties'
+});
+t('nombre y apellidos separados', [p1.nombre, p1.apellidos], ['Ana','García']);
+t('cargo extraído',               p1.cargo, 'Asesora Inmobiliaria');
+t('agencia extraída',             p1.agencia, 'Panorama Properties');
+t('zona del fragmento',           p1.zona, 'Marbella');
+t('años de experiencia',          p1.experiencia, '6');
+t('URL sin parámetros',           p1.linkedin, 'https://www.linkedin.com/in/anagarcia-marbella');
+
+const p2 = ctx.recParsearPerfilLinkedIn_({
+  title: 'Lars Nilsson - Marbella, Andalucía, España | Perfil profesional | LinkedIn',
+  link: 'https://es.linkedin.com/in/larsnilsson', snippet: ''
+});
+tt('ubicación en el título no se confunde con el cargo',
+   p2.cargo === '' && p2.zona.indexOf('Marbella') !== -1);
+
+tt('descarta enlaces que no son de perfil',
+   ctx.recParsearPerfilLinkedIn_({ title:'Empleos de inmobiliaria | LinkedIn',
+     link:'https://www.linkedin.com/jobs/search', snippet:'' }) === null);
+tt('descarta páginas de listado',
+   ctx.recParsearPerfilLinkedIn_({ title:'Perfiles de asesor inmobiliario | LinkedIn',
+     link:'https://www.linkedin.com/in/x', snippet:'' }) === null);
+
+t('normaliza URL con subdominio y querystring',
+  ctx.recNormalizarLinkedIn_('https://es.linkedin.com/in/AnaGarcia?trk=x'), 'linkedin.com/in/anagarcia');
+tt('misma URL en dos formatos = misma clave',
+  ctx.recNormalizarLinkedIn_('http://linkedin.com/in/ana/') ===
+  ctx.recNormalizarLinkedIn_('https://www.linkedin.com/in/ANA?utm=1'));
+t('URL no válida da vacío', ctx.recNormalizarLinkedIn_('https://facebook.com/ana'), '');
+
+console.log('\n── X-ray: consultas generadas ──');
+const qs = vm.runInContext('recConsultasXRay_()', ctx);
+tt('genera consultas',            qs.length >= 10);
+tt('todas limitadas a perfiles',  qs.every(q => q.query.indexOf('site:linkedin.com/in') === 0));
+tt('todas acotadas geográficamente',
+   qs.every(q => /Marbella|Estepona|Benahav|San Pedro|Nueva Andaluc|Mijas|Sotogrande|Costa del Sol/.test(q.query)));
+tt('cubre el segmento de autónomos',
+   qs.some(q => /autónomo|freelance/.test(q.query)));
+tt('cubre el cambio de sector',
+   qs.some(q => /concierge|yacht|private banker/.test(q.query)));
+
 console.log('\n' + '─'.repeat(50));
 console.log(fail === 0 ? '✅ ' + ok + ' PRUEBAS PASADAS' : '❌ ' + fail + ' FALLOS de ' + (ok+fail));
 process.exit(fail ? 1 : 0);

@@ -18,7 +18,7 @@ que no hay que instalar nada nuevo ni pagar otra herramienta.
 | 3 | En tu `onOpen()` del archivo `gs` (línea ~198), añade antes del `.addToUi()` final una línea nueva: `recCrearMenu();` |
 | 4 | Ejecuta **`recInicializarTodo()`** desde el editor. Crea las 8 hojas y siembra los Smart Plans. |
 | 5 | Rellena la hoja **`Rec_Config`**: nombre de la TL, teléfono, email y dirección del MC. |
-| 6 | Menú **🎯 Reclutamiento → Configurar claves de API**. Mínimo: `GEMINI_API_KEY` y `PLACES_API_KEY`. |
+| 6 | Menú **🎯 Reclutamiento → Configurar claves de API**. Mínimo: `GEMINI_API_KEY` y `PLACES_API_KEY`. Para el X-ray, además `CSE_API_KEY` y `CSE_CX`. |
 | 7 | Menú **🎯 Reclutamiento → Activar automatización diaria**. |
 
 > ⚠️ `reclutamiento.gs` **no** define `onOpen()` a propósito: ya tienes dos en
@@ -36,13 +36,20 @@ llamativas que suenen:
 |---|---|---|---|---|---|
 | 1 | **Webs de las agencias** (páginas de equipo) | Agente por agente: nombre, cargo, email, teléfono, idiomas | **1.500–4.000** | ✅ Total | Céntimos de Gemini |
 | 2 | **Google Places API** | El censo de agencias: nombre, web, teléfono, dirección, reputación | **300–600 agencias** | ✅ Total | ~15–25 € el barrido completo |
-| 3 | **Portales** (Idealista, Fotocasa, Kyero, Resales) | **Producción real**: nº de inmuebles publicados y rango de precio | El mismo universo, pero cualificado | ⚠️ Semi (copiar/pegar) | 0 € |
-| 4 | **LinkedIn / Sales Navigator** | Trayectoria, antigüedad, idiomas y **señal de cambio reciente** | 2.000–5.000 perfiles | ⚠️ Semi (export manual) | Sales Nav ~100 €/mes |
-| 5 | **Referidos de tus propios agentes** | Pocos, pero con la conversión más alta de todas | 5–15/mes con incentivo | ❌ Proceso humano | Incentivo interno |
-| 6 | **Formación abierta en la oficina** | Candidatos que vienen ellos | 10–30 por evento | ❌ | Organización |
-| 7 | **Instagram** | Agentes con marca personal y cierres visibles | Cientos | ❌ Manual | 0 € |
-| 8 | **Ofertas de empleo de la competencia** (InfoJobs, Indeed) | Qué agencias tienen rotación → dónde hay gente descontenta | Señal, no contactos | ⚠️ Semi | 0 € |
-| 9 | **Registro de Agentes Inmobiliarios de Andalucía** | El censo oficial completo | Todo el sector residencial | 🔜 Cuando abra | Gratis |
+| 3 | **X-ray de LinkedIn vía Google** | Nombre, cargo, agencia y URL del perfil. **Sin teléfono** | 500–2.000 perfiles | ✅ Total | 100 consultas/día gratis |
+| 4 | **Portales** (Idealista, Fotocasa, Kyero, Resales) | **Producción real**: nº de inmuebles publicados y rango de precio | El mismo universo, pero cualificado | ⚠️ Semi (copiar/pegar) | 0 € |
+| 5 | **LinkedIn Sales Navigator** | Lo del X-ray más antigüedad, **alertas de cambio de trabajo** y exportación | 2.000–5.000 perfiles | ⚠️ Semi (export manual) | ~100 €/mes |
+| 6 | **Referidos de tus propios agentes** | Pocos, pero con la conversión más alta de todas | 5–15/mes con incentivo | ❌ Proceso humano | Incentivo interno |
+| 7 | **Formación abierta en la oficina** | Candidatos que vienen ellos | 10–30 por evento | ❌ | Organización |
+| 8 | **Instagram** | Agentes con marca personal y cierres visibles | Cientos | ❌ Manual | 0 € |
+| 9 | **Ofertas de empleo de la competencia** (InfoJobs, Indeed) | Qué agencias tienen rotación → dónde hay gente descontenta | Señal, no contactos | ⚠️ Semi | 0 € |
+| 10 | **Registro de Agentes Inmobiliarios de Andalucía** | El censo oficial completo | Todo el sector residencial | 🔜 Cuando abra | Gratis |
+
+> **Si no tienes Sales Navigator** (fuente 5), la 3 lo cubre casi entero y es
+> gratis. La diferencia real es que Sales Navigator te avisa cuando alguien
+> **cambia de trabajo**, que es la señal de mayor conversión que existe. Si no
+> lo tienes, relanza el X-ray cada mes y compara contra la base: los perfiles
+> nuevos suelen ser movimientos recientes.
 
 ### El flujo que de verdad funciona
 
@@ -50,6 +57,7 @@ llamativas que suenen:
 Google Places  →  censo de agencias de la zona          (automático)
       ↓
 Webs de agencias  →  agentes con nombre y contacto      (automático)
+X-ray de Google  →  perfiles que no salen en esas webs  (automático)
       ↓
 Scoring  →  los 200 mejores                             (automático)
       ↓
@@ -62,7 +70,7 @@ Smart Plan  →  llamada, WhatsApp, LinkedIn, email       (automático)
 Entrevista con la Team Leader
 ```
 
-**Los pasos 1, 2, 3 y 6 son automáticos y te dan la base entera en una tarde.**
+**Los pasos automáticos te dan la base entera en una tarde.**
 Los pasos semiautomáticos son los que cualifican, y son los que de verdad
 mueven la aguja: un agente con 30 inmuebles en Nueva Andalucía vale veinte
 veces lo que un nombre suelto en una web.
@@ -183,6 +191,17 @@ Los mensajes llevan huecos `[así]`. **Rellénalos con datos reales de tu Market
 Center.** Si no puedes respaldar una cifra, bórrala. Un dato inventado delante
 de un agente que conoce la zona mejor que tú te cierra la puerta para siempre,
 y encima corre entre la competencia.
+
+### Activos que los mensajes prometen
+
+| Paso | Activo | Estado |
+|---|---|---|
+| Día 2 y 75 | Desglose de mercado por urbanización | Lo tienes que sacar de tu CRM |
+| Día 10 | Caso real de un agente comparable | Pídele permiso a la persona |
+| Día 14 | Formación o mesa redonda abierta | Organizativo |
+| **Día 28** | **Calculadora de ingresos** | ✅ **`calculadora_ingresos_agente.xlsx`** |
+| Día 35 | Modelo económico en PDF | Material corporativo del MC |
+| Día 45 | Agente recién incorporado dispuesto a hablar | Pídeselo |
 
 ---
 
@@ -318,7 +337,43 @@ ni pierdes el reporting oficial.
 
 ---
 
-## 9. Seguridad: hay una clave expuesta
+## 9. La calculadora de ingresos (día 28)
+
+`calculadora_ingresos_agente.xlsx` es el activo del paso que más convierte de
+toda la secuencia. El agente mete cuatro datos y ve lo que se habría quedado
+con cada modelo.
+
+**Tres pestañas:**
+
+| Pestaña | Quién la toca |
+|---|---|
+| `Instrucciones` | Nadie. Explica el uso y la leyenda de colores |
+| `Calculadora` | **El agente**: cuatro celdas amarillas |
+| `Parametros_MC` | **Tú, antes de enviarlo**: cinco celdas amarillas |
+
+**Antes de mandarla, rellena `Parametros_MC`:** reparto del agente, tope anual
+de aportación, royalty, tope de royalty y cuotas fijas. **Vienen vacías a
+propósito** — no me invento las cifras de tu Market Center, y cada MC tiene
+las suyas. Si te las dejas vacías, la hoja muestra un aviso en rojo y los
+resultados no son válidos.
+
+Puedes ocultar `Parametros_MC` (clic derecho en la pestaña → Ocultar) para que
+el agente vea solo su calculadora.
+
+**Por qué funciona:** no le pides sus números. Le das la herramienta y los mete
+él. Eso elimina la resistencia de "no te voy a contar lo que gano", y el que
+hace el cálculo saca su propia conclusión, que es la única que le mueve.
+
+Lo que más impacta no es el reparto: es la fila del **tope**. Hay un cálculo
+que dice cuántas operaciones le hacen falta para alcanzarlo, y una tabla de
+escenarios que enseña cómo se abre la diferencia cuanto más produce.
+
+El cálculo está verificado con 50 comprobaciones contra el resultado hecho a
+mano, incluidos los casos límite (producción que no llega al tope y hoja vacía).
+
+---
+
+## 10. Seguridad: hay una clave expuesta
 
 El archivo `gs`, línea ~3565, tiene la clave de Gemini escrita en el código:
 
@@ -344,7 +399,7 @@ El módulo de reclutamiento no guarda ninguna clave en el código.
 
 ---
 
-## 10. Hojas que crea el sistema
+## 11. Hojas que crea el sistema
 
 | Hoja | Para qué |
 |---|---|
@@ -360,17 +415,20 @@ El módulo de reclutamiento no guarda ninguna clave en el código.
 
 ---
 
-## 11. Pruebas
+## 12. Pruebas
 
 `test_reclutamiento.js` carga el módulo en Node con los servicios de Google
-simulados y valida 48 casos: normalización de teléfonos (incluidos los
+simulados y valida 65 casos: normalización de teléfonos (incluidos los
 británicos de los compradores UK), deduplicación, parser de `robots.txt`,
 clasificación de perfiles, scoring, plantillas, enlaces de WhatsApp y
-supresión.
+supresión, además del parser de perfiles del X-ray de Google.
 
 ```bash
 node test_reclutamiento.js
 ```
+
+La calculadora tiene su propia verificación: 50 comprobaciones del cálculo
+contra el resultado a mano, con casos límite incluidos.
 
 Ejecútalo siempre que toques los pesos del scoring o la normalización.
 

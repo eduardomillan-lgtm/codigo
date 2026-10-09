@@ -129,7 +129,8 @@ function recCrearMenu() {
       .addItem('2. Extraer agentes de las webs de agencias', 'recRastrearWebsAgencias')
       .addItem('3. Importar CSV (LinkedIn Sales Navigator)', 'recAbrirImportadorCSV')
       .addItem('4. Pegar ficha de portal (Idealista/Fotocasa)', 'recAbrirPegadoPortal')
-      .addItem('5. Generar búsquedas de LinkedIn', 'recGenerarBooleanLinkedIn'))
+      .addItem('5. Generar búsquedas de LinkedIn', 'recGenerarBooleanLinkedIn')
+      .addItem('6. X-ray de LinkedIn vía Google (sin Sales Navigator)', 'recBuscarXRayGoogle'))
     .addSeparator()
     .addItem('⭐ Recalcular puntuaciones', 'recRecalcularScores')
     .addItem('🧹 Deduplicar base de candidatos', 'recDeduplicar')
@@ -316,6 +317,8 @@ function recConfigurarClaves() {
   const campos = [
     ['GEMINI_API_KEY',  'Clave de Google AI Studio (Gemini). Se usa para extraer agentes de webs y clasificar perfiles.'],
     ['PLACES_API_KEY',  'Clave de Google Maps Platform con Places API (New) activada.'],
+    ['CSE_API_KEY',     'Clave de Google Custom Search API. Para el X-ray de LinkedIn sin Sales Navigator.'],
+    ['CSE_CX',          'ID del motor de Programmable Search (cx), creado con "Buscar en toda la web" activada.'],
     ['WA_TOKEN',        'Token permanente de WhatsApp Business Cloud API. Solo si MODO_WHATSAPP = API.'],
     ['WA_PHONE_ID',     'Phone Number ID de WhatsApp Business. Solo si MODO_WHATSAPP = API.']
   ];
@@ -1020,6 +1023,232 @@ function recAbrirPegadoPortal() {
 }
 
 // ============================================================
+//  FUENTE 6 — X-RAY DE GOOGLE: LinkedIn sin Sales Navigator
+// ============================================================
+
+/**
+ * Localiza perfiles de LinkedIn usando la API de búsqueda de Google
+ * (Programmable Search / Custom Search JSON API) con consultas `site:`.
+ *
+ * POR QUÉ ASÍ Y NO CON UN SCRAPER:
+ *   • No accedemos a LinkedIn: consultamos el índice público de Google con
+ *     su propia API oficial. Es exactamente lo que verías buscando a mano.
+ *   • Sales Navigator cuesta ~100 €/mes. Esto son 100 consultas gratis al día
+ *     y 5 $ por cada 1.000 adicionales.
+ *   • Los scrapers de LinkedIn incumplen sus condiciones y la AEPD ya ha
+ *     sancionado el uso de datos de perfiles públicos para contacto no
+ *     consentido. Esta vía no toca LinkedIn.
+ *
+ * QUÉ TE DA:  nombre, cargo, agencia, zona y URL del perfil.
+ * QUÉ NO TE DA: teléfono ni email. Eso lo cruzas con la web de su agencia
+ *               (fuente 2) o con la ficha del portal (fuente 4).
+ *
+ * REQUISITOS (una vez):
+ *   1. console.cloud.google.com → habilita "Custom Search API" → crea clave.
+ *   2. programmablesearchengine.google.com → crea un motor con la opción
+ *      "Buscar en toda la web" ACTIVADA. Copia el ID del motor (cx).
+ *   3. Menú → Configurar claves de API → CSE_API_KEY y CSE_CX.
+ */
+function recBuscarXRayGoogle() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hCa = ss.getSheetByName(REC.H_CANDIDATOS);
+  if (!hCa) { ui.alert('Ejecuta primero recInicializarTodo()'); return; }
+
+  let key, cx;
+  try { key = recClave_('CSE_API_KEY'); cx = recClave_('CSE_CX'); }
+  catch (e) {
+    ui.alert('❌ Falta configuración',
+      e.message + '\n\nCómo se consigue:\n' +
+      '1. console.cloud.google.com → habilita "Custom Search API" → crea una clave.\n' +
+      '2. programmablesearchengine.google.com → crea un motor con\n' +
+      '   "Buscar en toda la web" ACTIVADA → copia el ID (cx).\n' +
+      '3. Menú → Configurar claves de API.\n\n' +
+      'Las primeras 100 consultas de cada día son gratis.',
+      ui.ButtonSet.OK);
+    return;
+  }
+
+  const consultas = recConsultasXRay_();
+  const conf = ui.alert('🔎 X-ray de LinkedIn vía Google',
+    consultas.length + ' consultas × hasta 30 resultados cada una.\n\n' +
+    'Consume ' + (consultas.length * 3) + ' llamadas de tu cuota diaria (100 gratis/día).\n\n' +
+    'Saca nombre, cargo, agencia y URL del perfil. NO saca teléfono:\n' +
+    'eso se cruza después con la web de la agencia o la ficha del portal.\n\n' +
+    '¿Continuar?', ui.ButtonSet.YES_NO);
+  if (conf !== ui.Button.YES) return;
+
+  const yaExisten = recIndiceCandidatos_(hCa);
+  const urlsVistas = {};
+  hCa.getLastRow() > 1 && hCa.getRange(2, REC_COL.LINKEDIN, hCa.getLastRow() - 1, 1)
+    .getValues().forEach(f => { const v = recNormalizarLinkedIn_(f[0]); if (v) urlsVistas[v] = true; });
+
+  const nuevos = [];
+  let llamadas = 0, errores = 0;
+  const inicio = Date.now();
+
+  for (const c of consultas) {
+    if (Date.now() - inicio > 4.5 * 60 * 1000) break;   // margen del límite de 6 min
+
+    for (let pagina = 0; pagina < 3; pagina++) {
+      const res = recCSEConsultar_(key, cx, c.query, pagina * 10 + 1);
+      llamadas++;
+      if (res.error) { errores++; break; }
+      if (!res.items.length) break;
+
+      for (const item of res.items) {
+        const perfil = recParsearPerfilLinkedIn_(item);
+        if (!perfil) continue;
+
+        const url = recNormalizarLinkedIn_(perfil.linkedin);
+        if (url && urlsVistas[url]) continue;
+        const clave = recClaveDedupe_(perfil.nombre + ' ' + perfil.apellidos, '', '');
+        if (clave && yaExisten[clave]) continue;
+        if (url) urlsVistas[url] = true;
+        if (clave) yaExisten[clave] = true;
+
+        perfil.fuente = 'Google X-Ray (LinkedIn)';
+        perfil.urlFuente = perfil.linkedin;
+        perfil.zona = perfil.zona || c.zona || '';
+        perfil.perfil = recPerfilDesdeCargo_(perfil.cargo, perfil.agencia);
+        perfil.notas = c.segmento;
+        nuevos.push(recFilaCandidato_(perfil));
+      }
+      if (res.items.length < 10) break;
+      Utilities.sleep(200);
+    }
+  }
+
+  if (nuevos.length) {
+    hCa.getRange(hCa.getLastRow() + 1, 1, nuevos.length, REC_N_COLS).setValues(nuevos);
+    recRecalcularScores(true);
+  }
+
+  ui.alert('✅ X-ray completado',
+    'Llamadas a la API: ' + llamadas + (errores ? ' (' + errores + ' con error)' : '') + '\n' +
+    'Perfiles nuevos añadidos: ' + nuevos.length + '\n\n' +
+    'Ninguno tiene teléfono todavía. Para conseguirlo:\n' +
+    '• Si su agencia ya está en Rec_Agencias → ejecuta "Extraer agentes de las webs".\n' +
+    '• Si no → pega su ficha del portal (opción 4).\n' +
+    '• O escríbele por LinkedIn, que para eso tienes la URL.',
+    ui.ButtonSet.OK);
+}
+
+function recCSEConsultar_(key, cx, query, start) {
+  const url = 'https://www.googleapis.com/customsearch/v1'
+    + '?key=' + encodeURIComponent(key)
+    + '&cx=' + encodeURIComponent(cx)
+    + '&q=' + encodeURIComponent(query)
+    + '&num=10&start=' + start
+    + '&hl=es&gl=es';
+  try {
+    const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    if (res.getResponseCode() !== 200) {
+      Logger.log('CSE ' + res.getResponseCode() + ': ' + res.getContentText().substring(0, 250));
+      return { items: [], error: true };
+    }
+    const j = JSON.parse(res.getContentText());
+    return { items: j.items || [], error: false };
+  } catch (e) {
+    Logger.log('CSE excepción: ' + e.message);
+    return { items: [], error: true };
+  }
+}
+
+function recNormalizarLinkedIn_(url) {
+  const m = String(url || '').match(/linkedin\.com\/in\/([^\/?#\s]+)/i);
+  return m ? ('linkedin.com/in/' + m[1].toLowerCase()) : '';
+}
+
+/**
+ * LinkedIn titula sus páginas de forma muy regular:
+ *   "Ana García - Asesora Inmobiliaria - Panorama Properties | LinkedIn"
+ *   "Lars Nilsson - Marbella, Andalucía, España | Perfil profesional | LinkedIn"
+ * Y el fragmento suele traer "Ubicación: X · Experiencia: Y".
+ */
+function recParsearPerfilLinkedIn_(item) {
+  const link = String(item.link || '');
+  if (!/linkedin\.com\/in\//i.test(link)) return null;
+
+  let titulo = String(item.title || '')
+    .replace(/\s*\|\s*LinkedIn\s*$/i, '')
+    .replace(/\s*\|\s*Perfil profesional\s*$/i, '')
+    .replace(/\s*\|\s*Professional Profile\s*$/i, '')
+    .trim();
+  if (!titulo) return null;
+
+  const partes = titulo.split(/\s+[-–—]\s+/).map(p => p.trim()).filter(Boolean);
+  const nombreCompleto = partes.shift() || '';
+  if (nombreCompleto.length < 3 || nombreCompleto.length > 60) return null;
+  if (/^(perfiles|profiles|\d+\+?)/i.test(nombreCompleto)) return null;   // páginas de listado
+
+  const esUbicacion = (t) =>
+    /españa|spain|andaluc|málaga|malaga|provincia/i.test(t) ||
+    recZonas_().some(z => t.toLowerCase().indexOf(z.toLowerCase()) !== -1);
+
+  let cargo = '', agencia = '', zona = '';
+  for (const p of partes) {
+    if (!zona && esUbicacion(p)) { zona = p; continue; }
+    if (!cargo) { cargo = p; continue; }
+    if (!agencia) { agencia = p; }
+  }
+
+  // El fragmento completa lo que falte
+  const frag = String(item.snippet || '').replace(/\s+/g, ' ');
+  if (!zona) {
+    const m = frag.match(/Ubicaci[oó]n:\s*([^·•|]{3,60})/i) || frag.match(/Location:\s*([^·•|]{3,60})/i);
+    if (m) zona = m[1].trim();
+  }
+  let experiencia = '';
+  const mExp = frag.match(/Experiencia:\s*([^·•|]{2,40})/i) || frag.match(/Experience:\s*([^·•|]{2,40})/i);
+  if (mExp && !agencia) agencia = mExp[1].trim();
+  const mAnios = frag.match(/(\d{1,2})\s*a[ñn]os?\s+(?:de\s+)?experiencia/i);
+  if (mAnios) experiencia = mAnios[1];
+
+  const trozos = nombreCompleto.split(/\s+/);
+  return {
+    nombre: trozos.shift(),
+    apellidos: trozos.join(' '),
+    cargo: cargo.substring(0, 90),
+    agencia: agencia.substring(0, 90),
+    zona: zona.substring(0, 60),
+    experiencia: experiencia,
+    linkedin: link.split('?')[0],
+    idiomas: ''
+  };
+}
+
+/** Las consultas X-ray que se lanzan contra la API. */
+function recConsultasXRay_() {
+  const base = 'site:linkedin.com/in';
+  const zonas = ['Marbella', 'Estepona', 'Benahavís', 'San Pedro de Alcántara',
+                 'Nueva Andalucía', 'Mijas', 'Sotogrande'];
+  const out = [];
+
+  zonas.forEach(z => {
+    out.push({ segmento: 'Agentes en activo', zona: z,
+      query: base + ' ("asesor inmobiliario" OR "agente inmobiliario" OR "real estate agent" OR "property consultant") "' + z + '"' });
+  });
+
+  out.push({ segmento: 'Autónomos / marca propia', zona: '',
+    query: base + ' ("asesor inmobiliario" OR "real estate agent") ("autónomo" OR "freelance" OR "independiente" OR "self-employed") ("Marbella" OR "Costa del Sol")' });
+
+  out.push({ segmento: 'Competencia de lujo', zona: 'Marbella',
+    query: base + ' ("Engel" OR "Lucas Fox" OR "Savills" OR "Sotheby" OR "Knight Frank" OR "Panorama" OR "Terra Meridiana") ("Marbella" OR "Costa del Sol")' });
+
+  out.push({ segmento: 'Grandes franquicias', zona: '',
+    query: base + ' ("RE/MAX" OR "Century 21" OR "iad" OR "eXp" OR "Tecnocasa") ("Marbella" OR "Estepona" OR "Mijas")' });
+
+  out.push({ segmento: 'Cambio de sector (lujo/hostelería)', zona: 'Marbella',
+    query: base + ' ("guest relations" OR "concierge" OR "private banker" OR "yacht broker" OR "luxury retail" OR "club manager") ("Marbella" OR "Puerto Banús" OR "Sotogrande")' });
+
+  out.push({ segmento: 'Idioma de mercado comprador', zona: '',
+    query: base + ' ("real estate" OR "property") "Marbella" ("Swedish" OR "Norwegian" OR "Dutch" OR "German" OR "Russian" OR "Arabic")' });
+
+  return out;
+}
+
+// ============================================================
 //  10. FUENTE 5 — GENERADOR DE BÚSQUEDAS DE LINKEDIN
 // ============================================================
 
@@ -1095,15 +1324,36 @@ function recGenerarBooleanLinkedIn() {
   hoja.setColumnWidth(1, 260).setColumnWidth(2, 380).setColumnWidth(3, 620);
   hoja.getRange(2, 1, filas.length, 3).setWrap(true).setVerticalAlignment('top');
 
-  hoja.getRange(filas.length + 3, 1).setValue(
+  // --- Bloque 2: X-ray de Google, gratis y sin Sales Navigator ---
+  const filaX = filas.length + 3;
+  hoja.getRange(filaX, 1).setValue('X-RAY DE GOOGLE · sin Sales Navigator, sin coste')
+    .setFontWeight('bold').setFontSize(12).setFontColor('#b70000');
+  hoja.getRange(filaX + 1, 1, 1, 3)
+    .setValues([['Segmento', 'Por qué', 'Pegar en google.com (no en LinkedIn)']])
+    .setBackground('#334155').setFontColor('#ffffff').setFontWeight('bold');
+
+  const filasX = recConsultasXRay_().map(c => [
+    c.segmento + (c.zona ? ' · ' + c.zona : ''),
+    'Busca en el índice público de Google, no dentro de LinkedIn. Sin licencia y sin incumplir condiciones.',
+    c.query
+  ]);
+  hoja.getRange(filaX + 2, 1, filasX.length, 3).setValues(filasX)
+    .setWrap(true).setVerticalAlignment('top');
+
+  hoja.getRange(filaX + filasX.length + 3, 1).setValue(
     'CÓMO USARLO\n' +
     '1. Pega la cadena en el buscador de LinkedIn (o en Sales Navigator, que da mejores filtros).\n' +
     '2. Filtra por Ubicación = Provincia de Málaga / Costa del Sol.\n' +
     '3. Guarda la búsqueda: Sales Navigator te avisa de los perfiles nuevos que entran. Eso convierte la captación en un flujo continuo.\n' +
     '4. Exporta o copia los resultados y entra por Menú → Captar candidatos → Importar CSV.\n\n' +
+    'SIN LICENCIA DE SALES NAVIGATOR\n' +
+    'Usa el bloque X-ray de arriba: se pega en Google, no en LinkedIn, y es gratis.\n' +
+    'Si quieres que esas mismas consultas se ejecuten solas y vuelquen los perfiles\n' +
+    'directamente en Rec_Candidatos, configura CSE_API_KEY y CSE_CX y usa la\n' +
+    'opción 6 del menú (100 consultas gratis al día).\n\n' +
     'IMPORTANTE: no uses extensiones de scraping de LinkedIn (Phantombuster y similares).\n' +
     'Incumplen las condiciones de LinkedIn y la AEPD ya ha sancionado el uso de datos de\n' +
-    'perfiles públicos para contacto no consentido. Exportación manual o Sales Navigator.'
+    'perfiles públicos para contacto no consentido. Exportación manual, X-ray o Sales Navigator.'
   ).setWrap(true).setFontWeight('bold');
 
   hoja.activate();
@@ -1387,8 +1637,8 @@ function recSembrarSmartPlan_(ss) {
   add(A, 10, 28, 'WhatsApp', 'Valor 3 — calculadora',
     'Le damos el control del cálculo. No le pedimos datos.',
     '',
-    '{{nombre}}, te paso la hoja de la que te hablaba.\n\nMetes tus operaciones del año pasado y tu comisión media, y te dice lo que te habrías quedado con cada modelo. La rellenas tú, no me mandas nada.\n\nLa mayoría se sorprende con la línea del tope de aportación (cap): a partir de ahí te quedas el 100%.\n\n[adjuntar hoja de cálculo]',
-    '{{nombre}}, here is the sheet I mentioned.\n\nYou enter last year deals and your average fee, and it tells you what you would have kept under each model. You fill it in — you send me nothing.\n\nMost people are surprised by the cap line: past that point you keep 100%.\n\n[attach spreadsheet]',
+    '{{nombre}}, te paso la hoja de la que te hablaba.\n\nMetes tus operaciones del año pasado y tu comisión media, y te dice lo que te habrías quedado con cada modelo. La rellenas tú: no sale de tu ordenador y no me mandas ningún número.\n\nLa mayoría se sorprende con la línea del tope de aportación: a partir de ahí dejas de aportar al Market Center.\n\n[adjuntar calculadora_ingresos_agente.xlsx — rellena antes la pestaña Parametros_MC con los datos reales del MC]',
+    '{{nombre}}, here is the sheet I mentioned.\n\nYou enter last year deals and your average fee, and it tells you what you would have kept under each model. You fill it in — it never leaves your computer and you send me no numbers.\n\nMost people are surprised by the cap line: past that point you stop contributing to the Market Center.\n\n[attach calculadora_ingresos_agente.xlsx — fill the Parametros_MC tab with your real MC figures first]',
     'NO');
 
   add(A, 11, 35, 'Email', 'Valor 4 — modelo económico',
