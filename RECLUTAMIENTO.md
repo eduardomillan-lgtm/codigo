@@ -20,6 +20,8 @@ que no hay que instalar nada nuevo ni pagar otra herramienta.
 | 5 | Rellena la hoja **`Rec_Config`**: nombre de la TL, teléfono, email y dirección del MC. |
 | 6 | Menú **🎯 Reclutamiento → Configurar claves de API**. Mínimo: `GEMINI_API_KEY` y `PLACES_API_KEY`. Para el X-ray, además `CSE_API_KEY` y `CSE_CX`. |
 | 7 | Menú **🎯 Reclutamiento → Activar automatización diaria**. |
+| 8 | Menú → Captar candidatos → **0. Sembrar agencias desde CSV** y pega `agencias_marbella_seed.csv`. 40 agencias de tu zona, 25 con dominio. |
+| 9 | Menú → Captar candidatos → **2. Extraer agentes de las webs**. De aquí salen los candidatos. |
 
 > ⚠️ `reclutamiento.gs` **no** define `onOpen()` a propósito: ya tienes dos en
 > el archivo `gs` (líneas 54 y 198) y el segundo gana. Añadir un tercero
@@ -50,6 +52,30 @@ llamativas que suenen:
 > **cambia de trabajo**, que es la señal de mayor conversión que existe. Si no
 > lo tienes, relanza el X-ray cada mes y compara contra la base: los perfiles
 > nuevos suelen ser movimientos recientes.
+
+### Ya tienes las 40 primeras agencias
+
+`agencias_marbella_seed.csv` trae la lista de partida, investigada y clasificada:
+
+| | |
+|---|---|
+| Agencias | **40** |
+| Con dominio confirmado | 25 (listas para extraer agentes) |
+| Sin dominio | 15 (hay que resolverlo: un minuto de Google, o la API de Places) |
+| Prioridad alta | 16 |
+| Independientes | 32 · Grandes franquicias 7 · Plataformas 1 |
+
+Seis van marcadas **PRIORITARIA** por idiomas, que es el argumento de captación
+más fuerte que tienes en Marbella: Kristina Szekely (su equipo declara más de 10
+idiomas), Lucas Fox Marbella, Innovative Property (todos los nórdicos, húngaro,
+neerlandés, alemán), Marbella & Co (danesa, 8 idiomas), CarlingPetri (asigna
+agente por idioma) y StartGroup.
+
+Donde no había certeza del dominio, **el campo va vacío**. Un dominio inventado
+envenena la base y hace que el rastreador se coma errores en silencio.
+
+Con esto **te saltas la API de Places** para empezar: siembras, extraes agentes
+de las 25 webs y ya tienes cola de trabajo.
 
 ### El flujo que de verdad funciona
 

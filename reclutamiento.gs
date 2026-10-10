@@ -125,6 +125,7 @@ function recCrearMenu() {
     .addItem('📋 Panel diario de la Team Leader', 'recAbrirPanel')
     .addSeparator()
     .addSubMenu(SpreadsheetApp.getUi().createMenu('🔍 Captar candidatos')
+      .addItem('0. Sembrar agencias desde CSV (gratis, sin API)', 'recAbrirImportadorAgencias')
       .addItem('1. Mapear agencias de la zona (Google Places)', 'recImportarGooglePlaces')
       .addItem('2. Extraer agentes de las webs de agencias', 'recRastrearWebsAgencias')
       .addItem('3. Importar CSV (LinkedIn Sales Navigator)', 'recAbrirImportadorCSV')
@@ -524,6 +525,151 @@ function recZonas_() {
   const lista = REC.ZONAS.slice();
   if (extra) extra.split(',').forEach(z => { const t = z.trim(); if (t) lista.push(t); });
   return lista;
+}
+
+// ============================================================
+//  5-BIS. SEMBRAR AGENCIAS SIN API DE PLACES
+// ============================================================
+
+/**
+ * Carga una lista de agencias desde CSV, para arrancar SIN la API de Places.
+ *
+ * Por qué existe: Places cuesta y hay que configurar clave. Si ya tienes la
+ * lista de agencias de tu zona, la pegas aquí y pasas directo al paso 2
+ * (extraer los agentes de sus webs), que es donde está el valor.
+ *
+ * Deduplica por nombre de agencia normalizado, así que puedes volver a
+ * pegar una lista ampliada sin duplicar lo que ya está.
+ */
+function recAbrirImportadorAgencias() {
+  const html = HtmlService.createHtmlOutput(recHtmlImportadorAgencias_())
+    .setWidth(620).setHeight(560);
+  SpreadsheetApp.getUi().showModalDialog(html, '🏢 Sembrar agencias desde CSV');
+}
+
+function recImportarAgencias(csv) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hoja = ss.getSheetByName(REC.H_AGENCIAS);
+  if (!hoja) throw new Error('Ejecuta primero recInicializarTodo().');
+
+  let filas;
+  try { filas = Utilities.parseCsv(csv); }
+  catch (e) { try { filas = Utilities.parseCsv(csv, ';'); } catch (e2) { throw new Error('No he podido leer el CSV.'); } }
+  if (!filas || filas.length < 2) throw new Error('El CSV no tiene filas de datos.');
+
+  const cab = filas[0].map(c => String(c).toLowerCase().trim());
+  const col = (alternativas) => {
+    for (const a of alternativas) { const i = cab.indexOf(a); if (i !== -1) return i; }
+    for (const a of alternativas) { const i = cab.findIndex(c => c.indexOf(a) !== -1); if (i !== -1) return i; }
+    return -1;
+  };
+  const iNombre = col(['agencia', 'nombre', 'name', 'company']);
+  if (iNombre === -1) throw new Error('No encuentro la columna del nombre de la agencia.');
+  const iWeb    = col(['web', 'website', 'url', 'dominio']);
+  const iTel    = col(['teléfono', 'telefono', 'phone']);
+  const iEmail  = col(['email', 'correo']);
+  const iDir    = col(['dirección', 'direccion', 'address']);
+  const iZona   = col(['zona', 'location', 'ubicación', 'ubicacion', 'city']);
+  const iModelo = col(['modelo', 'model', 'tipo']);
+  const iPrio   = col(['prioridad', 'priority']);
+  const iFuente = col(['fuente', 'source']);
+  const iNotas  = col(['notas', 'notes', 'observaciones']);
+
+  // Índice de lo que ya hay, por nombre normalizado
+  const norma = (s) => String(s || '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+  const yaEstan = {};
+  if (hoja.getLastRow() > 1) {
+    hoja.getRange(2, 2, hoja.getLastRow() - 1, 1).getValues()
+      .forEach(f => { const n = norma(f[0]); if (n) yaEstan[n] = true; });
+  }
+
+  const nuevas = [];
+  let duplicadas = 0;
+  for (let i = 1; i < filas.length; i++) {
+    const f = filas[i];
+    const g = (idx) => (idx >= 0 && idx < f.length) ? String(f[idx]).trim() : '';
+    const nombre = g(iNombre);
+    if (!nombre) continue;
+    const clave = norma(nombre);
+    if (yaEstan[clave]) { duplicadas++; continue; }
+    yaEstan[clave] = true;
+
+    let web = g(iWeb);
+    if (web && !/^https?:\/\//i.test(web)) web = 'https://' + web;
+
+    nuevas.push([
+      recNuevoId_('A'), nombre, web, g(iTel), g(iEmail), g(iDir), g(iZona),
+      '', '', '',
+      g(iModelo) || recClasificarModelo_(nombre),
+      recClasificarModelo_(nombre) === 'Gran franquicia' ? 'SI' : 'SI',
+      g(iPrio) || 'Media',
+      g(iFuente) || 'CSV importado',
+      new Date(), 'NO', g(iNotas)
+    ]);
+  }
+
+  if (nuevas.length) {
+    hoja.getRange(hoja.getLastRow() + 1, 1, nuevas.length, 17).setValues(nuevas);
+    hoja.getRange(2, 17, hoja.getLastRow() - 1, 1).setWrap(true).setVerticalAlignment('top');
+    hoja.setColumnWidth(17, 420);
+  }
+
+  const conWeb = nuevas.filter(n => String(n[2]).trim()).length;
+  return {
+    nuevas: nuevas.length,
+    duplicadas: duplicadas,
+    conWeb: conWeb,
+    sinWeb: nuevas.length - conWeb
+  };
+}
+
+function recHtmlImportadorAgencias_() {
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${REC_CSS_DIALOGO}</style></head><body>
+    <h2>🏢 Sembrar agencias</h2>
+    <p class="sub">Pega aquí la lista de agencias de tu zona y te saltas la API de Places.
+    Lo único imprescindible es la columna <b>Agencia</b>; con <b>Web</b> ya puedes pasar
+    directamente a extraer los agentes de sus equipos, que es donde está el valor.</p>
+
+    <div class="aviso"><b>Las que lleguen sin web se quedan esperando.</b>
+    El paso de extracción salta las agencias sin dominio. Para resolverlas: o importas
+    con la API de Places, que los trae solos, o buscas el dominio a mano (es un minuto
+    por agencia) y lo pegas en la columna Web de la hoja Rec_Agencias.</div>
+
+    <label>CSV (con cabecera)</label>
+    <textarea id="contenido" placeholder="Agencia,Web,Zona,Modelo,Prioridad,Notas&#10;Terra Realty,terramarbella.com,Nueva Andalucía,Independiente,Alta,...&#10;..."></textarea>
+
+    <div class="fila">
+      <button id="btn" onclick="enviar()">Importar agencias</button>
+      <button class="sec" onclick="google.script.host.close()">Cerrar</button>
+    </div>
+    <div id="res"></div>
+
+    <script>
+      function enviar() {
+        var c = document.getElementById('contenido').value.trim();
+        if (!c) { alert('Pega el CSV primero.'); return; }
+        var b = document.getElementById('btn');
+        b.disabled = true; b.textContent = 'Importando…';
+        google.script.run
+          .withSuccessHandler(function (r) {
+            b.disabled = false; b.textContent = 'Importar agencias';
+            document.getElementById('res').innerHTML =
+              '<div class="ok">Agencias nuevas: <b>' + r.nuevas + '</b> · ' +
+              'Ya estaban: <b>' + r.duplicadas + '</b><br>' +
+              'Con web (listas para extraer agentes): <b>' + r.conWeb + '</b><br>' +
+              'Sin web (hay que resolver el dominio): <b>' + r.sinWeb + '</b><br><br>' +
+              'SIGUIENTE: menú → Captar candidatos → "2. Extraer agentes de las webs".</div>';
+            document.getElementById('contenido').value = '';
+          })
+          .withFailureHandler(function (e) {
+            b.disabled = false; b.textContent = 'Importar agencias';
+            document.getElementById('res').innerHTML = '<div class="aviso">Error: ' + e.message + '</div>';
+          })
+          .recImportarAgencias(c);
+      }
+    </script></body></html>`;
 }
 
 // ============================================================

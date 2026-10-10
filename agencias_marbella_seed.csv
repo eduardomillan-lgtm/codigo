@@ -1,0 +1,41 @@
+ID,Agencia,Web,Teléfono,Email,Dirección,Zona,Google_Rating,Google_Reviews,Agentes_Detectados,Modelo,Competidor_Directo,Prioridad,Fuente,Fecha_Captura,Web_Rastreada,Notas
+SEED-001,Terra Realty,terramarbella.com,,,,Nueva Andalucía,,,,Independiente,SI,Alta,Investigación web (Claude),2026-10-10,NO,"Página ""Nuestro Equipo"" confirmada. Fundada 1992, equipo pequeño y veterano."
+SEED-002,Inmobiliaria Marbella,inmobiliariamarbella.es,,,,Marbella,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,"Familiar desde 1984. Equipo con nombres, cargos e idiomas publicados. Mucha familia Álvarez: ojo, los socios no se reclutan."
+SEED-003,Nevado Realty,nevadomarbella.com,,,,Marbella centro / Milla de Oro,,,,Independiente,SI,Alta,Investigación web (Claude),2026-10-10,NO,"Página ""Nuestro equipo"". Especializada en centro y Milla de Oro."
+SEED-004,Drumelia,drumelia.com,,,,Puerto Banús,,,,Independiente,SI,Alta,Investigación web (Claude),2026-10-10,NO,"7 departamentos internos, 20 años. Producto de ticket muy alto."
+SEED-005,MPDunne / Hamptons International,mpdunne.com,,,,Milla de Oro / Benahavís / Estepona,,,,Gran franquicia,SI,Media,Investigación web (Claude),2026-10-10,NO,Afiliada a Hamptons. Lujo en tres zonas núcleo.
+SEED-006,One Marbella,one-marbella.com,,,,Milla de Oro / Nueva Andalucía / Benahavís,,,,Independiente,SI,Alta,Investigación web (Claude),2026-10-10,NO,Enfocada a comprador internacional. Zonas núcleo.
+SEED-007,Marbella Living,marbellaliving.com,,,,Milla de Oro / Nueva Andalucía,,,,Independiente,SI,Alta,Investigación web (Claude),2026-10-10,NO,Oficina en la Milla de Oro. Fuerte en Nueva Andalucía.
+SEED-008,Kristina Szekely International Realty,ksmarbella.com,,,,Marbella,,,,Independiente,SI,Alta,Investigación web (Claude),2026-10-10,NO,PRIORITARIA: su equipo declara más de 10 idiomas. Perfiles multilingües = argumento de captación directo.
+SEED-009,Marbella Homes,marbellahomes.com,,,,Puerto Banús / New Golden Mile,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,Desde 1995. Página /en/about-us/.
+SEED-010,Gilmar,gilmar.es,,,,Marbella,,,,Gran franquicia,SI,Media,Investigación web (Claude),2026-10-10,NO,"Franquicia nacional, equipo comercial multilingüe. Entienden el modelo de red."
+SEED-011,Livingstone Estates,livingstone-estates.com,,,,Estepona Este / New Golden Mile,,,,Independiente,SI,Alta,Investigación web (Claude),2026-10-10,NO,"25 años, sede en Guadalmansa. Página /about-us."
+SEED-012,Benahavis Homes,benahavishomes.com,,,,Benahavís,,,,Independiente,SI,Alta,Investigación web (Claude),2026-10-10,NO,"La Zagaleta, La Quinta, El Madroñal, Los Arqueros. Ticket altísimo."
+SEED-013,Engel & Völkers Estepona New Golden Mile,engelvoelkers.com,,,,Estepona,,,,Gran franquicia,SI,Media,Investigación web (Claude),2026-10-10,NO,Oficina propia en la zona. Agentes acostumbrados a marca y CRM.
+SEED-014,Lucas Fox Marbella,lucasfox.com,,,,Marbella,,,,Gran franquicia,SI,Alta,Investigación web (Claude),2026-10-10,NO,"PRIORITARIA: oficina multilingüe (inglés, español, sueco, serbocroata, neerlandés, alemán, francés)."
+SEED-015,Cilo Marbella,cilomarbella.com,,,,Marbella,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,Publica producto de lujo en New Golden Mile.
+SEED-016,Tartufo Estates,tartufoestates.es,,,,San Pedro de Alcántara,,,,Independiente,SI,Alta,Investigación web (Claude),2026-10-10,NO,"Cubre Guadalmina, Nueva Andalucía y Puerto Banús."
+SEED-017,Almar Estates,almarestates.com,,,,San Pedro de Alcántara,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,"Villas, apartamentos, áticos y adosados en San Pedro."
+SEED-018,Innovative Property,for-sale-marbella.com,,,,Marbella,,,,Independiente,SI,Alta,Investigación web (Claude),2026-10-10,NO,"PRIORITARIA: equipo en inglés, español, TODOS los nórdicos, húngaro, francés, neerlandés y alemán. Gestionada por escandinavos."
+SEED-019,Marbella & Co,marbellaco.com,,,,Marbella,,,,Independiente,SI,Alta,Investigación web (Claude),2026-10-10,NO,"PRIORITARIA: propiedad y dirección danesas, equipo con 8 idiomas."
+SEED-020,Meester Estate,meesterestate.com,,,,Marbella,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,Agencia neerlandesa.
+SEED-021,Professional Estates Marbella,professionalestatesmarbella.com,,,,Marbella,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,"Origen neerlandés. Inglés, español, neerlandés, alemán y francés."
+SEED-022,CarlingPetri,carlingpetri.com,,,,Marbella,,,,Independiente,SI,Alta,Investigación web (Claude),2026-10-10,NO,"PRIORITARIA: asigna agente por idioma — neerlandés, sueco, finés, ruso, francés."
+SEED-023,StartGroup Real Estate,startgroup.com,,,,Marbella,,,,Independiente,SI,Alta,Investigación web (Claude),2026-10-10,NO,"PRIORITARIA: neerlandés, alemán y un comercial de Gotemburgo con los nórdicos."
+SEED-024,Megens Real Estate,megens.es,,,,Marbella,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,"Inglés, alemán, neerlandés y español."
+SEED-025,Panspain Group,,,,,Nueva Andalucía,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,RESOLVER DOMINIO. Opera desde Nueva Andalucía.
+SEED-026,Nomad Realty,,,,,Nueva Andalucía,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,"RESOLVER DOMINIO. Equipo citado en directorios (Diana Danielli, Francesca Jiménez) — verificar en su web."
+SEED-027,Real Estate Nordica,,,,,Nueva Andalucía,,,,Independiente,SI,Alta,Investigación web (Claude),2026-10-10,NO,RESOLVER DOMINIO. Nombre indica foco nórdico: alta prioridad por idiomas.
+SEED-028,Golden Mile Group,,,,,Puerto Banús,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,"RESOLVER DOMINIO. Venta y alquiler de lujo, gestión y comercial."
+SEED-029,Bjurfors Marbella,,,,,Marbella / Málaga a Estepona,,,,Gran franquicia,SI,Alta,Investigación web (Claude),2026-10-10,NO,"RESOLVER DOMINIO. Agencia sueca, cubre toda la costa. Idiomas nórdicos."
+SEED-030,Winkworth Spain,,,,,San Pedro / Guadalmina,,,,Gran franquicia,SI,Media,Investigación web (Claude),2026-10-10,NO,RESOLVER DOMINIO. Franquicia británica.
+SEED-031,Von Poll Real Estate,,,,,San Pedro / Guadalmina,,,,Gran franquicia,SI,Media,Investigación web (Claude),2026-10-10,NO,RESOLVER DOMINIO. Franquicia alemana: agentes germanoparlantes.
+SEED-032,Status Homes,,,,,San Pedro / Guadalmina,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,RESOLVER DOMINIO.
+SEED-033,PRO Real Estate Guadalmina,,,,,Guadalmina,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,RESOLVER DOMINIO.
+SEED-034,Stone Pine Real Estate,,,,,San Pedro de Alcántara,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,RESOLVER DOMINIO.
+SEED-035,Inmoban,,,,,San Pedro de Alcántara,,,,Independiente,SI,Baja,Investigación web (Claude),2026-10-10,NO,RESOLVER DOMINIO. Perfil más local y de menor ticket.
+SEED-036,BravoHomes,,,,,Guadalmina Alta,,,,Independiente,SI,Baja,Investigación web (Claude),2026-10-10,NO,RESOLVER DOMINIO.
+SEED-037,iHome Property,,,,,Guadalmina Alta,,,,Independiente,SI,Baja,Investigación web (Claude),2026-10-10,NO,RESOLVER DOMINIO.
+SEED-038,MarBanus Estates,,,,,Puerto Banús,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,RESOLVER DOMINIO. Ficha autodeclarada en directorio: verificar.
+SEED-039,Privilege Real Estate,,,,,Puerto Banús,,,,Independiente,SI,Media,Investigación web (Claude),2026-10-10,NO,RESOLVER DOMINIO. Ficha autodeclarada en directorio: verificar.
+SEED-040,Housfy,housfy.com,,,,Marbella,,,,Plataforma online,NO,Baja,Investigación web (Claude),2026-10-10,NO,"Plataforma online, asigna agente por barrio. Poco equipo local que reclutar."
