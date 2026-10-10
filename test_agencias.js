@@ -7,6 +7,7 @@
  * Ejecutar:  node test_agencias.js
  */
 
+const fs = require('fs'), vm = require('vm');
 
 // CSV real de Apps Script: respeta comillas y comas dentro de campo
 function parseCsv(txt, delim){
