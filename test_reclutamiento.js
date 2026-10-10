@@ -239,6 +239,64 @@ tt('la producción se pregunta antes del cierre',
 tt('toda pregunta con botones los tiene en los dos idiomas',
    Q.every(q => q.botones.length === q.botones_en.length));
 
+console.log('\n── RealAdvisor: detectar de quién es el negocio ──');
+// El caso que cambia el argumento de la llamada: si la agencia lleva su nombre,
+// ya se queda casi todo y abrir por comisión quema el contacto.
+t('agencia con su nombre de pila → es su negocio',
+  ctx.recPerfilRealAdvisor_({nombre:'Luisa', apellidos:'Pérez Martin', agencia:'Luisa Martín Properties'}),
+  'Agente autónomo / sin agencia');
+t('agencia con su apellido → es su negocio',
+  ctx.recPerfilRealAdvisor_({nombre:'Christian', apellidos:'Zeuthen', agencia:'Zeuthen & Company'}),
+  'Agente autónomo / sin agencia');
+t('agencia sin su nombre → trabaja para otro',
+  ctx.recPerfilRealAdvisor_({nombre:'David', apellidos:'Manso Torres', agencia:'Marbella Property Box'}),
+  'Agente en agencia independiente');
+t('sin agencia → autónomo',
+  ctx.recPerfilRealAdvisor_({nombre:'Ana', apellidos:'Gómez', agencia:''}),
+  'Agente autónomo / sin agencia');
+t('red de independientes cuenta como autónomo',
+  ctx.recPerfilRealAdvisor_({nombre:'Jon', apellidos:'Ruiz', agencia:'SAFTI España'}),
+  'Agente autónomo / sin agencia');
+t('otro MC de KW se aparta',
+  ctx.recPerfilRealAdvisor_({nombre:'Eva', apellidos:'Soler', agencia:'Keller Williams Málaga'}),
+  'Agente en otro MC KW');
+t('franquicia reconocida',
+  ctx.recPerfilRealAdvisor_({nombre:'Tom', apellidos:'Smith', agencia:'Engel & Völkers Marbella'}),
+  'Agente en gran franquicia');
+
+console.log('\n── RealAdvisor: la nota que lee la TL antes de marcar ──');
+const nLuisa = ctx.recNotaRealAdvisor_({nombre:'Luisa', apellidos:'Pérez Martin',
+  agencia:'Luisa Martín Properties', inmuebles:'7', precioMedio:'350000', experiencia:'16'});
+tt('avisa de NO abrir por comisión', nLuisa.indexOf('NO abrir por comisión') !== -1);
+tt('recoge las ventas y los años', /7 ventas/.test(nLuisa) && /16 años/.test(nLuisa));
+tt('advierte de la antigüedad del dato', /confirmar en la llamada/i.test(nLuisa));
+
+const nZeuthen = ctx.recNotaRealAdvisor_({nombre:'Christian', apellidos:'Zeuthen',
+  agencia:'Zeuthen & Company', inmuebles:'5', precioMedio:'2000000', experiencia:'21'});
+tt('marca el ticket alto', nZeuthen.indexOf('TICKET ALTO') !== -1);
+tt('no le atribuye alto volumen con 5 ventas', nZeuthen.indexOf('ALTO VOLUMEN') === -1);
+
+const nDavid = ctx.recNotaRealAdvisor_({nombre:'David', apellidos:'Manso Torres',
+  agencia:'Marbella Property Box', inmuebles:'17', precioMedio:'588000', experiencia:'14'});
+tt('marca el alto volumen con 17 ventas', nDavid.indexOf('ALTO VOLUMEN') !== -1);
+tt('no dice que la agencia sea suya', nDavid.indexOf('LLEVA SU NOMBRE') === -1);
+
+console.log('\n── RealAdvisor: scoring con los datos reales encontrados ──');
+const Cc = vm.runInContext('REC_COL', ctx), Nn = vm.runInContext('REC_N_COLS', ctx);
+const mk = o => { const f = new Array(Nn).fill(''); Object.keys(o).forEach(k => f[Cc[k]-1] = o[k]); return f; };
+const sDavid = ctx.recScoreCandidato_(mk({INMUEBLES:17, PRECIO_MEDIO:588000, ZONA:'Marbella',
+  PERFIL:'Agente en agencia independiente', EXPERIENCIA:14, IDIOMAS:'Español, Inglés', TELEFONO:'+34600000000'}));
+const sZeuthen = ctx.recScoreCandidato_(mk({INMUEBLES:5, PRECIO_MEDIO:2000000, ZONA:'Marbella',
+  PERFIL:'Agente autónomo / sin agencia', EXPERIENCIA:21, IDIOMAS:'Danés, Inglés, Español', TELEFONO:'+34600000000'}));
+const sLuisa = ctx.recScoreCandidato_(mk({INMUEBLES:7, PRECIO_MEDIO:350000, ZONA:'Marbella',
+  PERFIL:'Agente autónomo / sin agencia', EXPERIENCIA:16, IDIOMAS:'Español', TELEFONO:'+34600000000'}));
+console.log('     David %d (%s) · Zeuthen %d (%s) · Luisa %d (%s)',
+  sDavid, ctx.recTemperatura_(sDavid), sZeuthen, ctx.recTemperatura_(sZeuthen), sLuisa, ctx.recTemperatura_(sLuisa));
+tt('los tres entran en prioridad A o B',
+  [sDavid,sZeuthen,sLuisa].every(x => ['A','B'].indexOf(ctx.recTemperatura_(x)) !== -1));
+tt('5 ventas de 2M puntúan por encima de 7 ventas de 350k', sZeuthen > sLuisa);
+tt('ninguno se va de 100', [sDavid,sZeuthen,sLuisa].every(x => x <= 100));
+
 console.log('\n' + '─'.repeat(50));
 console.log(fail === 0 ? '✅ ' + ok + ' PRUEBAS PASADAS' : '❌ ' + fail + ' FALLOS de ' + (ok+fail));
 process.exit(fail ? 1 : 0);

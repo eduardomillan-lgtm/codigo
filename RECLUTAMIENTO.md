@@ -34,28 +34,59 @@ que no hay que instalar nada nuevo ni pagar otra herramienta.
 Esta es la pregunta de verdad. Ordenadas por **rentabilidad real**, no por lo
 llamativas que suenen:
 
-| # | Fuente | Qué te da | Volumen estimado | Automatizable | Coste |
+| # | Fuente | Qué te da | Volumen | Automatizable | Coste |
 |---|---|---|---|---|---|
-| 1 | **Webs de las agencias** (páginas de equipo) | Agente por agente: nombre, cargo, email, teléfono, idiomas | **1.500–4.000** | ✅ Total | Céntimos de Gemini |
-| 2 | **Google Places API** | El censo de agencias: nombre, web, teléfono, dirección, reputación | **300–600 agencias** | ✅ Total | ~15–25 € el barrido completo |
-| 3 | **X-ray de LinkedIn vía Google** | Nombre, cargo, agencia y URL del perfil. **Sin teléfono** | 500–2.000 perfiles | ✅ Total | 100 consultas/día gratis |
-| 4 | **Portales** (Idealista, Fotocasa, Kyero, Resales) | **Producción real**: nº de inmuebles publicados y rango de precio | El mismo universo, pero cualificado | ⚠️ Semi (copiar/pegar) | 0 € |
-| 5 | **LinkedIn Sales Navigator** | Lo del X-ray más antigüedad, **alertas de cambio de trabajo** y exportación | 2.000–5.000 perfiles | ⚠️ Semi (export manual) | ~100 €/mes |
-| 6 | **Referidos de tus propios agentes** | Pocos, pero con la conversión más alta de todas | 5–15/mes con incentivo | ❌ Proceso humano | Incentivo interno |
-| 7 | **Formación abierta en la oficina** | Candidatos que vienen ellos | 10–30 por evento | ❌ | Organización |
-| 8 | **Instagram** | Agentes con marca personal y cierres visibles | Cientos | ❌ Manual | 0 € |
-| 9 | **Ofertas de empleo de la competencia** (InfoJobs, Indeed) | Qué agencias tienen rotación → dónde hay gente descontenta | Señal, no contactos | ⚠️ Semi | 0 € |
-| 10 | **Registro de Agentes Inmobiliarios de Andalucía** | El censo oficial completo | Todo el sector residencial | 🔜 Cuando abra | Gratis |
+| 1 | **⭐ RealAdvisor** | Agentes **ya ordenados por transacciones de los últimos 24 meses**, con ventas, precio mediano y años de oficio | ~47 en Marbella, ~58 en Málaga | ✅ Total | Céntimos de Gemini |
+| 2 | **Webs de las agencias** (páginas de equipo) | Agente por agente: nombre, cargo, email, teléfono, idiomas | **1.500–4.000** | ✅ Total | Céntimos de Gemini |
+| 3 | **Agencias que anuncian plazas** | **Rotación**: quién pierde gente ahora mismo | Señal, no contactos | ⚠️ Semi | 0 € |
+| 4 | **Google Places API** | El censo de agencias: web, teléfono, dirección, reputación | 300–600 agencias | ✅ Total | ~15–25 € el barrido |
+| 5 | **X-ray de LinkedIn vía Google** | Nombre, cargo, agencia y URL del perfil. **Sin teléfono** | 500–2.000 perfiles | ✅ Total | 100 consultas/día gratis |
+| 6 | **Portales** (Idealista, Fotocasa, Kyero) | Producción real: inmuebles publicados y rango de precio | El universo cualificado | ⚠️ Copiar/pegar | 0 € |
+| 7 | **LinkedIn Sales Navigator** | Lo del X-ray más **alertas de cambio de trabajo** | 2.000–5.000 | ⚠️ Export manual | ~100 €/mes |
+| 8 | **Referidos de tus agentes** | Pocos, la conversión más alta de todas | 5–15/mes | ❌ Humano | Incentivo |
+| 9 | **Formación abierta** | Candidatos que vienen ellos | 10–30/evento | ❌ | Organización |
+| 10 | **Instagram** | Agentes con marca personal y cierres visibles | Cientos | ❌ Manual | 0 € |
+| 11 | **Registro de Agentes de Andalucía** | El censo oficial completo | Todo el sector | 🔜 Cuando abra | Gratis |
 
-> **Si no tienes Sales Navigator** (fuente 5), la 3 lo cubre casi entero y es
-> gratis. La diferencia real es que Sales Navigator te avisa cuando alguien
-> **cambia de trabajo**, que es la señal de mayor conversión que existe. Si no
-> lo tienes, relanza el X-ray cada mes y compara contra la base: los perfiles
-> nuevos suelen ser movimientos recientes.
+> **Empieza por la 1.** Las demás fuentes dan nombres que hay que cualificar
+> después; RealAdvisor da nombres **ya cualificados por producción**, que es
+> justo lo que ordena la cola de llamadas. Es la única fuente pública con
+> producción a nivel de persona.
+>
+> Su límite: las páginas pueden tener más de un año. Sirven para **priorizar a
+> quién llamas**, no para decirle a nadie cuánto factura. Se confirma en la
+> llamada.
 
-### Ya tienes las 40 primeras agencias
+### El error que quema a los mejores candidatos
 
-`agencias_marbella_seed.csv` trae la lista de partida, investigada y clasificada:
+Llegar con el argumento del reparto a alguien que ya se queda el 90%.
+
+| Segmento | Qué NO funciona | Qué SÍ funciona |
+|---|---|---|
+| **Autónomo con marca propia** | **El split.** Ya se queda más de lo que le ofreces | Estructura: portales y audiovisual pagados, abogado y fiscalista sin facturar, formación, con quién repartir una operación grande. Y que la cartera sigue siendo suya |
+| **Red de independientes** (SAFTI 70→100%, iad ~87,8%) | **El split y el tope.** Ya tienen los dos | Oficina física y equipo. Son redes 100% remotas: ni sala, ni compañeros, ni formación presencial |
+| **Century 21 / Coldwell** (autónomo, techo ~60%, sin fijo) | — | **El split, directo.** Y el tope, que en su modelo no existe. Aquí la calculadora hace todo el trabajo |
+| **Agencia independiente local** (~40-50%) | — | El split y, más fuerte, **la propiedad de la cartera** |
+| **Gran franquicia de lujo** | Criticar su marca | Averiguar primero si es socio. Si lo es, no es candidato: es aliado y fuente de referidos |
+| **Cambio de sector** | Hablar de comisiones | *"¿De qué vivo mientras aprendo?"* es su única objeción real |
+
+El sistema detecta el segmento solo: si el nombre de la persona está dentro del
+nombre de la agencia, es su negocio, y la ficha sale avisando de **no abrir por
+comisión**.
+
+### Lo que ya tienes en el repositorio
+
+**`objetivos_reclutamiento.xlsx`** — la lista para empezar a llamar: 7 personas
+con nombre (5 con cifras de producción conocidas) y 10 oficinas que trabajar,
+cada una con su segmento, por qué esa y qué decir. Pestaña `Lógica` con la
+matriz de argumentos.
+
+Los nombres salen de fuentes públicas de terceros y **hay que verificarlos en la
+web de su agencia antes de llamar**. Van marcados.
+
+**`agencias_marbella_seed.csv`** — 40 agencias de la zona
+
+, investigada y clasificada:
 
 | | |
 |---|---|
@@ -558,10 +589,10 @@ El módulo de reclutamiento no guarda ninguna clave en el código.
 ## 13. Pruebas
 
 `test_reclutamiento.js` carga el módulo en Node con los servicios de Google
-simulados y valida 92 casos: normalización de teléfonos (incluidos los
+simulados y valida 109 casos: normalización de teléfonos (incluidos los
 británicos de los compradores UK), deduplicación, parser de `robots.txt`,
 clasificación de perfiles, scoring, plantillas, enlaces de WhatsApp y
-supresión, además del parser de perfiles del X-ray de Google el mapeo de plantillas de Kelly y el parser de rangos de botón (incluidos los separadores de miles en inglés).
+supresión, además del parser de perfiles del X-ray de Google el mapeo de plantillas de Kelly, el parser de rangos de botón y la detección de a quién pertenece la agencia, que es la que decide el argumento de la llamada.
 
 ```bash
 node test_reclutamiento.js

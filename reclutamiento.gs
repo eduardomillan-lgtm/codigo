@@ -131,7 +131,8 @@ function recCrearMenu() {
       .addItem('3. Importar CSV (LinkedIn Sales Navigator)', 'recAbrirImportadorCSV')
       .addItem('4. Pegar ficha de portal (Idealista/Fotocasa)', 'recAbrirPegadoPortal')
       .addItem('5. Generar búsquedas de LinkedIn', 'recGenerarBooleanLinkedIn')
-      .addItem('6. X-ray de LinkedIn vía Google (sin Sales Navigator)', 'recBuscarXRayGoogle'))
+      .addItem('6. X-ray de LinkedIn vía Google (sin Sales Navigator)', 'recBuscarXRayGoogle')
+      .addItem('⭐ 7. RealAdvisor: agentes ya ordenados por producción', 'recImportarRealAdvisor'))
     .addSeparator()
     .addItem('⭐ Recalcular puntuaciones', 'recRecalcularScores')
     .addItem('🧹 Deduplicar base de candidatos', 'recDeduplicar')
@@ -263,6 +264,8 @@ function recSembrarConfig_(ss) {
     ['MAX_TOQUES_DIA', '40', 'Tope de toques generados por día'],
     ['RETENCION_DIAS', '365', 'Días que conservamos un candidato sin avance'],
     ['ZONAS_EXTRA', '', 'Zonas adicionales separadas por coma'],
+    ['REALADVISOR_PAGINAS', '4', 'Páginas a leer por zona en RealAdvisor'],
+    ['REALADVISOR_URLS_EXTRA', '', 'URLs adicionales de directorios de RealAdvisor, separadas por coma'],
     ['RESPONSABLE_DEFECTO', '', 'Quién trabaja los candidatos nuevos por defecto']
   ];
   hoja.getRange(2, 1, filas.length, 3).setValues(filas);
@@ -1401,6 +1404,193 @@ function recConsultasXRay_() {
     query: base + ' ("real estate" OR "property") "Marbella" ("Swedish" OR "Norwegian" OR "Dutch" OR "German" OR "Russian" OR "Arabic")' });
 
   return out;
+}
+
+// ============================================================
+//  FUENTE 7 — REALADVISOR: agentes ordenados por producción
+// ============================================================
+
+/**
+ * LA MEJOR FUENTE DEL SISTEMA, y la que más tardé en encontrar.
+ *
+ * RealAdvisor publica directorios de agentes INDIVIDUALES ordenados por
+ * número de transacciones de los últimos 24 meses, y de cada uno da:
+ *   • nº de ventas en la zona
+ *   • precio mediano de venta
+ *   • años en el oficio
+ *   • valoraciones de clientes
+ *
+ * Eso son las TRES entradas que necesita el scoring, de una sola pasada.
+ * El resto de fuentes dan nombres y hay que cualificar después; esta da
+ * nombres YA cualificados por producción.
+ *
+ * Volumen conocido: ~47 agentes en el municipio de Marbella y ~58 en la
+ * provincia de Málaga, repartidos en varias páginas.
+ *
+ * LIMITACIÓN QUE HAY QUE TENER PRESENTE: al investigarlo, las páginas
+ * tenían entre 1 y 1,6 años de antigüedad. Las cifras son orden de
+ * magnitud, no el dato de hoy. Sirven para PRIORIZAR a quién llamas,
+ * no para decirle a nadie cuánto factura. Confírmalo en la llamada.
+ */
+
+const REC_URLS_REALADVISOR = [
+  'https://realadvisor.es/es/agentes-inmobiliarios/municipio-marbella',
+  'https://realadvisor.es/es/agentes-inmobiliarios/municipio-estepona',
+  'https://realadvisor.es/es/agentes-inmobiliarios/municipio-benahavis',
+  'https://realadvisor.es/es/agentes-inmobiliarios/municipio-mijas',
+  'https://realadvisor.es/es/agentes-inmobiliarios/provincia-malaga'
+];
+
+function recImportarRealAdvisor() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hCa = ss.getSheetByName(REC.H_CANDIDATOS);
+  if (!hCa) { ui.alert('Ejecuta primero recInicializarTodo()'); return; }
+
+  try { recClave_('GEMINI_API_KEY'); }
+  catch (e) { ui.alert('❌ ' + e.message); return; }
+
+  const extra = recLeerConfig_('REALADVISOR_URLS_EXTRA', '');
+  const bases = REC_URLS_REALADVISOR.slice();
+  if (extra) extra.split(',').forEach(u => { const t = u.trim(); if (t) bases.push(t); });
+
+  const paginas = parseInt(recLeerConfig_('REALADVISOR_PAGINAS', '4'), 10);
+  const conf = ui.alert('⭐ Importar agentes de RealAdvisor',
+    bases.length + ' zonas × hasta ' + paginas + ' páginas.\n\n' +
+    'Es la mejor fuente que tienes: trae los agentes ORDENADOS POR\n' +
+    'TRANSACCIONES de los últimos 24 meses, con ventas, precio mediano\n' +
+    'y años de oficio. El scoring sale calculado con datos reales, no\n' +
+    'con estimaciones.\n\n' +
+    'OJO: las cifras pueden tener más de un año. Sirven para priorizar\n' +
+    'a quién llamas, no para decirle a nadie cuánto factura.\n\n' +
+    '¿Continuar?', ui.ButtonSet.YES_NO);
+  if (conf !== ui.Button.YES) return;
+
+  const yaExisten = recIndiceCandidatos_(hCa);
+  const nuevos = [];
+  let descargadas = 0, bloqueadas = 0;
+  const inicio = Date.now();
+
+  for (const base of bases) {
+    const origen = recNormalizarUrl_(base);
+    const robots = recLeerRobots_(origen);
+    const ruta = base.replace(origen, '') || '/';
+    if (!recRobotsPermite_(robots, ruta)) { bloqueadas++; continue; }
+
+    for (let p = 1; p <= paginas; p++) {
+      if (Date.now() - inicio > 4.5 * 60 * 1000) break;
+      const url = (p === 1) ? base : base.replace(/\/$/, '') + '/pagina-' + p;
+      const html = recDescargar_(url);
+      if (!html) break;
+      descargadas++;
+
+      const texto = recHtmlATexto_(html);
+      if (texto.length < 400) break;
+
+      const agentes = recExtraerAgentesRealAdvisor_(texto.substring(0, 20000), url);
+      if (!agentes.length) break;
+
+      for (const a of agentes) {
+        const clave = recClaveDedupe_(a.nombre + ' ' + (a.apellidos || ''), a.telefono || '', a.email || '');
+        if (!clave || yaExisten[clave]) continue;
+        yaExisten[clave] = true;
+        a.fuente = 'RealAdvisor';
+        a.urlFuente = url;
+        a.perfil = recPerfilRealAdvisor_(a);
+        a.notas = recNotaRealAdvisor_(a);
+        nuevos.push(recFilaCandidato_(a));
+      }
+      Utilities.sleep(400);   // cortesía
+    }
+  }
+
+  if (nuevos.length) {
+    hCa.getRange(hCa.getLastRow() + 1, 1, nuevos.length, REC_N_COLS).setValues(nuevos);
+    recRecalcularScores(true);
+  }
+
+  ui.alert('⭐ RealAdvisor importado',
+    'Páginas leídas: ' + descargadas + (bloqueadas ? ' (' + bloqueadas + ' bloqueadas por robots.txt)' : '') + '\n' +
+    'Agentes nuevos: ' + nuevos.length + '\n\n' +
+    'Vienen con ventas, precio mediano y años de oficio, así que la cola\n' +
+    'ya está ordenada por producción REAL.\n\n' +
+    'No traen teléfono: se cruza con la web de su agencia (paso 2) o se\n' +
+    'les escribe por LinkedIn.',
+    ui.ButtonSet.OK);
+}
+
+function recExtraerAgentesRealAdvisor_(texto, url) {
+  const prompt =
+    'Este texto es un directorio de agentes inmobiliarios con sus métricas de actividad.\n' +
+    'URL: ' + url + '\n\n' +
+    'Devuelve SOLO un array JSON, un objeto por agente:\n' +
+    '{"nombre":"","apellidos":"","agencia":"","zona":"","inmuebles":"","precioMedio":"",' +
+    '"experiencia":"","valoracion":"","resenas":""}\n\n' +
+    'REGLAS ESTRICTAS:\n' +
+    '- "inmuebles": el NÚMERO DE VENTAS que se le atribuyen. Solo el dígito.\n' +
+    '- "precioMedio": el precio mediano de venta en EUROS, solo dígitos.\n' +
+    '  Convierte las abreviaturas: "588k" son 588000, "2M" son 2000000.\n' +
+    '- "experiencia": años en el sector, solo el dígito.\n' +
+    '- "valoracion": la nota media. "resenas": el número de opiniones.\n' +
+    '- Separa nombre y apellidos.\n' +
+    '- Si un dato no aparece, deja la cadena VACÍA. NO LO INVENTES NI LO ESTIMES.\n' +
+    '- Ignora cabeceras, filtros, anuncios y enlaces de navegación.\n' +
+    '- Si no hay agentes identificables, devuelve [].\n\n' +
+    'TEXTO:\n"""\n' + texto + '\n"""';
+
+  try {
+    const r = recLlamarGemini(prompt, true);
+    const arr = JSON.parse(r.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim());
+    if (!Array.isArray(arr)) return [];
+    return arr.filter(a => a && a.nombre && String(a.nombre).trim().length > 1);
+  } catch (e) {
+    Logger.log('RealAdvisor: no pude extraer de ' + url + ': ' + e.message);
+    return [];
+  }
+}
+
+/**
+ * Si el nombre de la persona está dentro del nombre de la agencia, es su
+ * propio negocio. Eso cambia el ARGUMENTO de la llamada por completo:
+ * a quien ya se queda casi todo no se le abre hablando de comisión.
+ */
+function recPerfilRealAdvisor_(a) {
+  const nombre = String(a.nombre || '').toLowerCase();
+  const apellidos = String(a.apellidos || '').toLowerCase();
+  const agencia = String(a.agencia || '').toLowerCase();
+  if (!agencia) return 'Agente autónomo / sin agencia';
+
+  const suyo = (nombre.length > 2 && agencia.indexOf(nombre) !== -1) ||
+               (apellidos.length > 2 && agencia.indexOf(apellidos.split(/\s+/)[0]) !== -1);
+  if (suyo) return 'Agente autónomo / sin agencia';
+
+  if (/safti|\biad\b|exp realty|keller/.test(agencia)) {
+    return /keller/.test(agencia) ? 'Agente en otro MC KW' : 'Agente autónomo / sin agencia';
+  }
+  return recClasificarModelo_(a.agencia) === 'Gran franquicia'
+    ? 'Agente en gran franquicia' : 'Agente en agencia independiente';
+}
+
+/** Deja escrito en la ficha lo que la Team Leader necesita ANTES de marcar. */
+function recNotaRealAdvisor_(a) {
+  const t = [];
+  if (a.inmuebles)   t.push(a.inmuebles + ' ventas');
+  if (a.precioMedio) t.push('mediana ' + a.precioMedio + ' €');
+  if (a.experiencia) t.push(a.experiencia + ' años de oficio');
+  if (a.valoracion)  t.push('nota ' + a.valoracion + (a.resenas ? ' (' + a.resenas + ' reseñas)' : ''));
+
+  const nombre = String(a.nombre || '').toLowerCase();
+  const agencia = String(a.agencia || '').toLowerCase();
+  if (nombre.length > 2 && agencia.indexOf(nombre) !== -1) {
+    t.push('LA AGENCIA LLEVA SU NOMBRE: es su negocio. NO abrir por comisión, abrir por estructura');
+  }
+  const precio = parseFloat(String(a.precioMedio).replace(/[^\d]/g, '')) || 0;
+  const ventas = parseFloat(a.inmuebles) || 0;
+  if (precio >= 1500000) t.push('TICKET ALTO: le mueve el producto y la red internacional, no el porcentaje');
+  if (ventas >= 15)      t.push('ALTO VOLUMEN: el tope de aportación es su argumento');
+
+  t.push('Cifras de RealAdvisor, pueden tener más de un año: confirmar en la llamada');
+  return t.join(' · ');
 }
 
 // ============================================================
