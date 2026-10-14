@@ -203,6 +203,10 @@ function recInicializarTodo() {
   ]));
 
   creadas.push(recCrearHojaColaKelly_(ss));
+  creadas.push(recCrearHoja_(ss, 'Rec_Consentimientos', [
+    'ID', 'ID_Candidato', 'Nombre', 'Fecha', 'Canal', 'Texto_Exacto_Mostrado',
+    'Version', 'Idioma', 'Origen', 'Finalidades_Aceptadas'
+  ]));
   creadas.push(recCrearHoja_(ss, REC.H_CONFIG, ['Clave', 'Valor', 'Descripción']));
   creadas.push(recCrearHoja_(ss, REC.H_RGPD, ['Campo', 'Contenido']));
 
@@ -330,6 +334,7 @@ function recConfigurarClaves() {
   const campos = [
     ['GEMINI_API_KEY',  'Clave de Google AI Studio (Gemini). Se usa para extraer agentes de webs y clasificar perfiles.'],
     ['PLACES_API_KEY',  'Clave de Google Maps Platform con Places API (New) activada.'],
+    ['FORM_TOKEN',       'Cadena larga y aleatoria. Protege el endpoint del formulario de entrada: sin ella es una puerta abierta a tu hoja.'],
     ['CSE_API_KEY',     'Clave de Google Custom Search API. Para el X-ray de LinkedIn sin Sales Navigator.'],
     ['CSE_CX',          'ID del motor de Programmable Search (cx), creado con "Buscar en toda la web" activada.'],
     ['WA_TOKEN',        'Token permanente de WhatsApp Business Cloud API. Solo si MODO_WHATSAPP = API.'],
@@ -3552,6 +3557,276 @@ function recRangoAPunto_(valor) {
   if (/menos de|under|less than/i.test(v))         return Math.round(numeros[0] * 0.6);
   if (numeros.length >= 2)                          return Math.round((numeros[0] + numeros[1]) / 2);
   return Math.round(numeros[0]);
+}
+
+// ============================================================
+//  22. EMBUDO DE ENTRADA — el único bot que es legal de verdad
+// ============================================================
+
+/**
+ * EL PROBLEMA QUE RESUELVE
+ *
+ * Ni LinkedIn ni WhatsApp permiten que un bot abra conversación en frío:
+ *   • LinkedIn: su API de mensajes es solo para partners aprobados y, aun
+ *     así, exige que el mensaje vaya ligado a una acción concreta del
+ *     usuario — un envío automático o programado NO cuenta. Es decir: ni
+ *     con acceso de partner puedes automatizar el envío.
+ *   • WhatsApp: hace falta consentimiento previo, y una plantilla de
+ *     reclutamiento es categoría MARKETING, que la asigna Meta, no tú.
+ *
+ * Así que el primer toque no se puede automatizar. Lo que SÍ se puede
+ * automatizar al 100% es el camino contrario: que el candidato entre él,
+ * deje su consentimiento y a partir de ahí el bot lo lleve solo.
+ *
+ * EL EMBUDO
+ *   Anuncio en LinkedIn o Instagram dirigido a agentes de la zona
+ *        ↓
+ *   Página con la calculadora: "¿cuánto te quedarías con otro modelo?"
+ *        ↓
+ *   Formulario con consentimiento expreso y granular
+ *        ↓
+ *   ESTE ENDPOINT: crea el candidato con el consentimiento probado
+ *        ↓
+ *   Kelly cualifica por WhatsApp, legalmente y sin intervención
+ *        ↓
+ *   La Team Leader solo recibe los que quieren hablar
+ *
+ * El imán ya existe: calculadora_ingresos_agente.xlsx. Es exactamente el
+ * gancho que un agente con dudas sobre su reparto va a querer descargar.
+ *
+ * INSTALACIÓN
+ *   1. Menú → Configurar claves de API → define FORM_TOKEN con una cadena
+ *      larga y aleatoria.
+ *   2. Añade esta función al proyecto (NO define doPost a propósito, para
+ *      no chocar con el doGet que ya tienes):
+ *
+ *        function doPost(e) { return recDoPost(e); }
+ *
+ *   3. Implementar → Nueva implementación → Aplicación web, ejecutar como
+ *      tú, acceso "Cualquier usuario". Copia la URL.
+ *   4. El formulario hace POST de un JSON a esa URL con el token dentro.
+ */
+
+function recDoPost(e) {
+  const salida = (obj, codigo) => ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+
+  try {
+    if (!e || !e.postData || !e.postData.contents) {
+      return salida({ ok: false, error: 'Sin cuerpo en la petición' });
+    }
+    const datos = JSON.parse(e.postData.contents);
+
+    // Token compartido: sin esto el endpoint es una puerta abierta a tu hoja
+    const esperado = PropertiesService.getScriptProperties().getProperty('FORM_TOKEN');
+    if (!esperado) return salida({ ok: false, error: 'Endpoint sin configurar' });
+    if (String(datos.token || '') !== esperado) {
+      Logger.log('Formulario: token incorrecto desde ' + (datos.origen || 'origen desconocido'));
+      return salida({ ok: false, error: 'No autorizado' });
+    }
+
+    const r = recRecibirFormulario(datos);
+    return salida(r);
+  } catch (err) {
+    Logger.log('recDoPost falló: ' + err.message);
+    return salida({ ok: false, error: 'Error interno' });
+  }
+}
+
+/**
+ * Da de alta un candidato que ha entrado él mismo por el formulario.
+ *
+ * Es el único camino por el que un candidato llega con base jurídica de
+ * CONSENTIMIENTO (art. 6.1.a RGPD) en lugar de interés legítimo. Eso
+ * significa que a partir de aquí el bot puede trabajar sin fricción.
+ */
+function recRecibirFormulario(datos) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hCa = ss.getSheetByName(REC.H_CANDIDATOS);
+  const hCo = ss.getSheetByName('Rec_Consentimientos');
+  if (!hCa) throw new Error('Ejecuta recInicializarTodo() primero.');
+
+  const tel = recNormalizarTelefono_(datos.telefono);
+  const email = String(datos.email || '').trim().toLowerCase();
+  if (!tel && !email) return { ok: false, error: 'Hace falta teléfono o email' };
+
+  // Una baja previa manda sobre cualquier formulario nuevo
+  if (recEstaSuprimido_(recCargarSupresion_(), tel, email, '')) {
+    return { ok: false, error: 'Este contacto pidió la baja anteriormente' };
+  }
+
+  // Sin consentimiento expreso no se guarda nada: el formulario es
+  // precisamente el mecanismo para obtenerlo
+  if (String(datos.consiente_contacto || '').toLowerCase() !== 'true' &&
+      datos.consiente_contacto !== true) {
+    return { ok: false, error: 'Falta el consentimiento de contacto' };
+  }
+
+  const nombre = String(datos.nombre || '').trim();
+  const apellidos = String(datos.apellidos || '').trim();
+  const idioma = String(datos.idioma || 'ES').toUpperCase() === 'EN' ? 'EN' : 'ES';
+  const consienteWA = (datos.consiente_whatsapp === true ||
+                       String(datos.consiente_whatsapp || '').toLowerCase() === 'true');
+
+  // ¿Ya existe? Entonces se actualiza y se mejora su base jurídica
+  let fila = -1;
+  if (hCa.getLastRow() > 1) {
+    const n = hCa.getLastRow() - 1;
+    const existentes = hCa.getRange(2, 1, n, REC_N_COLS).getValues();
+    for (let i = 0; i < existentes.length; i++) {
+      const mismoTel = tel && recNormalizarTelefono_(existentes[i][REC_COL.TELEFONO - 1]) === tel;
+      const mismoMail = email && String(existentes[i][REC_COL.EMAIL - 1]).trim().toLowerCase() === email;
+      if (mismoTel || mismoMail) { fila = i + 2; break; }
+    }
+  }
+
+  const ahora = new Date();
+  const nota = 'ENTRÓ POR FORMULARIO (' + (datos.campana || 'sin campaña') + ')' +
+    (datos.operaciones ? ' · ' + datos.operaciones + ' operaciones declaradas' : '') +
+    (datos.dolor ? ' · DOLOR: ' + String(datos.dolor).substring(0, 250) : '');
+
+  if (fila === -1) {
+    const nuevo = recFilaCandidato_({
+      nombre: nombre, apellidos: apellidos, telefono: tel, email: email,
+      linkedin: datos.linkedin || '', agencia: datos.agencia || '',
+      zona: datos.zona || '', idiomas: datos.idiomas || '',
+      inmuebles: recRangoAPunto_(datos.operaciones),
+      precioMedio: recRangoAPunto_(datos.honorarios_medios),
+      experiencia: datos.experiencia || '',
+      perfil: recPerfilDesdeCargo_(datos.cargo || '', datos.agencia || ''),
+      fuente: 'Formulario entrante · ' + (datos.campana || 'directo'),
+      urlFuente: datos.origen || '',
+      notas: nota
+    });
+    // Base jurídica mejorada: consentimiento, no interés legítimo
+    nuevo[REC_COL.BASE_LEGAL - 1] = 'Consentimiento del interesado (art. 6.1.a RGPD) — formulario propio';
+    nuevo[REC_COL.INFO_RGPD - 1] = 'SI';
+    nuevo[REC_COL.CONSENT_WA - 1] = consienteWA ? 'SI' : 'NO';
+    if (consienteWA) nuevo[REC_COL.FECHA_CONSENT - 1] = ahora;
+    nuevo[REC_COL.IDIOMA_PREF - 1] = idioma;
+    nuevo[REC_COL.ESTADO - 1] = 'Conversación activa';
+    nuevo[REC_COL.TEMPERATURA - 1] = 'A';   // entra él: es lo más caliente que hay
+    hCa.appendRow(nuevo);
+    fila = hCa.getLastRow();
+  } else {
+    hCa.getRange(fila, REC_COL.BASE_LEGAL)
+       .setValue('Consentimiento del interesado (art. 6.1.a RGPD) — formulario propio');
+    hCa.getRange(fila, REC_COL.INFO_RGPD).setValue('SI');
+    hCa.getRange(fila, REC_COL.ESTADO).setValue('Conversación activa');
+    hCa.getRange(fila, REC_COL.IDIOMA_PREF).setValue(idioma);
+    if (consienteWA) {
+      hCa.getRange(fila, REC_COL.CONSENT_WA).setValue('SI');
+      hCa.getRange(fila, REC_COL.FECHA_CONSENT).setValue(ahora);
+    }
+    if (tel && !String(hCa.getRange(fila, REC_COL.TELEFONO).getValue()).trim()) {
+      hCa.getRange(fila, REC_COL.TELEFONO).setValue(tel);
+    }
+    const prev = hCa.getRange(fila, REC_COL.NOTAS).getValue();
+    hCa.getRange(fila, REC_COL.NOTAS).setValue((prev ? prev + ' | ' : '') + nota);
+    // Sale de la secuencia en frío: ahora es entrante
+    hCa.getRange(fila, REC_COL.PLAN).setValue('');
+    hCa.getRange(fila, REC_COL.PROXIMO_TOQUE).setValue('');
+  }
+
+  const idCand = hCa.getRange(fila, REC_COL.ID).getValue();
+
+  // PRUEBA DEL CONSENTIMIENTO: el texto exacto que vio, fecha, versión e idioma.
+  // Sin esto el consentimiento no sirve de nada si algún día lo piden.
+  if (hCo) {
+    hCo.appendRow([
+      recNuevoId_('CON'), idCand, (nombre + ' ' + apellidos).trim(),
+      ahora, 'Formulario web',
+      String(datos.texto_consentimiento || '').substring(0, 2000),
+      datos.version_consentimiento || 'sin versión',
+      idioma,
+      datos.origen || '',
+      [consienteWA ? 'WhatsApp' : null, 'Contacto profesional'].filter(Boolean).join(' + ')
+    ]);
+  }
+
+  // Recalcular con lo que haya declarado.
+  //
+  // El SCORE mide el encaje (produce, zona, idiomas). La TEMPERATURA manda el
+  // orden de llamada. Un entrante va SIEMPRE en A aunque su score sea B: ha
+  // rellenado un formulario sobre cuánto gana, así que está mirando opciones
+  // ahora mismo. Un B que levanta la mano vale más que un A que no te conoce.
+  const ficha = hCa.getRange(fila, 1, 1, REC_N_COLS).getValues()[0];
+  const score = recScoreCandidato_(ficha);
+  hCa.getRange(fila, REC_COL.SCORE).setValue(score);
+  hCa.getRange(fila, REC_COL.TEMPERATURA).setValue('A');
+  if (recTemperatura_(score) !== 'A') {
+    const n0 = hCa.getRange(fila, REC_COL.NOTAS).getValue();
+    hCa.getRange(fila, REC_COL.NOTAS).setValue(
+      n0 + ' | Prioridad A por ser ENTRANTE (encaje por score: ' +
+      recTemperatura_(score) + ', ' + score + ' puntos)');
+  }
+
+  // Registrar el toque entrante para la auditoría
+  const hTo = ss.getSheetByName(REC.H_TOQUES);
+  if (hTo) {
+    hTo.appendRow([recNuevoId_('T'), idCand, (nombre + ' ' + apellidos).trim(),
+      ahora, Utilities.formatDate(ahora, Session.getScriptTimeZone(), 'HH:mm'),
+      'Formulario', 'Entrante', 'Alta voluntaria', 'HECHO',
+      'Entró por formulario', JSON.stringify(datos).substring(0, 800),
+      'Formulario web', nota]);
+  }
+
+  // Avisar a la Team Leader: un entrante se contesta hoy, no mañana
+  try {
+    const destino = recLeerConfig_('MC_EMAIL', '') || Session.getEffectiveUser().getEmail();
+    MailApp.sendEmail({
+      to: destino,
+      subject: '🔥 Candidato entrante: ' + (nombre + ' ' + apellidos).trim(),
+      htmlBody: '<div style="font-family:Arial">' +
+        '<h2>Ha entrado él solo por el formulario</h2>' +
+        '<p><b>' + (nombre + ' ' + apellidos).trim() + '</b>' +
+        (datos.agencia ? ' · ' + datos.agencia : '') +
+        (datos.zona ? ' · ' + datos.zona : '') + '</p>' +
+        '<p>Teléfono: ' + (tel || '—') + '<br>Email: ' + (email || '—') + '</p>' +
+        (datos.dolor ? '<p><b>Lo que le duele:</b> ' + datos.dolor + '</p>' : '') +
+        '<p>Score ' + score + ' (' + recTemperatura_(score) + ')' +
+        ' · WhatsApp ' + (consienteWA ? 'CONSENTIDO' : 'sin consentir') + '</p>' +
+        '<p style="color:#b70000"><b>Llámale hoy.</b> Un entrante se enfría en horas, ' +
+        'no en días: ha rellenado un formulario sobre cuánto gana, está mirando opciones ' +
+        'ahora mismo.</p></div>'
+    });
+  } catch (e) { Logger.log('No pude avisar por email: ' + e.message); }
+
+  return {
+    ok: true, id: idCand, score: score,
+    temperatura: 'A',                        // orden de llamada
+    encaje: recTemperatura_(score),          // calidad del candidato
+    consentimiento_whatsapp: consienteWA
+  };
+}
+
+/** Texto de consentimiento para el formulario. Lo valida tu asesor antes de publicarlo. */
+function recTextoConsentimiento(idioma) {
+  const mc = REC.MC_NOMBRE;
+  const email = recLeerConfig_('MC_EMAIL', '[email del MC]');
+  if (String(idioma).toUpperCase() === 'EN') {
+    return {
+      version: 'v1-2026-10',
+      contacto: 'I agree that [LEGAL ENTITY] may contact me to discuss a professional ' +
+        'opportunity at ' + mc + '. My data is processed on the basis of my consent ' +
+        '(art. 6.1.a GDPR), is not shared with anyone, and is kept for a maximum of 12 ' +
+        'months from my last contact. I can access, rectify, erase, object, restrict or ' +
+        'port my data by writing to ' + email + ', and I can complain to the AEPD ' +
+        '(www.aepd.es). Withdrawing consent is as easy as giving it: reply STOP.',
+      whatsapp: 'I also agree to be contacted by WhatsApp on the number I provided.'
+    };
+  }
+  return {
+    version: 'v1-2026-10',
+    contacto: 'Acepto que [RAZÓN SOCIAL] me contacte para hablar de una oportunidad ' +
+      'profesional en ' + mc + '. Mis datos se tratan sobre la base de mi consentimiento ' +
+      '(art. 6.1.a RGPD), no se ceden a nadie y se conservan un máximo de 12 meses desde ' +
+      'el último contacto. Puedo acceder, rectificar, suprimir, oponerme, limitar el ' +
+      'tratamiento y portar mis datos escribiendo a ' + email + ', y reclamar ante la AEPD ' +
+      '(www.aepd.es). Retirar el consentimiento es tan fácil como darlo: responde BAJA.',
+    whatsapp: 'Acepto además que me contactéis por WhatsApp en el número que he facilitado.'
+  };
 }
 
 // ============================================================

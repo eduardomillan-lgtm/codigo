@@ -505,7 +505,108 @@ cargáis vosotros.
 
 ---
 
-## 10. La calculadora de ingresos (día 28)
+## 10. ¿Puede un bot reclutar por LinkedIn y por WhatsApp?
+
+Respuesta corta: **por WhatsApp sí, por LinkedIn no.** Y el cuello de botella no
+es enviar, es el consentimiento.
+
+### LinkedIn: no se puede, y no es una cuestión de riesgo sino de regla
+
+- Su **API de mensajes es solo para partners aprobados**, y aun así exige que el
+  mensaje vaya ligado a **una acción concreta del usuario**. Un envío automático
+  o programado no cuenta: la persona tiene que revisar y enviar. Es decir, ni
+  con acceso de partner puedes automatizar el envío.
+- **El InMail programático** requiere el programa de partners de Recruiter /
+  Talent Solutions. No está disponible para una aplicación normal.
+- Las **Message Ads y Conversation Ads** son la vía patrocinada, pero la página
+  de ayuda de LinkedIn dice que **no pueden dirigirse a miembros ubicados en la
+  UE**. Hay un artículo posterior que afirma que el targeting UE volvió en
+  octubre de 2024 solo para quien haya aceptado recibirlas. Las fuentes se
+  contradicen: compruébalo en Campaign Manager antes de contar con ello.
+- Las herramientas de terceros (Expandi, HeyReach, Dripify, Dux-Soup y
+  compañía) envían **a través de tu propia cuenta conectada**, fuera de la
+  plataforma autorizada. El riesgo no es teórico: te restringen la cuenta, y la
+  red de la Team Leader es un activo del negocio que no se recupera.
+
+**Lo que sí es legítimo en LinkedIn:**
+
+| Vía | Qué es | Coste |
+|---|---|---|
+| **LinkedIn Recruiter** | InMail masivo con plantilla **dentro de su propio producto**. Es lo más parecido a un bot que está autorizado | Licencia de pago, con créditos limitados |
+| **Lead Gen Forms** en contenido patrocinado normal | Anuncio con formulario nativo. Siguieron funcionando en la UE cuando se cortó el Sponsored Messaging | Publicidad |
+| **Borrador por IA + clic humano** | Lo que ya tienes montado: el X-ray encuentra, el sistema redacta, la TL envía | 0 € |
+
+### WhatsApp: sí, pero solo después del consentimiento
+
+Kelly ya resuelve la parte técnica. Lo que hace falta añadir:
+
+1. **Un segundo número**, a nombre del Market Center y no de la oficina. No
+   mezcles prospección en frío con la respuesta a leads de cliente.
+2. **Cuatro plantillas de categoría MARKETING** aprobadas. La categoría **la
+   asigna Meta, no tú**, y reutilizar una de servicio para prospección va contra
+   la autorización, que está ligada a la finalidad.
+3. **Mecanismo de consentimiento** previo. Es el punto 4 de abajo.
+
+**Coste.** Un mensaje de marketing en España ronda los **0,05 €** según una
+fuente, y 0,0707 USD según otras; no coinciden, así que confírmalo en la página
+de tarifas de Meta antes de presupuestar. En cualquier caso, 500 mensajes al mes
+son del orden de **25-35 €**: el coste no es el problema.
+
+Lo que sí cambió: desde el **1 de octubre de 2026** los mensajes de servicio ya
+no son ilimitados gratis — hay **1.000 gratis por número y mes** y se cobra a
+partir del 1.001. Y las respuestas de texto libre dentro de la ventana de 24 h
+pasan a cobrarse a tarifa de utilidad.
+
+### El único bot que recluta de principio a fin, y es legal
+
+Como el primer toque no se puede automatizar en ningún canal, se le da la vuelta:
+**que entre el candidato.**
+
+```
+Anuncio en LinkedIn o Instagram dirigido a agentes de la zona
+      ↓
+Página con la calculadora: "¿cuánto te quedarías con otro modelo?"
+      ↓
+Formulario con consentimiento expreso y granular
+      ↓
+recDoPost: crea el candidato con el consentimiento PROBADO
+      ↓
+Kelly cualifica por WhatsApp, sin intervención humana
+      ↓
+La Team Leader solo recibe a los que quieren hablar
+```
+
+Esto es 100% automático y 100% defendible, porque el candidato llega con
+**consentimiento (art. 6.1.a RGPD)** en lugar de interés legítimo. Y el imán ya
+existe: la calculadora es exactamente lo que un agente con dudas sobre su
+reparto va a querer descargar.
+
+**Qué trae implementado:**
+
+- `recDoPost(e)` — endpoint protegido con `FORM_TOKEN`. Sin token no escribe nada.
+- Rechaza si falta el consentimiento, si no hay teléfono ni email, o si esa
+  persona **pidió la baja antes**: una baja previa manda sobre cualquier
+  formulario nuevo.
+- `Rec_Consentimientos` — la prueba documental: **el texto exacto que vio**, la
+  fecha, la versión, el idioma, el origen y las finalidades aceptadas. Sin esto
+  el consentimiento no sirve de nada si algún día lo piden.
+- Reenviar el formulario **no duplica** la ficha: la actualiza y le mejora la
+  base jurídica.
+- Un entrante entra **siempre en prioridad A** aunque su producción puntúe B, y
+  la nota explica por qué. Un B que levanta la mano vale más que un A que no te
+  conoce. El score no se infla: sigue midiendo el encaje.
+- Avisa por email a la TL en el momento, con el dolor que ha declarado y un
+  «llámale hoy»: un entrante se enfría en horas.
+- `recTextoConsentimiento()` — el texto en ES y EN, con hueco para la razón
+  social. **Que lo valide tu asesor antes de publicarlo.**
+
+**Instalación:** define `FORM_TOKEN`, añade `function doPost(e) { return recDoPost(e); }`
+al proyecto, e implementa como aplicación web con acceso para cualquier usuario.
+No defino `doPost` yo para no chocar con el `doGet` que ya tienes.
+
+---
+
+## 11. La calculadora de ingresos (día 28)
 
 `calculadora_ingresos_agente.xlsx` es el activo del paso que más convierte de
 toda la secuencia. El agente mete cuatro datos y ve lo que se habría quedado
@@ -541,7 +642,7 @@ mano, incluidos los casos límite (producción que no llega al tope y hoja vací
 
 ---
 
-## 11. Seguridad: hay una clave expuesta
+## 12. Seguridad: hay una clave expuesta
 
 El archivo `gs`, línea ~3565, tiene la clave de Gemini escrita en el código:
 
@@ -567,7 +668,7 @@ El módulo de reclutamiento no guarda ninguna clave en el código.
 
 ---
 
-## 12. Hojas que crea el sistema
+## 13. Hojas que crea el sistema
 
 | Hoja | Para qué |
 |---|---|
@@ -583,10 +684,11 @@ El módulo de reclutamiento no guarda ninguna clave en el código.
 | `Rec_Cola_Kelly` | Toques entregados a Kelly, con plantilla y variables |
 | `Rec_Plantillas_Kelly` | Las plantillas de Meta que faltan para reclutamiento |
 | `Rec_Cualificacion_Kelly` | Las 5 preguntas de cualificación y el formato del JSON |
+| `Rec_Consentimientos` | Prueba documental: texto exacto, fecha, versión, idioma y finalidades |
 
 ---
 
-## 13. Pruebas
+## 14. Pruebas
 
 `test_reclutamiento.js` carga el módulo en Node con los servicios de Google
 simulados y valida 109 casos: normalización de teléfonos (incluidos los
@@ -597,6 +699,12 @@ supresión, además del parser de perfiles del X-ray de Google el mapeo de plant
 ```bash
 node test_reclutamiento.js
 ```
+
+`test_agencias.js` valida el importador de agencias contra el CSV real
+(22 casos) y `test_formulario.js` el endpoint expuesto a internet (45 casos),
+donde lo que más se comprueba es lo que **no** debe pasar: sin token no escribe,
+sin consentimiento no escribe, y una baja previa manda sobre cualquier
+formulario nuevo.
 
 La calculadora tiene su propia verificación: 50 comprobaciones del cálculo
 contra el resultado a mano, con casos límite incluidos.
@@ -619,4 +727,7 @@ Ejecútalo siempre que toques los pesos del scoring o la normalización.
 - [KW abre Command a desarrolladores externos, feb. 2026 (Inman)](https://www.inman.com/2026/02/23/keller-williams-opens-command-platform-to-3rd-party-developers/) · [nota oficial](https://www.businesswire.com/news/home/20260223307158/en/Keller-Williams-Opens-Command-to-Power-Agent-Choice-and-Best-in-Class-Integrations)
 - [KWIQ, el asistente de IA de KW (HousingWire)](https://www.housingwire.com/articles/keller-williams-launches-ai-powered-real-estate-assistant/)
 - [Google Places API (New) — Text Search](https://developers.google.com/maps/documentation/places/web-service/text-search)
+- [LinkedIn Message Ads API — restringida a partners aprobados](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/advertising-targeting/version/message-ads-integrations?view=li-lms-2026-02)
+- [LinkedIn: las Message Ads no pueden dirigirse a miembros de la UE](https://www.linkedin.com/help/linkedin/answer/a425533) · [artículo que afirma lo contrario desde oct. 2024](https://www.linkedin.com/help/lms/answer/a421723) · [contexto del corte en Europa](https://rootagency.be/linkedin-disables-sponsored-messages-in-europe-what-linkedin-advertisers-need-to-know/)
+- [Tarifas de WhatsApp Business en España](https://engrana.es/en/blog/whatsapp-business-api-pricing) · [cambio del 1 de octubre de 2026](https://aunoa.ai/blog/precios-de-whatsapp-business-2026-cuanto-va-a-costar-cada-mensaje/)
 - [Autónomos inmobiliarios en Andalucía (El Confidencial Digital)](https://www.elconfidencialdigital.com/articulo/legal/andalucia-suma-12500-autonomos-inmobiliarios-cinco-anos/202610071637561491500.html)
